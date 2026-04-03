@@ -1,0 +1,10 @@
+name = "casse-briques"
+compatibility_date = "2024-01-01"
+
+# Pages project (pas de "main" pour Pages)
+pages_build_output_dir = "public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "casse-briques-scores"
+database_id = "REMPLACE_PAR_TON_DATABASE_ID"
