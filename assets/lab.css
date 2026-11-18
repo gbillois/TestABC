@@ -1,0 +1,44 @@
+/* Video Lab — shared styles for the menu and every test page. */
+:root {
+  --bg: #08090d;
+  --panel: #12151d;
+  --panel2: #191d28;
+  --line: #242a38;
+  --text: #eef2f8;
+  --muted: #8d97a8;
+  --ice: #8fd8ff;
+  --cobalt: #1e3ff2;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--ice); }
+code { font: 13px "Space Mono", monospace; color: var(--ice); }
+.wrap { max-width: 1280px; margin: 0 auto; padding: 20px 16px 60px; }
+@media (min-width: 720px) { .wrap { padding: 28px 32px 80px; } }
+
+.top { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
+.back { font: 700 13px "Space Mono", monospace; text-decoration: none; color: var(--text); padding: 7px 12px; border: 1px solid var(--line); border-radius: 8px; }
+.back:hover { border-color: var(--ice); color: var(--ice); }
+.crumb { font: 700 12px "Space Mono", monospace; color: var(--muted); letter-spacing: .12em; }
+
+.hero { margin-bottom: 22px; }
+.eyebrow { font: 700 12px "Space Mono", monospace; color: var(--ice); letter-spacing: .14em; text-transform: uppercase; margin: 0 0 8px; }
+h1 { font: 400 clamp(40px, 7vw, 76px)/0.98 "Anton", Impact, sans-serif; margin: 0; letter-spacing: .01em; text-transform: uppercase; }
+h1 em { font-style: normal; color: var(--cobalt); }
+.lede { max-width: 760px; color: var(--muted); font-size: 16px; margin: 14px 0 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.chips span { font: 700 11px "Space Mono", monospace; padding: 5px 9px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); color: var(--text); }
+h2.sec { font: 400 28px "Anton", Impact, sans-serif; text-transform: uppercase; letter-spacing: .02em; margin: 44px 0 0; }
+
+.btn { appearance: none; border: 1px solid var(--line); background: var(--panel); color: var(--text); padding: 8px 14px; border-radius: 8px; font: 700 12px "Space Mono", monospace; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { border-color: var(--ice); }
+.btn.primary { background: var(--ice); color: #07080c; border-color: var(--ice); min-width: 82px; justify-content: center; }
+.btn.icon { padding: 8px 10px; }
+.btn.toggle { color: var(--muted); }
+.btn.toggle.on { color: var(--text); border-color: var(--cobalt); box-shadow: inset 0 0 0 1px var(--cobalt); }
+select.btn { padding-right: 10px; }
+.btn:focus-visible, .shot:focus-visible, .tabs button:focus-visible, a:focus-visible { outline: 2px solid var(--ice); outline-offset: 2px; }
+.foot { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+[hidden] { display: none !important; }
