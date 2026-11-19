@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AO Character Reveal</title>
+<link rel="stylesheet" href="../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../assets/lab.css">
+<style>
+  .stage { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 10px; overflow: hidden; box-shadow: 0 30px 80px -30px rgba(30, 63, 242, .45); }
+  .stage canvas, .stage video { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .stage video { background: #000; }
+  .hud { position: absolute; left: 12px; top: 12px; font: 700 12px/1.3 "Space Mono", monospace; color: #fff; background: rgba(7, 8, 12, .72); padding: 6px 10px; border-radius: 6px; pointer-events: none; letter-spacing: .04em; }
+  .hud b { color: var(--ice); }
+  .guides { position: absolute; inset: 0; pointer-events: none; display: none; }
+  .guides.on { display: block; }
+  .guides i { position: absolute; border: 1px dashed rgba(143, 216, 255, .7); }
+  .guides .act { inset: 5%; }
+  .guides .ttl { inset: 10%; border-color: rgba(255, 255, 255, .55); }
+  .guides .v1, .guides .v2 { top: 0; bottom: 0; width: 0; border-width: 0 0 0 1px; }
+  .guides .h1, .guides .h2 { left: 0; right: 0; height: 0; border-width: 1px 0 0 0; }
+  .guides .v1 { left: 33.333%; } .guides .v2 { left: 66.666%; } .guides .h1 { top: 33.333%; } .guides .h2 { top: 66.666%; }
+  .bigplay { position: absolute; inset: 0; display: grid; place-items: center; background: transparent; border: 0; cursor: pointer; }
+  .bigplay span { width: 84px; height: 84px; border-radius: 50%; background: var(--cobalt); display: grid; place-items: center; box-shadow: 0 0 0 10px rgba(30, 63, 242, .25); transition: transform .15s; }
+  .bigplay:hover span { transform: scale(1.06); }
+  .bigplay svg { width: 30px; height: 30px; margin-left: 5px; fill: #fff; }
+  .bigplay[hidden] { display: none; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
+  .controls .sp { flex: 1; }
+  .tc { font: 700 15px "Space Mono", monospace; color: #fff; letter-spacing: .06em; min-width: 9.5em; }
+  .tc small { color: var(--muted); font-weight: 400; font-size: 12px; margin-left: 6px; }
+
+  .timeline { position: relative; margin-top: 14px; height: 54px; display: flex; gap: 2px; cursor: pointer; user-select: none; touch-action: none; }
+  .seg { position: relative; background: var(--panel); border-radius: 4px; overflow: hidden; display: flex; align-items: flex-end; padding: 4px 5px; min-width: 0; transition: background .1s; }
+  .seg span { font: 700 10px "Space Mono", monospace; color: var(--muted); white-space: nowrap; overflow: hidden; }
+  .seg.on { background: var(--cobalt); }
+  .seg.on span { color: #fff; }
+  .playhead { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--ice); box-shadow: 0 0 10px var(--ice); pointer-events: none; }
+
+  .tabs { display: inline-flex; background: var(--panel); border-radius: 8px; padding: 3px; gap: 2px; }
+  .tabs button { border: 0; background: transparent; color: var(--muted); padding: 7px 12px; border-radius: 6px; font: 700 12px "Space Mono", monospace; cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--ice); color: #07080c; }
+
+  .shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; margin-top: 18px; }
+  .shot { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; cursor: pointer; text-align: left; color: inherit; padding: 0; font: inherit; transition: border-color .15s, transform .15s; }
+  .shot:hover { border-color: var(--ice); transform: translateY(-2px); }
+  .shot.on { border-color: var(--cobalt); box-shadow: 0 0 0 1px var(--cobalt); }
+  .shot canvas { width: 100%; aspect-ratio: 16 / 9; display: block; background: #000; }
+  .shot div { padding: 10px 12px 12px; }
+  .shot h3 { margin: 0 0 2px; font: 400 20px "Anton", sans-serif; letter-spacing: .02em; color: #fff; }
+  .shot .t { font: 700 11px "Space Mono", monospace; color: var(--ice); }
+  .shot p { margin: 6px 0 0; font-size: 13px; line-height: 1.45; color: var(--muted); }
+  .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 16px; }
+  .note { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .note h3 { margin: 0 0 6px; font: 700 12px "Space Mono", monospace; color: var(--ice); text-transform: uppercase; letter-spacing: .08em; }
+  .note p, .note li { font-size: 14px; line-height: 1.55; color: var(--muted); margin: 0; }
+  .note ul { margin: 0; padding-left: 18px; }
+  kbd { font: 700 11px "Space Mono", monospace; background: var(--panel2); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; color: var(--text); }
+  .warn { font-size: 13px; color: var(--muted); margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="back" href="../../index.html">← Video Lab</a>
+    <span class="crumb">TEST 01</span>
+  </header>
+
+  <section class="hero">
+    <div>
+      <p class="eyebrow">Motion graphics · character reveal</p>
+      <h1>AO <em>//</em> Character Reveal</h1>
+      <p class="lede">An explosive title-sequence trailer: 80% bold graphic design in motion, 20% character action. Every frame is drawn procedurally on a canvas and the soundtrack is synthesised live, so it plays the same in the browser and in the exported MP4.</p>
+      <div class="chips">
+        <span>16:9 · 1920×1080</span><span>24 fps</span><span>13 cuts</span><span>14.0 s · 336 frames</span><span>Canvas 2D + Web Audio</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="controls" style="margin-top:0;margin-bottom:12px">
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-mode="live">Live canvas</button>
+      <button role="tab" aria-selected="false" data-mode="mp4">Rendered MP4</button>
+    </div>
+    <span class="sp"></span>
+    <a class="btn" href="ao-reveal.mp4" download>Download MP4</a>
+  </div>
+
+  <div class="stage" id="stage">
+    <canvas id="cv" width="1920" height="1080" aria-label="AO character reveal trailer"></canvas>
+    <video id="vid" src="ao-reveal.mp4" poster="poster.jpg" controls playsinline preload="none" hidden></video>
+    <div class="guides" id="guides"><i class="act"></i><i class="ttl"></i><i class="v1"></i><i class="v2"></i><i class="h1"></i><i class="h2"></i></div>
+    <div class="hud" id="hud"></div>
+    <button class="bigplay" id="bigplay" aria-label="Play"><span><svg viewBox="0 0 24 24"><path d="M6 4l15 8-15 8z"/></svg></span></button>
+  </div>
+
+  <div id="liveUI">
+    <div class="timeline" id="timeline"><div class="playhead" id="playhead"></div></div>
+    <div class="controls">
+      <button class="btn primary" id="play">Play</button>
+      <button class="btn icon" id="prevCut" title="Previous cut (Shift ←)">⏮</button>
+      <button class="btn icon" id="prevF" title="Previous frame (←)">◀ 1f</button>
+      <button class="btn icon" id="nextF" title="Next frame (→)">1f ▶</button>
+      <button class="btn icon" id="nextCut" title="Next cut (Shift →)">⏭</button>
+      <span class="tc" id="tc">00:00:00:00</span>
+      <span class="sp"></span>
+      <select class="btn" id="speed" title="Playback speed (audio only at 1×)">
+        <option value="1">1×</option><option value="0.5">0.5×</option><option value="0.25">0.25×</option><option value="0.1">0.1×</option>
+      </select>
+      <button class="btn toggle on" id="snd" aria-pressed="true">Sound</button>
+      <button class="btn toggle on" id="loop" aria-pressed="true">Loop</button>
+      <button class="btn toggle on" id="hudT" aria-pressed="true">Cut info</button>
+      <button class="btn toggle" id="guideT" aria-pressed="false">Safe guides</button>
+    </div>
+    <p class="warn">Keys: <kbd>Space</kbd> play/pause · <kbd>←</kbd><kbd>→</kbd> step one frame · <kbd>Shift</kbd>+<kbd>←</kbd><kbd>→</kbd> jump cut · <kbd>Home</kbd> restart · <kbd>M</kbd> sound. Contains rapid flashes and strobing.</p>
+  </div>
+
+  <h2 class="sec">Shot list</h2>
+  <div class="shots" id="shots"></div>
+
+  <h2 class="sec">Techniques under test</h2>
+  <div class="notes">
+    <div class="note"><h3>Editing</h3><ul><li>13 hard cuts locked to a 24 fps grid</li><li>Cut-on-impact, shutter and invert flashes</li><li>Whip-pan smear and a sneaker foreground wipe</li><li>Speed ramp: 25% slow-mo then snap-zoom</li></ul></div>
+    <div class="note"><h3>Graphics</h3><ul><li>Kinetic type: punch-in, spring squash, 3D text ring, 180° rotation</li><li>Split-screen triptych with stroboscopic echoes</li><li>Flat-colour shatter (radial and grid shards)</li><li>Halftone, barcodes, UI ticks, target-lock HUD, RGB split</li></ul></div>
+    <div class="note"><h3>Character</h3><ul><li>Procedural 2D rig with 17 key poses, blended per frame</li><li>One model reused everywhere (full colour, silhouettes, ghosts)</li><li>Close-up face and eye drawings matched to the rig design</li></ul></div>
+    <div class="note"><h3>Sound</h3><p>Web Audio synth at 120 BPM: kick, hats and bass on the grid, and every cut, slam, shatter and stamp gets its own hit. The same schedule renders offline into the MP4's audio track.</p></div>
+  </div>
+  <footer class="foot">Test 01 · rendered with <code>tools/render-video.js</code> · <a href="../../index.html">back to the menu</a></footer>
+</div>
+
+<script src="rig.js"></script>
+<script src="trailer.js"></script>
+<script>
+(() => {
+  const T = window.AOTRAILER, { FPS, TOTAL, CUTS } = T;
+  const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  const $ = id => document.getElementById(id);
+  const tl = $('timeline'), ph = $('playhead'), hud = $('hud'), vid = $('vid');
+  const exportMode = new URLSearchParams(location.search).has('export');
+
+  // exporter hook (tools/render-video.js)
+  window.VIDEO_TEST = {
+    width: 1920, height: 1080, fps: FPS, frames: TOTAL, poster: 296,
+    ready: () => fontsReady,
+    frame(F, type = 'image/jpeg', q = 0.95) { T.render(ctx, F); return cv.toDataURL(type, q); },
+    audioWav: () => T.renderAudioWav(),
+  };
+  const fontsReady = Promise.all(['400 100px Anton', '400 100px "Archivo Black"', '400 20px "Space Mono"', '700 20px "Space Mono"'].map(f => document.fonts.load(f))).then(() => document.fonts.ready);
+  if (exportMode) return;
+
+  let F = 0, playing = false, t0 = 0, speed = 1, loop = true, sound = true, ac = null, voice = null;
+  const segs = CUTS.map((c, i) => {
+    const d = document.createElement('div');
+    d.className = 'seg'; d.style.flexGrow = c.e - c.s; d.title = `Cut ${i + 1} — ${c.title}`;
+    d.innerHTML = `<span>${String(i + 1).padStart(2, '0')}</span>`;
+    tl.insertBefore(d, ph);
+    return d;
+  });
+  const pad = n => String(n).padStart(2, '0');
+  const range = c => c.tc;
+  let lastCut = -1;
+  function draw() {
+    const i = T.render(ctx, F), c = CUTS[i];
+    $('tc').innerHTML = `00:00:${pad(Math.floor(F / FPS))}:${pad(F % FPS)}<small>F${String(F).padStart(3, '0')}</small>`;
+    ph.style.left = `calc(${(F / TOTAL) * 100}% - 1px)`;
+    hud.innerHTML = `CUT <b>${pad(i + 1)}</b>/13 · ${range(c)} · ${c.title.toUpperCase()} · f${pad(F - c.s)}`;
+    if (i !== lastCut) {
+      segs.forEach((s, j) => s.classList.toggle('on', j === i));
+      shotEls.forEach((s, j) => s.classList.toggle('on', j === i));
+      lastCut = i;
+    }
+  }
+  function stopAudio() { if (voice) { voice.stop(); voice = null; } }
+  function startClock() {
+    stopAudio();
+    let lead = 0;
+    if (sound && speed === 1) {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      ac.resume();
+      lead = 0.04;
+      voice = T.synth(ac, ac.destination, ac.currentTime + lead, F / FPS);
+    }
+    t0 = performance.now() + lead * 1000 - (F / FPS) * 1000 / speed;
+  }
+  function play() { if (F >= TOTAL - 1) F = 0; playing = true; $('bigplay').hidden = true; $('play').textContent = 'Pause'; startClock(); }
+  function pause() { playing = false; $('play').textContent = 'Play'; stopAudio(); }
+  function seek(nf) { F = Math.max(0, Math.min(TOTAL - 1, nf)); $('bigplay').hidden = true; draw(); if (playing) startClock(); }
+  function tick(now) {
+    if (playing) {
+      const nf = Math.floor(((now - t0) / 1000) * speed * FPS);
+      if (nf >= TOTAL) {
+        if (loop) { F = 0; draw(); startClock(); } else { F = TOTAL - 1; draw(); pause(); }
+      } else if (nf !== F && nf >= 0) { F = nf; draw(); }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // controls
+  $('play').onclick = () => (playing ? pause() : play());
+  $('bigplay').onclick = play;
+  cv.onclick = () => (playing ? pause() : play());
+  $('prevF').onclick = () => { pause(); seek(F - 1); };
+  $('nextF').onclick = () => { pause(); seek(F + 1); };
+  const cutStart = d => { const i = T.cutAt(F); const j = d < 0 ? (F > CUTS[i].s ? i : i - 1) : i + 1; return CUTS[Math.max(0, Math.min(CUTS.length - 1, j))].s; };
+  $('prevCut').onclick = () => seek(cutStart(-1));
+  $('nextCut').onclick = () => seek(cutStart(1));
+  $('speed').onchange = e => { speed = +e.target.value; if (playing) startClock(); };
+  const toggle = (id, fn) => { const b = $(id); b.onclick = () => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); fn(on); }; };
+  toggle('snd', on => { sound = on; if (playing) startClock(); });
+  toggle('loop', on => (loop = on));
+  toggle('hudT', on => (hud.style.display = on ? '' : 'none'));
+  toggle('guideT', on => $('guides').classList.toggle('on', on));
+
+  // scrubbing
+  let scrubbing = false, wasPlaying = false;
+  const scrubTo = e => { const r = tl.getBoundingClientRect(); seek(Math.floor(((e.clientX - r.left) / r.width) * TOTAL)); };
+  tl.addEventListener('pointerdown', e => { scrubbing = true; wasPlaying = playing; if (playing) pause(); tl.setPointerCapture(e.pointerId); scrubTo(e); });
+  tl.addEventListener('pointermove', e => scrubbing && scrubTo(e));
+  tl.addEventListener('pointerup', () => { scrubbing = false; if (wasPlaying) play(); });
+
+  addEventListener('keydown', e => {
+    if (e.target.closest('select, input')) return;
+    if (e.code === 'Space') { e.preventDefault(); playing ? pause() : play(); }
+    else if (e.code === 'ArrowLeft') { e.preventDefault(); if (e.shiftKey) seek(cutStart(-1)); else { pause(); seek(F - 1); } }
+    else if (e.code === 'ArrowRight') { e.preventDefault(); if (e.shiftKey) seek(cutStart(1)); else { pause(); seek(F + 1); } }
+    else if (e.code === 'Home') seek(0);
+    else if (e.key === 'm' || e.key === 'M') $('snd').click();
+  });
+
+  // live / mp4 tabs
+  document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+    const mp4 = b.dataset.mode === 'mp4';
+    document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+    if (mp4) { pause(); vid.preload = 'auto'; } else vid.pause();
+    vid.hidden = !mp4; cv.hidden = mp4; hud.hidden = mp4; $('bigplay').hidden = mp4 || F > 0;
+    $('liveUI').hidden = mp4;
+  });
+
+  // shot list with live thumbnails
+  const shotEls = CUTS.map((c, i) => {
+    const b = document.createElement('button');
+    b.className = 'shot';
+    b.innerHTML = `<canvas width="384" height="216"></canvas><div><span class="t">CUT ${pad(i + 1)} · ${range(c)}</span><h3>${c.title}</h3><p>${c.desc}</p></div>`;
+    b.onclick = () => { document.querySelector('.tabs button[data-mode="live"]').click(); seek(c.s); $('stage').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+    $('shots').appendChild(b);
+    return b;
+  });
+  const THUMB = [20, 31, 64, 90, 104, 134, 158, 177, 208, 226, 251, 296, 326];
+
+  fontsReady.then(() => {
+    shotEls.forEach((b, i) => { T.render(ctx, THUMB[i]); b.querySelector('canvas').getContext('2d').drawImage(cv, 0, 0, 384, 216); });
+    draw(); T.render(ctx, 296); // UI at frame 0, hero frame behind the play button
+    requestAnimationFrame(tick);
+  });
+})();
+</script>
+</body>
+</html>

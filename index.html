@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Video Lab</title>
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/lab.css">
+<style>
+  .mast { display: grid; gap: 18px; align-items: end; padding: 18px 0 30px; border-bottom: 1px solid var(--line); }
+  @media (min-width: 860px) { .mast { grid-template-columns: 1fr auto; } }
+  .mast h1 { font-size: clamp(64px, 13vw, 168px); line-height: .85; }
+  .mast h1 span { color: var(--ice); }
+  .stats { display: flex; gap: 28px; }
+  .stats div { font: 400 44px/1 "Anton", sans-serif; }
+  .stats small { display: block; font: 700 11px "Space Mono", monospace; color: var(--muted); letter-spacing: .12em; margin-top: 6px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: 18px; margin-top: 28px; }
+  .card { position: relative; display: block; text-decoration: none; color: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; transition: transform .18s, border-color .18s; }
+  .card:hover { transform: translateY(-3px); border-color: var(--ice); }
+  .media { position: relative; aspect-ratio: 16 / 9; background: #000; overflow: hidden; }
+  .media img, .media video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .media video { opacity: 0; transition: opacity .2s; }
+  .card:hover .media video.playing { opacity: 1; }
+  .num { position: absolute; left: 12px; top: 10px; font: 400 40px/1 "Anton", sans-serif; color: #fff; text-shadow: 0 2px 12px rgba(0, 0, 0, .6); }
+  .badge { position: absolute; right: 12px; top: 12px; font: 700 10px "Space Mono", monospace; letter-spacing: .1em; padding: 4px 8px; border-radius: 999px; background: var(--ice); color: #07080c; }
+  .body { padding: 14px 16px 16px; }
+  .kind { font: 700 11px "Space Mono", monospace; color: var(--ice); letter-spacing: .1em; text-transform: uppercase; }
+  .card h2 { margin: 4px 0 6px; font: 400 30px/1.05 "Anton", sans-serif; text-transform: uppercase; letter-spacing: .01em; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
+  .tags span { font: 700 10px "Space Mono", monospace; padding: 3px 7px; border-radius: 5px; background: var(--panel2); color: var(--text); }
+  .specs { display: flex; gap: 12px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); font: 700 11px "Space Mono", monospace; color: var(--muted); }
+
+  .slot { display: grid; place-items: center; text-align: center; min-height: 300px; border: 1.5px dashed var(--line); border-radius: 14px; color: var(--muted); padding: 24px; }
+  .slot b { display: block; font: 400 56px/1 "Anton", sans-serif; color: var(--line); }
+  .slot span { font: 700 12px "Space Mono", monospace; letter-spacing: .1em; }
+
+  .how { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 16px; }
+  .how div { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; font-size: 14px; color: var(--muted); }
+  .how b { display: block; font: 700 12px "Space Mono", monospace; color: var(--ice); margin-bottom: 4px; letter-spacing: .08em; }
+  .other { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <p class="eyebrow">Main menu · video technique tests</p>
+      <h1>Video<span>/</span>Lab</h1>
+      <p class="lede">One folder per test. Each test is a self-contained page that plays live in the browser and ships a rendered MP4.</p>
+    </div>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <div class="grid" id="grid"></div>
+
+  <h2 class="sec">Add a test</h2>
+  <div class="how">
+    <div><b>1 · FOLDER</b>Create <code>videos/NN-name/index.html</code>. Link the shared <code>assets/</code> fonts and styles.</div>
+    <div><b>2 · HOOK</b>Expose <code>window.VIDEO_TEST</code> with <code>frame(F)</code> and <code>audioWav()</code>. See test 01.</div>
+    <div><b>3 · RENDER</b>Run <code>node tools/render-video.js videos/NN-name</code> to write the MP4 and poster.</div>
+    <div><b>4 · LIST</b>Add one entry to the <code>TESTS</code> array at the bottom of this page.</div>
+  </div>
+
+  <h2 class="sec">Other experiments</h2>
+  <div class="other"><a class="btn" href="breakout.html">Breakout (HTML game)</a></div>
+
+  <footer class="foot">Video Lab · all tests are procedural (Canvas 2D + Web Audio) unless noted.</footer>
+</div>
+
+<script>
+// ---- the menu: add one entry per test folder ----
+const TESTS = [
+  {
+    n: '01', href: 'videos/01-ao-reveal/index.html', title: 'AO // Character Reveal',
+    kind: 'Motion graphics · character reveal',
+    desc: 'Explosive streetwear title sequence: giant kinetic type, split-screens, shatters and strobe action around the character AO.',
+    tags: ['Kinetic type', 'Split-screen', 'Shatter', 'Stroboscopic', 'Whip-pan', 'Speed ramp', 'Synth audio'],
+    specs: ['16:9', '24 fps', '13 cuts', '14.0 s'],
+    poster: 'videos/01-ao-reveal/poster.jpg', preview: 'videos/01-ao-reveal/ao-reveal.mp4',
+  },
+];
+const SLOTS = 2; // empty "next test" placeholders
+
+const grid = document.getElementById('grid');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+for (const t of TESTS) {
+  const a = document.createElement('a');
+  a.className = 'card'; a.href = t.href;
+  a.innerHTML = `
+    <div class="media">
+      <img src="${esc(t.poster)}" alt="" loading="lazy">
+      ${t.preview ? `<video muted loop playsinline preload="none" src="${esc(t.preview)}"></video>` : ''}
+      <span class="num">${esc(t.n)}</span><span class="badge">READY</span>
+    </div>
+    <div class="body">
+      <div class="kind">${esc(t.kind)}</div>
+      <h2>${esc(t.title)}</h2>
+      <p>${esc(t.desc)}</p>
+      <div class="tags">${t.tags.map(x => `<span>${esc(x)}</span>`).join('')}</div>
+      <div class="specs">${t.specs.map(esc).join('<span>·</span>')}</div>
+    </div>`;
+  const v = a.querySelector('video');
+  if (v) {
+    a.addEventListener('mouseenter', () => { v.play().then(() => v.classList.add('playing')).catch(() => {}); });
+    a.addEventListener('mouseleave', () => { v.pause(); v.classList.remove('playing'); });
+  }
+  grid.appendChild(a);
+}
+for (let i = 0; i < SLOTS; i++) {
+  const d = document.createElement('div');
+  d.className = 'slot';
+  d.innerHTML = `<div><b>${String(TESTS.length + i + 1).padStart(2, '0')}</b><span>NEXT TEST SLOT</span></div>`;
+  grid.appendChild(d);
+}
+document.getElementById('stats').innerHTML =
+  `<div>${String(TESTS.length).padStart(2, '0')}<small>TESTS</small></div>` +
+  `<div>${TESTS.reduce((s, t) => s + (parseInt(t.specs.find(x => /cuts/.test(x))) || 0), 0)}<small>CUTS</small></div>`;
+</script>
+</body>
+</html>
