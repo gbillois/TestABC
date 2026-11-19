@@ -5,7 +5,7 @@ Banc d'essai de tests rangés par catégorie. Ouvrir `index.html` pour la page d
 | Catégorie | Menu | Tests |
 |---|---|---|
 | Vidéo création | `videos/index.html` | 01 AO Character Reveal · 02 AO Reveal Trailer v2 |
-| Slides création / édition | `slides/index.html` | 01 HTML Presentation Editor (repo externe, [audit](slides/01-html-presentation-editor/AUDIT.md)) |
+| Slides création / édition | `slides/index.html` | 01 HTML Presentation Editor ([audit](slides/01-html-presentation-editor/AUDIT.md)) · 02 Bento Slides ([audit](slides/02-bento-slides/AUDIT.md)) |
 | Jeux & divers | — | Breakout (`breakout.html`) |
 
 Toute repo externe intégrée passe d'abord par un audit du code source (voir `CLAUDE.md`).
