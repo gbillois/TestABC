@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AO — Character Reveal Trailer (video test)</title>
+<style>
+  @font-face { font-family: 'Anton'; src: url('fonts/Anton-Regular.ttf') format('truetype'); font-display: block; }
+  @font-face { font-family: 'JetBrains Mono'; src: url('fonts/JetBrainsMono-Variable.ttf') format('truetype'); font-weight: 100 800; font-display: block; }
+  :root {
+    --ice: #a9e2ff; --cobalt: #0b3bff; --white: #fff; --silver: #b9c1cc; --black: #06070b;
+    --panel: #0e1119; --line: #1e2433; --dim: #7c8698;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--black); color: var(--white); }
+  body { font: 500 13px/1.5 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace; -webkit-font-smoothing: antialiased; }
+  .wrap { width: min(100% - 32px, max(640px, calc((100vh - 250px) * 16 / 9))); max-width: 1600px; margin: 0 auto; padding: 18px 0 56px; }
+
+  header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+  h1 { font: 400 34px/1 'Anton', Impact, sans-serif; letter-spacing: .02em; margin: 0; text-transform: uppercase; }
+  h1 b { color: var(--ice); font-weight: 400; }
+  .meta { color: var(--dim); letter-spacing: .08em; text-transform: uppercase; font-size: 11px; text-align: right; }
+  .meta span { color: var(--silver); }
+
+  .stage { position: relative; background: #000; aspect-ratio: 16 / 9; outline: 1px solid var(--line); cursor: pointer; overflow: hidden; }
+  .stage canvas { display: block; width: 100%; height: 100%; }
+  .stage:fullscreen { outline: 0; display: flex; align-items: center; justify-content: center; }
+  .stage:fullscreen canvas { width: min(100vw, calc(100vh * 16 / 9)); height: auto; aspect-ratio: 16 / 9; }
+  .big-play { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(6, 7, 11, .45); transition: opacity .12s; }
+  .big-play i { width: 92px; height: 92px; border-radius: 50%; background: var(--cobalt); display: grid; place-items: center; box-shadow: 0 0 0 6px #fff; }
+  .big-play i::after { content: ''; border-left: 30px solid #fff; border-top: 19px solid transparent; border-bottom: 19px solid transparent; margin-left: 8px; }
+  .playing .big-play, .scrubbed .big-play { opacity: 0; pointer-events: none; }
+  .loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--dim); letter-spacing: .2em; background: #000; }
+
+  /* timeline */
+  .timeline { position: relative; display: flex; height: 40px; margin-top: 10px; background: var(--panel); outline: 1px solid var(--line); cursor: ew-resize; user-select: none; touch-action: none; }
+  .seg { position: relative; height: 100%; border-right: 1px solid var(--black); display: flex; align-items: center; justify-content: center; color: var(--dim); font-size: 11px; overflow: hidden; }
+  .seg:nth-child(odd) { background: #121722; }
+  .seg.on { background: var(--cobalt); color: #fff; }
+  .seg.done { color: var(--silver); }
+  .head { position: absolute; top: -4px; bottom: -4px; width: 2px; background: #fff; pointer-events: none; }
+  .head::before { content: ''; position: absolute; top: -3px; left: -5px; border: 6px solid transparent; border-top-color: #fff; }
+
+  /* transport */
+  .bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  button, select { font: inherit; color: #fff; background: var(--panel); border: 1px solid var(--line); height: 36px; padding: 0 12px; cursor: pointer; letter-spacing: .06em; text-transform: uppercase; border-radius: 0; }
+  button:hover, select:hover { border-color: var(--ice); }
+  button:focus-visible, select:focus-visible, .seg:focus-visible, .shot:focus-visible { outline: 2px solid var(--ice); outline-offset: 2px; }
+  button.primary { background: var(--cobalt); border-color: var(--cobalt); min-width: 96px; }
+  button[aria-pressed="true"] { background: #fff; color: var(--black); border-color: #fff; }
+  .read { margin-left: auto; display: flex; gap: 18px; align-items: baseline; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+  .read .tc { font: 400 28px/1 'Anton', Impact, sans-serif; letter-spacing: .04em; }
+  .read .k { color: var(--dim); }
+  .read .v { color: var(--ice); }
+  .hint { color: var(--dim); margin-top: 10px; font-size: 11px; letter-spacing: .04em; }
+  kbd { border: 1px solid var(--line); padding: 1px 5px; color: var(--silver); font: inherit; }
+
+  /* shot list */
+  h2 { font: 400 20px/1 'Anton', Impact, sans-serif; letter-spacing: .06em; text-transform: uppercase; margin: 34px 0 12px; display: flex; align-items: center; gap: 12px; }
+  h2::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+  .shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; }
+  .shot { text-align: left; height: auto; padding: 12px; display: block; text-transform: none; letter-spacing: 0; background: var(--panel); border: 1px solid var(--line); color: var(--silver); }
+  .shot .n { font: 400 30px/1 'Anton', Impact, sans-serif; color: #fff; margin-right: 8px; }
+  .shot .t { font: 400 18px/1 'Anton', Impact, sans-serif; color: #fff; letter-spacing: .05em; }
+  .shot .tc { display: block; color: var(--ice); font-size: 11px; margin: 6px 0; letter-spacing: .06em; }
+  .shot p { margin: 0; font-size: 12px; line-height: 1.5; color: var(--silver); }
+  .shot.on { border-color: var(--cobalt); box-shadow: inset 4px 0 0 var(--cobalt); }
+  .shot.proposed .tc::after { content: ' · proposed'; color: var(--dim); }
+  .notes { color: var(--silver); max-width: 78ch; font-size: 12px; }
+  .notes li { margin: 4px 0; }
+  .notes code { color: var(--ice); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><b>AO</b> — Character Reveal Trailer</h1>
+    <div class="meta">Video test · <span>16:9</span> · <span>13 cuts</span> · <span>24 fps</span> · <span>15.0 s / 360 frames</span><br>Rendered live in canvas — no MP4 yet</div>
+  </header>
+
+  <div class="stage" id="stage" title="Click to play / pause">
+    <canvas id="film" width="1920" height="1080" aria-label="AO character reveal trailer"></canvas>
+    <div class="big-play" id="bigPlay"><i></i></div>
+    <div class="loading" id="loading">LOADING FONTS…</div>
+  </div>
+
+  <div class="timeline" id="timeline" aria-label="Timeline — 13 cuts"><div class="head" id="head"></div></div>
+
+  <div class="bar">
+    <button class="primary" id="play">Play</button>
+    <button id="prevCut" title="Previous cut (↑)">|◀</button>
+    <button id="prevF" title="Previous frame (←)">◀ 1f</button>
+    <button id="nextF" title="Next frame (→)">1f ▶</button>
+    <button id="nextCut" title="Next cut (↓)">▶|</button>
+    <select id="speed" title="Playback speed">
+      <option value="1">1×</option><option value="0.5">0.5×</option><option value="0.25">0.25×</option><option value="0.1">0.1×</option>
+    </select>
+    <button id="loop" aria-pressed="true" title="Loop (L)">Loop</button>
+    <button id="loopCut" aria-pressed="false" title="Loop current cut (C)">Loop cut</button>
+    <button id="sound" aria-pressed="false" title="Synth beat track (M)">Sound</button>
+    <button id="fs" title="Fullscreen (F)">Full</button>
+    <div class="read">
+      <span class="tc" id="tc">00:00</span>
+      <span><span class="k">FRAME </span><span class="v" id="fr">000</span><span class="k">/359</span></span>
+      <span><span class="k">CUT </span><span class="v" id="cutName">01 IMPACT</span></span>
+    </div>
+  </div>
+  <div class="hint"><kbd>Space</kbd> play/pause · <kbd>←</kbd><kbd>→</kbd> frame step · <kbd>↑</kbd><kbd>↓</kbd> cut · <kbd>L</kbd> loop · <kbd>C</kbd> loop cut · <kbd>M</kbd> sound · <kbd>F</kbd> fullscreen · drag the timeline to scrub</div>
+
+  <h2>Shot list</h2>
+  <div class="shots" id="shots"></div>
+
+  <h2>Notes</h2>
+  <ul class="notes">
+    <li>Everything on screen — the character, the typography, the shards — is drawn procedurally per frame; every frame is a pure function of its frame number, so the film scrubs exactly and can be exported frame-by-frame later (<code>window.AO_FILM.renderFrame(n)</code>, or open <code>?f=120</code> for a still).</li>
+    <li>Cut timings follow the brief, with decimal seconds snapped to the nearest 24 fps frame (e.g. 3.10 s → frame 74).</li>
+    <li>The brief was cut off at <code>CUT 12 | 11.10-13.00s</code>. Cuts 12 and 13 are a proposal: a hero landing with outfit call-outs, then an end-card lockup that returns to the opening frame so the loop closes.</li>
+    <li>The synth beat is optional and off by default.</li>
+  </ul>
+</div>
+
+<script src="js/core.js"></script>
+<script src="js/ao.js"></script>
+<script src="js/cuts.js"></script>
+<script src="js/player.js"></script>
+</body>
+</html>
