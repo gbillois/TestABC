@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slide Lab · TestABC</title>
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../assets/lab.css">
+<style>
+  :root { --accent: #ff8a65; }
+  .mast { padding: 18px 0 30px; border-bottom: 1px solid var(--line); }
+  .mast h1 { font-size: clamp(64px, 13vw, 168px); line-height: .85; }
+  .mast h1 span { color: var(--accent); }
+  .eyebrow { color: var(--accent); }
+  .how { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 16px; }
+  .how div { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; font-size: 14px; color: var(--muted); }
+  .how b { display: block; font: 700 12px "Space Mono", monospace; color: var(--accent); margin-bottom: 4px; letter-spacing: .08em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="top"><a class="back" href="../index.html">← TestABC</a><span class="crumb">CATÉGORIE · SLIDES CRÉATION / ÉDITION</span></nav>
+  <header class="mast">
+    <p class="eyebrow">Menu · tests de création et d'édition de slides</p>
+    <h1>Slide<span>/</span>Lab</h1>
+    <p class="lede">Outils pour écrire, retoucher, présenter et exporter des decks. Chaque outil externe est figé sur un commit et accompagné de son rapport d'audit.</p>
+  </header>
+
+  <div class="grid" id="grid"></div>
+
+  <h2 class="sec">Ajouter un test</h2>
+  <div class="how">
+    <div><b>1 · DOSSIER</b>Créer <code>slides/NN-nom/</code> avec un <code>index.html</code> de présentation du test.</div>
+    <div><b>2 · AUDIT</b>Repo externe : <code>AUDIT.md</code> obligatoire (commit figé, hash des fichiers copiés, verdict).</div>
+    <div><b>3 · LISTER</b>Ajouter une entrée au tableau <code>TESTS</code> ci-dessous et dans <code>CATEGORIES</code> sur l'accueil.</div>
+  </div>
+
+  <footer class="foot">Slide Lab · TestABC</footer>
+</div>
+
+<script src="../assets/cards.js"></script>
+<script>
+const TESTS = [
+  {
+    n: '01', href: '01-html-presentation-editor/index.html', title: 'HTML Presentation Editor',
+    kind: 'Éditeur type PowerPoint · repo externe',
+    desc: 'Éditeur hors ligne en un seul fichier HTML : ruban, miniatures, tableaux, graphiques, mode présentateur, export .pptx.',
+    tags: ['matheusbeccalli/html-presentation-editor', 'MIT', 'Audit ✓', 'Offline / CSP'],
+    specs: ['1 fichier', '1.8 MB', 'commit fd03cd5'],
+    poster: '01-html-presentation-editor/poster.jpg', badge: 'AUDITÉ',
+  },
+];
+const grid = document.getElementById('grid');
+TESTS.forEach(t => grid.appendChild(TestCards.card(t)));
+grid.appendChild(TestCards.slot(TESTS.length + 1, 'PROCHAIN TEST'));
+</script>
+</body>
+</html>

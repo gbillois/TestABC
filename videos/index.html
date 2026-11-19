@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Video Lab · TestABC</title>
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../assets/lab.css">
+<style>
+  .mast { display: grid; gap: 18px; align-items: end; padding: 18px 0 30px; border-bottom: 1px solid var(--line); }
+  @media (min-width: 860px) { .mast { grid-template-columns: 1fr auto; } }
+  .mast h1 { font-size: clamp(64px, 13vw, 168px); line-height: .85; }
+  .mast h1 span { color: var(--ice); }
+  .stats { display: flex; gap: 28px; }
+  .stats div { font: 400 44px/1 "Anton", sans-serif; }
+  .stats small { display: block; font: 700 11px "Space Mono", monospace; color: var(--muted); letter-spacing: .12em; margin-top: 6px; }
+
+  .how { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 16px; }
+  .how div { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; font-size: 14px; color: var(--muted); }
+  .how b { display: block; font: 700 12px "Space Mono", monospace; color: var(--ice); margin-bottom: 4px; letter-spacing: .08em; }
+  .other { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="top"><a class="back" href="../index.html">← TestABC</a><span class="crumb">CATEGORY · VIDEO CREATION</span></nav>
+  <header class="mast">
+    <div>
+      <p class="eyebrow">Main menu · video technique tests</p>
+      <h1>Video<span>/</span>Lab</h1>
+      <p class="lede">One folder per test. Each test is a self-contained page that plays live in the browser and ships a rendered MP4.</p>
+    </div>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <div class="grid" id="grid"></div>
+
+  <h2 class="sec">Add a test</h2>
+  <div class="how">
+    <div><b>1 · FOLDER</b>Create <code>videos/NN-name/index.html</code>. Link the shared <code>assets/</code> fonts and styles.</div>
+    <div><b>2 · HOOK</b>Expose <code>window.VIDEO_TEST</code> with <code>frame(F)</code> and <code>audioWav()</code>. See test 01.</div>
+    <div><b>3 · RENDER</b>Run <code>node tools/render-video.js videos/NN-name</code> to write the MP4 and poster.</div>
+    <div><b>4 · LIST</b>Add one entry to the <code>TESTS</code> array at the bottom of this page.</div>
+  </div>
+
+  <h2 class="sec">Other experiments</h2>
+  <div class="other"><a class="btn" href="../index.html">All categories (TestABC home)</a><a class="btn" href="../breakout.html">Breakout (HTML game)</a></div>
+
+  <footer class="foot">Video Lab · all tests are procedural (Canvas 2D + Web Audio) unless noted.</footer>
+</div>
+
+<script>
+// ---- the menu: add one entry per test folder ----
+const TESTS = [
+  {
+    n: '01', href: '01-ao-reveal/index.html', title: 'AO // Character Reveal',
+    kind: 'Motion graphics · character reveal',
+    desc: 'Explosive streetwear title sequence: giant kinetic type, split-screens, shatters and strobe action around the character AO.',
+    tags: ['Kinetic type', 'Split-screen', 'Shatter', 'Stroboscopic', 'Whip-pan', 'Speed ramp', 'Synth audio'],
+    specs: ['16:9', '24 fps', '13 cuts', '14.0 s'],
+    poster: '01-ao-reveal/poster.jpg', preview: '01-ao-reveal/ao-reveal.mp4',
+  },
+  {
+    n: '02', href: '02-ao-reveal-trailer/index.html', title: 'AO // Reveal Trailer v2',
+    kind: 'Motion graphics · frame-exact player',
+    desc: 'Second take on the AO reveal: posable vector rig, frame-exact scrubbing, cut-by-cut timeline and shot list. Rendered live in canvas (no MP4 yet).',
+    tags: ['Vector rig', 'Frame-exact', 'Timeline', 'Shot list', 'Loop cut', 'Synth audio'],
+    specs: ['16:9', '24 fps', '13 cuts', '15.0 s'],
+    poster: '02-ao-reveal-trailer/poster.jpg', preview: '', badge: 'LIVE',
+  },
+];
+const SLOTS = 1; // empty "next test" placeholders
+
+const grid = document.getElementById('grid');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+for (const t of TESTS) {
+  const a = document.createElement('a');
+  a.className = 'card'; a.href = t.href;
+  a.innerHTML = `
+    <div class="media">
+      <img src="${esc(t.poster)}" alt="" loading="lazy">
+      ${t.preview ? `<video muted loop playsinline preload="none" src="${esc(t.preview)}"></video>` : ''}
+      <span class="num">${esc(t.n)}</span><span class="badge">${esc(t.badge || 'READY')}</span>
+    </div>
+    <div class="body">
+      <div class="kind">${esc(t.kind)}</div>
+      <h2>${esc(t.title)}</h2>
+      <p>${esc(t.desc)}</p>
+      <div class="tags">${t.tags.map(x => `<span>${esc(x)}</span>`).join('')}</div>
+      <div class="specs">${t.specs.map(esc).join('<span>·</span>')}</div>
+    </div>`;
+  const v = a.querySelector('video');
+  if (v) {
+    a.addEventListener('mouseenter', () => { v.play().then(() => v.classList.add('playing')).catch(() => {}); });
+    a.addEventListener('mouseleave', () => { v.pause(); v.classList.remove('playing'); });
+  }
+  grid.appendChild(a);
+}
+for (let i = 0; i < SLOTS; i++) {
+  const d = document.createElement('div');
+  d.className = 'slot';
+  d.innerHTML = `<div><b>${String(TESTS.length + i + 1).padStart(2, '0')}</b><span>NEXT TEST SLOT</span></div>`;
+  grid.appendChild(d);
+}
+document.getElementById('stats').innerHTML =
+  `<div>${String(TESTS.length).padStart(2, '0')}<small>TESTS</small></div>` +
+  `<div>${TESTS.reduce((s, t) => s + (parseInt(t.specs.find(x => /cuts/.test(x))) || 0), 0)}<small>CUTS</small></div>`;
+</script>
+</body>
+</html>
