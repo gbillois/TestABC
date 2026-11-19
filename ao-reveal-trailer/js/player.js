@@ -84,7 +84,7 @@
   $('loop').addEventListener('click', () => { loop = !loop; press('loop', loop); });
   $('loopCut').addEventListener('click', () => { loopCut = !loopCut; press('loopCut', loopCut); if (playing) { pause(); play(); } });
   $('sound').addEventListener('click', () => { sound = !sound; press('sound', sound); if (playing) { stopAudio(); startAudio(frame); } });
-  $('fs').addEventListener('click', () => (document.fullscreenElement ? document.exitFullscreen() : stage.requestFullscreen && stage.requestFullscreen()));
+  $('fs').addEventListener('click', () => { try { const r = document.fullscreenElement ? document.exitFullscreen() : stage.requestFullscreen && stage.requestFullscreen(); if (r && r.catch) r.catch(() => {}); } catch (e) {} });
 
   // scrubbing
   let drag = false;
