@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Radar du RSSI en relief</title>
+<title>The Cyber Book</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=JetBrains+Mono:wght@500&display=swap">
 <style>
@@ -105,14 +105,14 @@ dialog::backdrop{background:rgba(10,7,22,.72)}
 </style>
 </head>
 <body>
-<main id="table" aria-label="Dix éditions du radar du RSSI Wavestone, en livre animé">
+<main id="table" aria-label="The Cyber Book : dix éditions du radar du RSSI Wavestone, en livre animé">
   <canvas id="world" tabindex="0" role="img" aria-label="Un livre ouvert en trois dimensions. Faites glisser pour tourner les pages, ou utilisez les flèches du clavier."></canvas>
   <div class="shade" aria-hidden="true"></div>
   <div class="ui">
     <header class="head">
       <div class="brand">
         <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="9" fill="#6a3df0"/><circle cx="20" cy="20" r="12" fill="none" stroke="#efeadd" stroke-width="1.4" opacity=".55"/><circle cx="20" cy="20" r="7" fill="none" stroke="#efeadd" stroke-width="1.4" opacity=".8"/><path d="M20 20 L20 7 A13 13 0 0 1 31.3 13.5 Z" fill="#35e6b8"/><circle cx="20" cy="20" r="2" fill="#efeadd"/></svg>
-        <div><b>Radar du RSSI</b><small>WAVESTONE · 10 ÉDITIONS EN RELIEF</small></div>
+        <div><b>The Cyber Book</b><small>RADAR DU RSSI WAVESTONE · 10 ÉDITIONS</small></div>
       </div>
       <nav aria-label="Outils"><button class="btn" id="look" title="Revenir à la place du lecteur">↺ <span>Recentrer</span></button></nav>
     </header>
@@ -253,7 +253,7 @@ function leftPage(i){
   g.strokeStyle = 'rgba(27,21,51,.4)'; g.setLineDash([3,6]); g.beginPath(); g.arc(cx,cy,r+5,0,7); g.stroke(); g.setLineDash([]);
   g.fillStyle = INK; g.font = '500 17px "JetBrains Mono",monospace';
   g.fillText(`PLANCHE ${String(i+1).padStart(2,'0')} · RADAR ${e.year}`, 46, 58);
-  g.textAlign = 'right'; g.fillText('WAVESTONE', PW-46, 58);
+  g.textAlign = 'right'; g.fillText('THE CYBER BOOK', PW-46, 58);
   return tex(c);
 }
 function rightPage(i){
