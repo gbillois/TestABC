@@ -5,96 +5,95 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>The Cyber Book</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap">
 <style>
-/* Layout : une table de nuit, un livre ouvert au centre, le texte posé dans les marges sombres autour. */
+/* Layout : un livre blanc posé sur un plan clair de studio ; le texte vit dans les marges, comme sur une page de garde. */
 :root{
-  color-scheme:dark;
-  --night:#120d24;      /* table */
-  --night-2:#1d1638;    /* panneaux */
-  --paper:#efeadd;      /* papier */
-  --ink:#1b1533;        /* encre */
-  --violet:#6a3df0;     /* signature */
-  --signal:#35e6b8;     /* balayage radar */
-  --amber:#ffb84a;      /* accent édition (remplacé par édition) */
-  --muted:#a79fc4;
-  --line:rgba(239,234,221,.18);
-  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
-  --serif:"Newsreader",Georgia,"Times New Roman",serif;
-  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  color-scheme:light;
+  --studio:#eceef2;     /* plan de studio */
+  --paper:#ffffff;      /* papier */
+  --ink:#1a1040;        /* encre, bleu nuit violacé */
+  --violet:#451dc7;     /* violet signature */
+  --violet-deep:#250f6b;
+  --green:#0fbf6c;      /* accent, avec parcimonie */
+  --muted:#6f6a86;
+  --line:rgba(26,16,64,.16);
+  --accent:var(--violet);
+  --display:"Instrument Serif","Iowan Old Style",Georgia,serif;
+  --sans:"Instrument Sans","Helvetica Neue",Arial,sans-serif;
 }
 html,body{height:100%}
-body{background:var(--night);color:var(--paper);font-family:var(--display);overflow:hidden}
+body{background:var(--studio);color:var(--ink);font-family:var(--sans);overflow:hidden}
 #table{position:relative;height:100%;overflow:hidden;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 #world{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab;outline:none}
 #world.dragging{cursor:grabbing}
-#world:focus-visible{outline:2px solid var(--signal);outline-offset:-4px}
+#world:focus-visible{outline:2px solid var(--violet);outline-offset:-4px}
 .shade{position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(18,13,36,.8) 0,rgba(18,13,36,0) 26%,rgba(18,13,36,0) 74%,rgba(18,13,36,.82) 100%)}
+  background:linear-gradient(180deg,rgba(236,238,242,.92) 0,rgba(236,238,242,0) 24%,rgba(236,238,242,0) 76%,rgba(236,238,242,.94) 100%)}
 .ui{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:space-between;
-  padding-block:clamp(14px,2.4vh,26px);pointer-events:none}
+  padding-block:clamp(14px,2.6vh,30px);padding-inline:clamp(0px,1.4vw,22px);pointer-events:none}
 .ui > *{pointer-events:auto}
 .head{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.brand{display:flex;align-items:center;gap:12px;min-width:0}
-.brand svg{flex:none}
-.brand b{display:block;font-weight:800;font-size:1.05rem;letter-spacing:-.01em}
-.brand small{font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;color:var(--muted)}
-.btn{font:500 .82rem var(--display);color:var(--paper);background:rgba(29,22,56,.72);border:1px solid var(--line);
-  border-radius:999px;padding:.55rem .95rem;cursor:pointer;backdrop-filter:blur(8px)}
-.btn:hover{border-color:var(--signal)}
-.btn:focus-visible,.round:focus-visible,.link:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
-.chapter{margin-top:clamp(8px,2vh,22px);max-width:min(34rem,92%);pointer-events:none}
-.eyebrow{font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;color:var(--accent,var(--amber));display:flex;gap:.8rem;align-items:center}
+.brand{display:flex;align-items:baseline;gap:.3rem 1.2rem;min-width:0;flex-wrap:wrap}
+.brand b,.brand small{flex:none;white-space:nowrap}
+.brand b{font-family:var(--display);font-weight:400;font-size:1.55rem;letter-spacing:-.01em;line-height:1}
+.brand small{font-size:.64rem;font-weight:600;letter-spacing:.2em;color:var(--muted)}
+.btn{font:500 .8rem var(--sans);color:var(--ink);background:rgba(255,255,255,.7);border:1px solid var(--line);
+  border-radius:999px;padding:.5rem .95rem;cursor:pointer;backdrop-filter:blur(8px)}
+.btn:hover{border-color:var(--violet);color:var(--violet)}
+.btn:focus-visible,.round:focus-visible,.link:focus-visible{outline:2px solid var(--violet);outline-offset:2px}
+.chapter{margin-top:clamp(10px,3vh,34px);max-width:min(30rem,92%);pointer-events:none}
+.eyebrow{font-size:.66rem;font-weight:600;letter-spacing:.2em;color:var(--violet);display:flex;gap:.8rem;align-items:center}
 .eyebrow::before{content:"";width:28px;height:1px;background:currentColor}
-#year{font-weight:800;font-size:clamp(3.4rem,9.5vw,7.2rem);line-height:.86;letter-spacing:-.05em;margin:.12em 0 .08em;
-  font-variant-numeric:tabular-nums;color:var(--paper)}
-#tagline{font-family:var(--serif);font-style:italic;font-size:clamp(1rem,1.7vw,1.3rem);color:var(--paper);margin:0;text-wrap:balance;max-width:26rem}
+#year{font-family:var(--display);font-weight:400;font-size:clamp(4rem,10.5vw,8.4rem);line-height:.86;letter-spacing:-.03em;margin:.1em 0 .1em;
+  font-variant-numeric:lining-nums tabular-nums;color:var(--ink)}
+#tagline{font-size:clamp(.95rem,1.35vw,1.1rem);font-weight:500;line-height:1.35;color:var(--ink);margin:0;text-wrap:balance;max-width:24rem}
 .grow{flex:1}
 .bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap}
-.narration{max-width:min(36rem,100%);min-width:0;flex:1 1 300px}
-.smallcap{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;color:var(--accent,var(--amber))}
-#line{font-family:var(--serif);font-size:clamp(1.02rem,1.55vw,1.3rem);line-height:1.32;margin:.45rem 0 .6rem;min-height:2.64em;text-wrap:pretty}
-#line b{font-family:var(--display);font-weight:800;letter-spacing:-.01em}
-.link{font:500 .84rem var(--display);color:var(--paper);background:none;border:0;border-bottom:1px solid var(--accent,var(--amber));padding:0 0 3px;cursor:pointer}
-.transport{flex:0 1 430px;min-width:min(100%,280px);background:rgba(29,22,56,.78);border:1px solid var(--line);border-radius:16px;
+.narration{max-width:min(34rem,100%);min-width:0;flex:1 1 300px}
+.smallcap{font-size:.64rem;font-weight:600;letter-spacing:.2em;color:var(--violet)}
+#line{font-family:var(--display);font-size:clamp(1.2rem,1.95vw,1.6rem);line-height:1.2;margin:.45rem 0 .7rem;min-height:2.4em;text-wrap:pretty}
+#line b{font-family:var(--sans);font-weight:700;font-size:.72em;letter-spacing:-.005em}
+.link{font:600 .8rem var(--sans);color:var(--ink);background:none;border:0;border-bottom:1px solid var(--violet);padding:0 0 3px;cursor:pointer}
+.link:hover{color:var(--violet)}
+.transport{flex:0 1 430px;min-width:min(100%,280px);background:rgba(255,255,255,.78);border:1px solid var(--line);border-radius:4px;
   padding:.8rem 1rem .75rem;backdrop-filter:blur(10px)}
-.turn-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;color:var(--muted)}
-.turn-label b{color:var(--paper);font-weight:500;font-variant-numeric:tabular-nums}
+.turn-label{display:flex;justify-content:space-between;font-size:.6rem;font-weight:600;letter-spacing:.18em;color:var(--muted)}
+.turn-label b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
 .rail-row{display:flex;align-items:center;gap:.7rem;margin-top:.55rem}
-.round{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--paper);cursor:pointer;font-size:1rem;line-height:1}
-.round:hover:not(:disabled){border-color:var(--signal);color:var(--signal)}
+.round{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;font-size:1rem;line-height:1}
+.round:hover:not(:disabled){border-color:var(--violet);color:var(--violet)}
 .round:disabled{opacity:.3;cursor:default}
 .rail{position:relative;flex:1;min-width:0;height:38px}
 .ticks{position:absolute;inset:0 9px;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
-.ticks i{width:1px;height:9px;background:var(--muted);opacity:.6}
-.ticks i.on{background:var(--accent,var(--amber));opacity:1;height:15px;width:2px}
+.ticks i{width:1px;height:9px;background:var(--muted);opacity:.55}
+.ticks i.on{background:var(--violet);opacity:1;height:15px;width:2px}
 #scrub{position:absolute;inset:0;width:100%;height:100%;margin:0;appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer}
 #scrub::-webkit-slider-runnable-track{height:1px;background:var(--line)}
 #scrub::-moz-range-track{height:1px;background:var(--line)}
-#scrub::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--paper);border:4px solid var(--violet);margin-top:-9px}
-#scrub::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--paper);border:4px solid var(--violet)}
-#scrub:focus-visible{outline:2px solid var(--signal);outline-offset:2px;border-radius:8px}
-.years{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.56rem;color:var(--muted);margin:.1rem 47px 0;font-variant-numeric:tabular-nums}
-.years span.on{color:var(--paper)}
-#loading{position:absolute;inset:0;z-index:5;display:grid;place-items:center;background:var(--night);font-family:var(--mono);font-size:.74rem;letter-spacing:.2em;color:var(--muted);transition:opacity .6s}
+#scrub::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--paper);border:5px solid var(--violet);margin-top:-9px}
+#scrub::-moz-range-thumb{width:10px;height:10px;border-radius:50%;background:var(--paper);border:5px solid var(--violet)}
+#scrub:focus-visible{outline:2px solid var(--violet);outline-offset:2px;border-radius:8px}
+.years{display:flex;justify-content:space-between;font-size:.58rem;font-weight:500;color:var(--muted);margin:.1rem 47px 0;font-variant-numeric:tabular-nums}
+.years span.on{color:var(--violet);font-weight:700}
+#loading{position:absolute;inset:0;z-index:5;display:grid;place-items:center;background:var(--studio);font-size:.7rem;font-weight:600;letter-spacing:.22em;color:var(--muted);transition:opacity .6s}
 #loading.gone{opacity:0;pointer-events:none}
-dialog{background:var(--paper);color:var(--ink);border:0;border-radius:6px;padding:0;width:min(46rem,calc(100% - 32px));max-height:86%;box-shadow:0 30px 80px rgba(0,0,0,.6)}
-dialog::backdrop{background:rgba(10,7,22,.72)}
-.inside{padding:clamp(1.2rem,3.5vw,2.4rem);position:relative}
-.inside .smallcap{color:var(--violet)}
-.inside h2{font-weight:800;font-size:clamp(1.5rem,3.4vw,2.3rem);letter-spacing:-.03em;line-height:1;margin:.4rem 2.5rem .3rem 0;text-wrap:balance}
-.inside .lede{font-family:var(--serif);font-style:italic;font-size:1.1rem;margin:0 0 1rem;max-width:36rem}
-.inside ol{list-style:none;padding:0;margin:0 0 1.2rem;display:grid;gap:.9rem;counter-reset:t}
-.inside li{counter-increment:t;display:grid;grid-template-columns:2.2rem 1fr;gap:.2rem .6rem;border-top:1px solid rgba(27,21,51,.16);padding-top:.8rem}
-.inside li::before{content:counter(t,decimal-leading-zero);font-family:var(--mono);font-size:.74rem;color:var(--violet);padding-top:.22rem}
-.inside li b{font-weight:800;font-size:1.06rem;letter-spacing:-.01em}
-.inside li p{grid-column:2;margin:0;font-family:var(--serif);font-size:1rem;line-height:1.4;max-width:34rem}
+dialog{background:var(--paper);color:var(--ink);border:0;border-radius:2px;padding:0;width:min(48rem,calc(100% - 32px));max-height:88%;box-shadow:0 30px 80px rgba(26,16,64,.35)}
+dialog::backdrop{background:rgba(26,16,64,.5)}
+.inside{padding:clamp(1.4rem,4vw,3rem);position:relative}
+.inside h2{font-family:var(--display);font-weight:400;font-size:clamp(1.8rem,4vw,2.8rem);letter-spacing:-.01em;line-height:1.02;margin:.5rem 2.5rem .4rem 0;text-wrap:balance}
+.inside .lede{font-size:1.02rem;line-height:1.45;margin:0 0 1.3rem;max-width:36rem;color:var(--muted)}
+.inside ol{list-style:none;padding:0;margin:0 0 1.4rem;display:grid;gap:.9rem;counter-reset:t}
+.inside li{counter-increment:t;display:grid;grid-template-columns:2.4rem 1fr;gap:.2rem .6rem;border-top:1px solid var(--line);padding-top:.85rem}
+.inside li::before{content:counter(t,decimal-leading-zero);font-family:var(--display);font-size:1.25rem;color:var(--violet);line-height:1.1}
+.inside li b{font-weight:700;font-size:1.02rem;letter-spacing:-.005em}
+.inside li p{grid-column:2;margin:0;font-size:.95rem;line-height:1.5;max-width:36rem}
 .inside figure{margin:0 0 1rem}
-.inside figure img{display:block;width:100%;border:1px solid rgba(27,21,51,.16);background:#fff}
-.inside figcaption,.inside .src{font-family:var(--mono);font-size:.66rem;letter-spacing:.04em;color:rgba(27,21,51,.7);margin-top:.5rem;overflow-wrap:anywhere}
+.inside figure img{display:block;width:100%;border:1px solid var(--line);background:#fff}
+.inside figcaption,.inside .src{font-size:.68rem;letter-spacing:.02em;color:var(--muted);margin-top:.5rem;overflow-wrap:anywhere}
 .inside .src a{color:var(--violet)}
-.close{position:absolute;top:.9rem;right:.9rem;width:36px;height:36px;border-radius:50%;border:1px solid rgba(27,21,51,.3);background:transparent;color:var(--ink);font-size:1.1rem;cursor:pointer}
+.close{position:absolute;top:.9rem;right:.9rem;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:1.1rem;cursor:pointer}
 .close:focus-visible{outline:2px solid var(--violet);outline-offset:2px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 @media (max-width:640px){
@@ -111,8 +110,8 @@ dialog::backdrop{background:rgba(10,7,22,.72)}
   <div class="ui">
     <header class="head">
       <div class="brand">
-        <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="9" fill="#6a3df0"/><circle cx="20" cy="20" r="12" fill="none" stroke="#efeadd" stroke-width="1.4" opacity=".55"/><circle cx="20" cy="20" r="7" fill="none" stroke="#efeadd" stroke-width="1.4" opacity=".8"/><path d="M20 20 L20 7 A13 13 0 0 1 31.3 13.5 Z" fill="#35e6b8"/><circle cx="20" cy="20" r="2" fill="#efeadd"/></svg>
-        <div><b>The Cyber Book</b><small>RADAR DU RSSI WAVESTONE · 10 ÉDITIONS</small></div>
+        
+        <div><b>The Cyber Book</b><small>LE RADAR DU RSSI WAVESTONE · 2017–2026</small></div>
       </div>
       <nav aria-label="Outils"><button class="btn" id="look" title="Revenir à la place du lecteur">↺ <span>Recentrer</span></button></nav>
     </header>
@@ -140,7 +139,7 @@ dialog::backdrop{background:rgba(10,7,22,.72)}
       </div>
     </div>
   </div>
-  <div id="loading">LE LIVRE S’OUVRE…</div>
+  <div id="loading">THE CYBER BOOK</div>
 </main>
 <dialog id="pageDialog" aria-labelledby="readTitle"><div class="inside">
   <button class="close" aria-label="Fermer">×</button>
@@ -162,7 +161,8 @@ const $ = id => document.getElementById(id);
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
 const smooth = (a,b,x) => { const t = clamp((x-a)/(b-a),0,1); return t*t*(3-2*t); };
-const PAPER = '#efeadd', INK = '#1b1533', VIOLET = '#6a3df0';
+const PAPER = '#ffffff', INK = '#1a1040', VIOLET = '#451dc7', DEEP = '#250f6b', STUDIO = '#eceef2';
+const SANS = '"Instrument Sans",Helvetica,Arial,sans-serif', SERIF = '"Instrument Serif",Georgia,serif';
 
 /* ---------- dimensions du livre ---------- */
 const W = 4.5, D = 5.1, TH = .34;            // largeur de page, profondeur, épaisseur du bloc
@@ -175,29 +175,29 @@ let renderer;
 try { renderer = new T.WebGLRenderer({canvas, antialias:true, powerPreference:'high-performance'}); }
 catch(e){ $('loading').textContent = 'AFFICHAGE 3D INDISPONIBLE — OUVREZ « LIRE CETTE ÉDITION À PLAT »'; }
 const scene = new T.Scene();
-scene.background = new T.Color('#120d24');
-scene.fog = new T.Fog('#120d24', 22, 46);
+scene.background = new T.Color(STUDIO);
+scene.fog = new T.Fog(STUDIO, 24, 50);
 const camera = new T.PerspectiveCamera(33, 1, .1, 120);
 if (renderer){
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
   renderer.outputColorSpace = T.SRGBColorSpace;
-  renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12;
+  renderer.toneMapping = T.NoToneMapping;
 }
 const maxAniso = renderer ? renderer.capabilities.getMaxAnisotropy() : 1;
 
-scene.add(new T.HemisphereLight('#cfc6ff', '#241a44', .95));
-const key = new T.DirectionalLight('#fff1d6', 2.5);
+scene.add(new T.HemisphereLight('#ffffff', '#d6d3e6', 1.95));
+const key = new T.DirectionalLight('#ffffff', 1.55);
 key.position.set(-5.5, 11, 6.5); key.castShadow = true;
 key.shadow.mapSize.set(2048, 2048); key.shadow.bias = -.0004; key.shadow.normalBias = .02; key.shadow.radius = 5;
 Object.assign(key.shadow.camera, {left:-8, right:8, top:8, bottom:-8, near:1, far:30});
 scene.add(key);
-const rim = new T.DirectionalLight('#7a5cff', 1.1); rim.position.set(6, 5, -7); scene.add(rim);
+const rim = new T.DirectionalLight('#dcd6ff', .35); rim.position.set(6, 5, -7); scene.add(rim);
 
 /* ---------- petites fabriques ---------- */
 function makeCanvas(w,h){ const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
 function tex(c){ const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.anisotropy = maxAniso; return t; }
-function grain(g, w, h, n, a){ for(let i=0;i<n;i++){ g.fillStyle = `rgba(${Math.random()<.5?'60,40,90':'255,255,255'},${Math.random()*a})`; g.fillRect(Math.random()*w, Math.random()*h, 1.4, 1.4); } }
+function grain(g, w, h, n, a){ for(let i=0;i<n;i++){ g.fillStyle = `rgba(40,30,80,${Math.random()*a})`; g.fillRect(Math.random()*w, Math.random()*h, 1.4, 1.4); } }
 function wrap(g, text, x, y, maxW, lh, maxLines=9){
   const words = text.split(' '); let line = '', n = 0;
   for (let i=0;i<words.length;i++){
@@ -211,26 +211,23 @@ function wrap(g, text, x, y, maxW, lh, maxLines=9){
 }
 const lam = (color, extra={}) => new T.MeshStandardMaterial({color, roughness:.92, metalness:0, ...extra});
 
-/* ---------- table ---------- */
+/* ---------- plan de studio ---------- */
 { const c = makeCanvas(512,512), g = c.getContext('2d');
-  const r = g.createRadialGradient(256,256,20,256,256,256); r.addColorStop(0,'#2c2259'); r.addColorStop(.45,'#1c153c'); r.addColorStop(1,'#120d24');
+  const r = g.createRadialGradient(256,256,20,256,256,256); r.addColorStop(0,'#fbfbfd'); r.addColorStop(.5,'#f1f2f5'); r.addColorStop(1,STUDIO);
   g.fillStyle = r; g.fillRect(0,0,512,512);
-  g.strokeStyle = 'rgba(53,230,184,.10)'; g.lineWidth = 1;
-  for (let i=1;i<=7;i++){ g.beginPath(); g.arc(256,256,i*34,0,7); g.stroke(); }
-  for (let i=0;i<12;i++){ g.beginPath(); g.moveTo(256,256); g.lineTo(256+Math.cos(i*Math.PI/6)*250, 256+Math.sin(i*Math.PI/6)*250); g.stroke(); }
   const m = new T.Mesh(new T.PlaneGeometry(64,64), new T.MeshStandardMaterial({map:tex(c), roughness:1}));
   m.rotation.x = -Math.PI/2; m.position.y = -TH-.09; m.receiveShadow = true; scene.add(m); }
 
 /* ---------- le livre (couverture, blocs de pages) ---------- */
 const book = new T.Group(); scene.add(book);
-{ const cover = new T.Mesh(new T.BoxGeometry(W*2+.5, .08, D+.34), lam(VIOLET, {roughness:.6}));
+{ const cover = new T.Mesh(new T.BoxGeometry(W*2+.5, .08, D+.34), lam(DEEP, {roughness:.55}));
   cover.position.y = -TH-.04; cover.castShadow = cover.receiveShadow = true; book.add(cover);
-  const c = makeCanvas(64,64), g = c.getContext('2d'); g.fillStyle = '#e4dcc8'; g.fillRect(0,0,64,64);
-  for (let y=0;y<64;y+=4){ g.fillStyle = 'rgba(70,50,110,.20)'; g.fillRect(0,y,64,1); }
+  const c = makeCanvas(64,64), g = c.getContext('2d'); g.fillStyle = '#f6f6f8'; g.fillRect(0,0,64,64);
+  for (let y=0;y<64;y+=4){ g.fillStyle = 'rgba(40,30,80,.13)'; g.fillRect(0,y,64,1); }
   const edge = tex(c); edge.wrapS = edge.wrapT = T.RepeatWrapping; edge.repeat.set(1,3);
   for (const s of [-1,1]){ const b = new T.Mesh(new T.BoxGeometry(W, TH, D), new T.MeshStandardMaterial({map:edge, roughness:1}));
     b.position.set(s*W/2, -TH/2-.004, 0); b.castShadow = b.receiveShadow = true; book.add(b); }
-  const rib = new T.Mesh(new T.BoxGeometry(.32, .012, 1.1), lam('#35e6b8', {roughness:.5}));
+  const rib = new T.Mesh(new T.BoxGeometry(.32, .012, 1.1), lam('#0fbf6c', {roughness:.5}));
   rib.position.set(.5, -TH-.075, D/2+.55); book.add(rib);
 }
 
@@ -238,34 +235,32 @@ const book = new T.Group(); scene.add(book);
 const PW = 800, PH = Math.round(PW*D/W);
 const u2p = PW / W;                                       // unités -> pixels de page
 function pageBase(g, left){
-  g.fillStyle = PAPER; g.fillRect(0,0,PW,PH); grain(g, PW, PH, 5000, .06);
-  const s = g.createLinearGradient(left?PW:0, 0, left?PW-130:130, 0);   // ombre de la reliure
-  s.addColorStop(0,'rgba(40,25,80,.34)'); s.addColorStop(1,'rgba(40,25,80,0)');
+  g.fillStyle = PAPER; g.fillRect(0,0,PW,PH); grain(g, PW, PH, 2500, .035);
+  const s = g.createLinearGradient(left?PW:0, 0, left?PW-110:110, 0);   // ombre de la reliure
+  s.addColorStop(0,'rgba(26,16,64,.22)'); s.addColorStop(1,'rgba(26,16,64,0)');
   g.fillStyle = s; g.fillRect(0,0,PW,PH);
-  g.strokeStyle = 'rgba(27,21,51,.22)'; g.lineWidth = 1.5; g.strokeRect(26,26,PW-52,PH-52);
+}
+function running(g, l, r){
+  g.fillStyle = INK; g.font = `600 13px ${SANS}`; g.letterSpacing = '3px';
+  g.textAlign = 'left'; g.fillText(l, 52, 62); g.textAlign = 'right'; g.fillText(r, PW-52, 62); g.textAlign = 'left'; g.letterSpacing = '0px';
+  g.fillStyle = 'rgba(26,16,64,.3)'; g.fillRect(52, 76, PW-104, 1);
 }
 function leftPage(i){
   const e = ED[i], c = makeCanvas(PW,PH), g = c.getContext('2d'); pageBase(g, true);
   const cx = (DISC_X + W)*u2p, cy = (HINGE_Z - DISC + D/2)*u2p, r = DISC*u2p;
   // l'empreinte imprimée du radar, là où le relief se replie
-  g.save(); g.beginPath(); g.arc(cx,cy,r+3,0,7); g.clip(); g.globalAlpha = .34;
+  g.save(); g.beginPath(); g.arc(cx,cy,r,0,7); g.clip(); g.globalAlpha = .22;
   g.drawImage(discCanvas(i), cx-r, cy-r, r*2, r*2); g.restore();
-  g.strokeStyle = 'rgba(27,21,51,.4)'; g.setLineDash([3,6]); g.beginPath(); g.arc(cx,cy,r+5,0,7); g.stroke(); g.setLineDash([]);
-  g.fillStyle = INK; g.font = '500 17px "JetBrains Mono",monospace';
-  g.fillText(`PLANCHE ${String(i+1).padStart(2,'0')} · RADAR ${e.year}`, 46, 58);
-  g.textAlign = 'right'; g.fillText('THE CYBER BOOK', PW-46, 58);
+  g.strokeStyle = 'rgba(69,29,199,.5)'; g.lineWidth = 1; g.beginPath(); g.arc(cx,cy,r+4,0,7); g.stroke();
+  running(g, `RADAR DU RSSI · ${e.year}`, 'THE CYBER BOOK');
+  g.fillStyle = INK; g.font = `500 14px ${SANS}`; g.fillText(String(i*2+2).padStart(2,'0'), 52, PH-44);
   return tex(c);
 }
 function rightPage(i){
   const e = ED[i], c = makeCanvas(PW,PH), g = c.getContext('2d'); pageBase(g, false);
-  g.fillStyle = INK; g.font = '500 17px "JetBrains Mono",monospace';
-  g.fillText(`LES THÈMES FORTS · ${e.year}`, 46, 58);
-  g.textAlign = 'right'; g.fillText(String(i+1).padStart(2,'0')+' / '+N, PW-46, 58); g.textAlign = 'left';
-  // lignes de pli de l'escalier
-  g.strokeStyle = 'rgba(27,21,51,.28)'; g.setLineDash([3,6]);
-  for (let k=0;k<=e.themes.length;k++){ const y = (STAIR_Z0 - k*STEP_D + D/2)*u2p; g.beginPath(); g.moveTo(60,y); g.lineTo(PW-60,y); g.stroke(); }
-  g.setLineDash([]);
-  g.globalAlpha = .1; g.font = '800 250px "Bricolage Grotesque",sans-serif'; g.fillText(e.year, 40, 300); g.globalAlpha = 1;
+  running(g, 'LES THÈMES FORTS', `ÉDITION ${e.year}`);
+  g.fillStyle = 'rgba(69,29,199,.09)'; g.font = `400 330px ${SERIF}`; g.fillText(e.year, 44, 350);
+  g.fillStyle = INK; g.font = `500 14px ${SANS}`; g.textAlign = 'right'; g.fillText(String(i*2+3).padStart(2,'0'), PW-52, PH-44);
   return tex(c);
 }
 
@@ -284,11 +279,11 @@ function discCanvas(i){
     g.drawImage(im, S/2 - k.cx*im.width*sc, S/2 - k.cy*im.height*sc, im.width*sc, im.height*sc);
   } else {
     // image indisponible : un radar schématique, sans donnée
-    const a = e.accent; g.fillStyle = '#fbf9f2'; g.fillRect(0,0,S,S);
-    [[1,.16],[.68,.3],[.36,.5]].forEach(([r,al]) => { g.globalAlpha = al; g.fillStyle = a; g.beginPath(); g.arc(S/2,S/2,S/2*r,0,7); g.fill(); });
-    g.globalAlpha = 1; g.strokeStyle = INK; g.lineWidth = 2;
+    const a = VIOLET; g.fillStyle = '#ffffff'; g.fillRect(0,0,S,S);
+    [[1,.08],[.68,.14],[.36,.9]].forEach(([r,al]) => { g.globalAlpha = al; g.fillStyle = a; g.beginPath(); g.arc(S/2,S/2,S/2*r,0,7); g.fill(); });
+    g.globalAlpha = 1; g.strokeStyle = 'rgba(26,16,64,.35)'; g.lineWidth = 1.5;
     for (let q=0;q<6;q++){ g.beginPath(); g.moveTo(S/2,S/2); g.lineTo(S/2+Math.cos(q*Math.PI/3)*S/2, S/2+Math.sin(q*Math.PI/3)*S/2); g.stroke(); }
-    g.fillStyle = INK; g.textAlign = 'center'; g.font = '800 120px "Bricolage Grotesque",sans-serif'; g.fillText(e.year, S/2, S/2+40);
+    g.fillStyle = '#fff'; g.textAlign = 'center'; g.font = `400 130px ${SERIF}`; g.fillText(e.year, S/2, S/2+42);
   }
   discCache.set(i, c); return c;
 }
@@ -299,7 +294,7 @@ function buildRadar(i){
   root.position.set(DISC_X, .012, HINGE_Z); root.add(tilt);
   const map = tex(discCanvas(i));
   const rings = e.rings || [.34, .67, 1], K = rings.length, tiers = [];
-  const wallMat = lam('#d9d1ba'), topMat = new T.MeshStandardMaterial({map, roughness:.85});
+  const wallMat = lam('#e9e7f2'), topMat = new T.MeshStandardMaterial({map, roughness:.85});
   for (let k=0;k<K;k++){
     const r0 = k ? rings[k-1]*DISC : 0, r1 = rings[k]*DISC;
     const geo = k ? new T.RingGeometry(r0, r1, 96, 1) : new T.CircleGeometry(r1, 96);
@@ -310,27 +305,27 @@ function buildRadar(i){
     const g = new T.Group(); g.position.z = -DISC; g.add(top, wall); tilt.add(g);
     tiers.push({g, wall, level:K-1-k});
   }
-  const back = new T.Mesh(new T.CircleGeometry(DISC, 96), lam('#cfc6ae', {side:T.BackSide}));
+  const back = new T.Mesh(new T.CircleGeometry(DISC, 96), lam('#f4f3f8', {side:T.BackSide}));
   back.rotation.x = -Math.PI/2; back.position.set(0, -.002, -DISC); tilt.add(back);
-  // faisceau de balayage
+  // faisceau de balayage, discret
   const sc = makeCanvas(256,256), sg = sc.getContext('2d'), cg = sg.createConicGradient(0,128,128);
-  cg.addColorStop(0,'rgba(53,230,184,0)'); cg.addColorStop(.86,'rgba(53,230,184,0)'); cg.addColorStop(.992,'rgba(53,230,184,.55)'); cg.addColorStop(1,'rgba(220,255,245,.9)');
+  cg.addColorStop(0,'rgba(69,29,199,0)'); cg.addColorStop(.84,'rgba(69,29,199,0)'); cg.addColorStop(.994,'rgba(69,29,199,.20)'); cg.addColorStop(1,'rgba(15,191,108,.9)');
   sg.fillStyle = cg; sg.beginPath(); sg.arc(128,128,127,0,7); sg.fill();
   const sweepPivot = new T.Group(); sweepPivot.rotation.x = -Math.PI/2; sweepPivot.position.z = -DISC; tilt.add(sweepPivot);
-  const sweep = new T.Mesh(new T.CircleGeometry(DISC*1.0, 64), new T.MeshBasicMaterial({map:tex(sc), transparent:true, depthWrite:false, blending:T.AdditiveBlending, opacity:.8}));
+  const sweep = new T.Mesh(new T.CircleGeometry(DISC*1.0, 64), new T.MeshBasicMaterial({map:tex(sc), transparent:true, depthWrite:false}));
   sweepPivot.add(sweep);
-  const hub = new T.Mesh(new T.CylinderGeometry(.05,.05,.12,16), lam('#35e6b8', {emissive:'#35e6b8', emissiveIntensity:.8}));
+  const hub = new T.Mesh(new T.CylinderGeometry(.035,.035,.1,16), lam('#0fbf6c'));
   tilt.add(hub);
   // béquilles de papier
-  const props = [-1,1].map(s => { const m = new T.Mesh(new T.BoxGeometry(.5,.02,1), lam('#d9d1ba')); m.castShadow = true; m.userData.x = s*DISC*.52; root.add(m); return m; });
-  const TIER = .2;
+  const props = [-1,1].map(s => { const m = new T.Mesh(new T.BoxGeometry(.5,.02,1), lam('#f4f3f8')); m.castShadow = true; m.userData.x = s*DISC*.5; root.add(m); return m; });
+  const TIER = .13, STAND_Z = .55;
   function set(o, t){
-    const a = o*.74; tilt.rotation.x = a;
+    const a = o*1.34; tilt.rotation.x = a; root.position.z = HINGE_Z + (STAND_Z-HINGE_Z)*o;   // le disque glisse vers le milieu de la page et se dresse
     tiers.forEach(({g, wall, level}) => { const h = .02 + level*TIER*o; g.position.y = h; wall.scale.y = Math.max(h,.001); wall.position.y = -h/2; });
     const topH = .02 + (K-1)*TIER*o + .03;
     sweepPivot.position.y = topH; hub.position.set(0, topH, -DISC); hub.scale.y = .2+o;
-    sweep.rotation.z = -t*.9; sweep.material.opacity = .5*o;
-    props.forEach(m => { const d = DISC*1.25, y = d*Math.sin(a), z = -d*Math.cos(a), z0 = -DISC*1.9;   // de la page au dos du disque
+    sweep.rotation.z = -t*.9; sweep.material.opacity = o;
+    props.forEach(m => { const d = DISC*1.1, y = d*Math.sin(a), z = -d*Math.cos(a), z0 = -DISC*.95;   // de la page au dos du disque
       const len = Math.hypot(y, z-z0); m.visible = o > .04; m.scale.z = len; m.position.set(m.userData.x, y/2, (z+z0)/2); m.rotation.x = -Math.atan2(y, z-z0) ; });
   }
   return {root, set, tops:tiers.map(x => x.g.children[0]), dispose(){ map.dispose(); }};
@@ -339,22 +334,22 @@ function buildRadar(i){
 /* ---------- relief droit : l'escalier des thèmes ---------- */
 function cardTexture(e, k){
   const th = e.themes[k], c = makeCanvas(1200, 320), g = c.getContext('2d');
-  g.fillStyle = '#fbf8ef'; g.fillRect(0,0,1200,320); grain(g, 1200, 320, 1500, .05);
-  g.fillStyle = e.accent; g.fillRect(0,0,150,320);
-  g.fillStyle = e.accentInk || '#fff'; g.font = '800 92px "Bricolage Grotesque",sans-serif'; g.textAlign = 'center';
-  g.fillText(String(k+1).padStart(2,'0'), 75, 190);
-  g.textAlign = 'left'; g.fillStyle = INK;
-  let size = 62; g.font = `800 ${size}px "Bricolage Grotesque",sans-serif`;
-  while (size > 40 && g.measureText(th.t).width > 990*2) { size -= 4; g.font = `800 ${size}px "Bricolage Grotesque",sans-serif`; }
-  const one = g.measureText(th.t).width <= 990;
-  let y = wrap(g, th.t, 185, one ? 118 : 88, 990, size*1.02, 2);
-  if (th.k){ g.font = '500 30px "JetBrains Mono",monospace'; g.fillStyle = 'rgba(27,21,51,.72)'; wrap(g, th.k.toUpperCase(), 187, Math.max(y+14, 236), 990, 38, one ? 2 : 1); }
+  g.fillStyle = '#ffffff'; g.fillRect(0,0,1200,320); grain(g, 1200, 320, 800, .03);
+  g.fillStyle = VIOLET; g.fillRect(0,0,1200,7);
+  g.font = `400 150px ${SERIF}`; g.textAlign = 'left'; g.fillText(String(k+1).padStart(2,'0'), 44, 205);
+  g.fillStyle = 'rgba(26,16,64,.2)'; g.fillRect(228, 58, 1, 214);
+  g.fillStyle = INK;
+  let size = 58; g.font = `700 ${size}px ${SANS}`;
+  while (size > 40 && g.measureText(th.t).width > 900*2) { size -= 4; g.font = `700 ${size}px ${SANS}`; }
+  const one = g.measureText(th.t).width <= 900;
+  let y = wrap(g, th.t, 268, one ? 126 : 100, 900, size*1.06, 2);
+  if (th.k){ g.font = `600 25px ${SANS}`; g.letterSpacing = '3px'; g.fillStyle = VIOLET; wrap(g, th.k.toUpperCase(), 270, Math.max(y+10, 232), 900, 34, one ? 2 : 1); g.letterSpacing = '0px'; }
   return tex(c);
 }
 function buildStairs(i){
   const e = ED[i], root = new T.Group(), n = e.themes.length, steps = [], maps = [];
   root.position.set(STAIR_X, .012, 0);
-  const riserMat = lam(e.accent, {roughness:.7}), blockMat = lam('#ded6c0');
+  const riserMat = lam(VIOLET, {roughness:.7}), blockMat = lam('#f1f0f6');
   for (let k=0;k<n;k++){
     const z = STAIR_Z0 - k*STEP_D;
     const block = new T.Mesh(new T.BoxGeometry(CARD_W, 1, STEP_D), [blockMat,blockMat,blockMat,blockMat,riserMat,blockMat]);
@@ -362,15 +357,15 @@ function buildStairs(i){
     const hinge = new T.Group(); hinge.position.z = z; root.add(hinge);
     const map = cardTexture(e, k); maps.push(map);
     const geo = new T.BoxGeometry(CARD_W, .022, CARD_L); geo.translate(0, .011, -CARD_L/2);
-    const side = lam('#fbf8ef');
-    const card = new T.Mesh(geo, [side, side, new T.MeshStandardMaterial({map, roughness:.8, emissive:'#ffffff', emissiveIntensity:0, emissiveMap:map}), lam('#d9d1ba'), side, side]);
+    const side = lam('#ffffff');
+    const card = new T.Mesh(geo, [side, side, new T.MeshStandardMaterial({map, roughness:.8, emissive:'#ffffff', emissiveIntensity:0, emissiveMap:map}), lam('#eceaf4'), side, side]);
     card.castShadow = card.receiveShadow = true; card.userData.theme = k; hinge.add(card);
     steps.push({block, hinge, card, k, lift:0});
   }
   // le millésime, dressé au sommet
   const yc = makeCanvas(1024, 400), yg = yc.getContext('2d');
-  yg.font = '800 400px "Bricolage Grotesque",sans-serif'; yg.textAlign = 'center'; yg.textBaseline = 'alphabetic';
-  yg.lineJoin = 'round'; yg.lineWidth = 26; yg.strokeStyle = '#fbf8ef'; yg.strokeText(e.year, 512, 350); yg.fillStyle = e.accent; yg.fillText(e.year, 512, 350);
+  yg.font = `400 440px ${SERIF}`; yg.textAlign = 'center'; yg.textBaseline = 'alphabetic';
+  yg.lineJoin = 'round'; yg.lineWidth = 22; yg.strokeStyle = '#ffffff'; yg.strokeText(e.year, 512, 350); yg.fillStyle = VIOLET; yg.fillText(e.year, 512, 350);
   const ymap = tex(yc); maps.push(ymap);
   const yh = new T.Group(); yh.position.z = STAIR_Z0 - n*STEP_D; root.add(yh);
   const ygeo = new T.PlaneGeometry(3.3, 1.29); ygeo.rotateX(-Math.PI/2); ygeo.translate(0, .012, -.645);
@@ -386,7 +381,7 @@ function buildStairs(i){
       s.block.scale.y = Math.max(h,.001); s.block.position.y = h/2; s.block.visible = s.k > 0 && o > .02;
       s.lift += ((sel === s.k ? 1 : 0) - s.lift)*.16;
       s.hinge.position.y = h; s.hinge.rotation.x = o*(.86 + s.lift*.22);
-      s.card.material[2].emissiveIntensity = s.lift*.16;
+      s.card.material[2].emissiveIntensity = s.lift*.08;
     });
     const h = Math.max(n*STEP_H*o, .0015*(n+1));
     yblock.scale.y = Math.max(h,.001); yblock.position.y = h/2; yblock.visible = o > .02;
@@ -470,8 +465,7 @@ function showLine(){
 }
 function showEdition(i){
   if (i === shown) return; shown = i; selected = -1; const e = ED[i];
-  document.documentElement.style.setProperty('--accent', e.accentUi || e.accent);
-  $('folio').textContent = `ÉDITION ${String(i+1).padStart(2,'0')} / ${N} · ${e.published}`;
+    $('folio').textContent = `ÉDITION ${String(i+1).padStart(2,'0')} / ${N} · ${e.published}`;
   $('year').textContent = e.year; $('tagline').textContent = e.title;
   $('counter').textContent = `${String(i+1).padStart(2,'0')} / ${N}`;
   [...ticks.children].forEach((d,j) => d.classList.toggle('on', j === i));
@@ -539,7 +533,7 @@ function resize(){
 function placeCamera(){
   const half = Math.tan(camera.fov*Math.PI/360), portrait = camera.aspect < .9;
   const dist = Math.max(13.7, (W+.9)/(half*camera.aspect)) * (1 + (1-intro)*.35);
-  const y0 = portrait ? .6 : 1.05, el = .70 + tiltCam, az = yaw + userYaw;
+  const y0 = portrait ? .9 : 1.45, el = .60 + tiltCam, az = yaw + userYaw;
   camera.position.set(dist*Math.sin(az)*Math.cos(el), y0 + dist*Math.sin(el), .25 + dist*Math.cos(az)*Math.cos(el));
   camera.lookAt(0, y0, .25);
 }
@@ -562,7 +556,7 @@ function frame(now){
 }
 
 async function start(){
-  await Promise.all([document.fonts.load('800 60px "Bricolage Grotesque"'), document.fonts.load('500 20px "JetBrains Mono"'), document.fonts.ready, ...ED.map((_,i) => loadImage(i))]).catch(()=>{});
+  await Promise.all([document.fonts.load('400 60px "Instrument Serif"'), document.fonts.load('700 40px "Instrument Sans"'), document.fonts.load('600 20px "Instrument Sans"'), document.fonts.load('500 20px "Instrument Sans"'), document.fonts.ready, ...ED.map((_,i) => loadImage(i))]).catch(()=>{});
   showEdition(0);
   if (!renderer) return;
   edition(0); if (N > 1) edition(1);
