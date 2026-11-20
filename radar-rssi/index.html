@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Radar du RSSI en relief</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout : une table de nuit, un livre ouvert au centre, le texte posé dans les marges sombres autour. */
+:root{
+  color-scheme:dark;
+  --night:#120d24;      /* table */
+  --night-2:#1d1638;    /* panneaux */
+  --paper:#efeadd;      /* papier */
+  --ink:#1b1533;        /* encre */
+  --violet:#6a3df0;     /* signature */
+  --signal:#35e6b8;     /* balayage radar */
+  --amber:#ffb84a;      /* accent édition (remplacé par édition) */
+  --muted:#a79fc4;
+  --line:rgba(239,234,221,.18);
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+html,body{height:100%}
+body{background:var(--night);color:var(--paper);font-family:var(--display);overflow:hidden}
+#table{position:relative;height:100%;overflow:hidden;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#world{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab;outline:none}
+#world.dragging{cursor:grabbing}
+#world:focus-visible{outline:2px solid var(--signal);outline-offset:-4px}
+.shade{position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(18,13,36,.8) 0,rgba(18,13,36,0) 26%,rgba(18,13,36,0) 74%,rgba(18,13,36,.82) 100%)}
+.ui{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:space-between;
+  padding-block:clamp(14px,2.4vh,26px);pointer-events:none}
+.ui > *{pointer-events:auto}
+.head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand svg{flex:none}
+.brand b{display:block;font-weight:800;font-size:1.05rem;letter-spacing:-.01em}
+.brand small{font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;color:var(--muted)}
+.btn{font:500 .82rem var(--display);color:var(--paper);background:rgba(29,22,56,.72);border:1px solid var(--line);
+  border-radius:999px;padding:.55rem .95rem;cursor:pointer;backdrop-filter:blur(8px)}
+.btn:hover{border-color:var(--signal)}
+.btn:focus-visible,.round:focus-visible,.link:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+.chapter{margin-top:clamp(8px,2vh,22px);max-width:min(34rem,92%);pointer-events:none}
+.eyebrow{font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;color:var(--accent,var(--amber));display:flex;gap:.8rem;align-items:center}
+.eyebrow::before{content:"";width:28px;height:1px;background:currentColor}
+#year{font-weight:800;font-size:clamp(3.4rem,9.5vw,7.2rem);line-height:.86;letter-spacing:-.05em;margin:.12em 0 .08em;
+  font-variant-numeric:tabular-nums;color:var(--paper)}
+#tagline{font-family:var(--serif);font-style:italic;font-size:clamp(1rem,1.7vw,1.3rem);color:var(--paper);margin:0;text-wrap:balance;max-width:26rem}
+.grow{flex:1}
+.bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap}
+.narration{max-width:min(36rem,100%);min-width:0;flex:1 1 300px}
+.smallcap{font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;color:var(--accent,var(--amber))}
+#line{font-family:var(--serif);font-size:clamp(1.02rem,1.55vw,1.3rem);line-height:1.32;margin:.45rem 0 .6rem;min-height:2.64em;text-wrap:pretty}
+#line b{font-family:var(--display);font-weight:800;letter-spacing:-.01em}
+.link{font:500 .84rem var(--display);color:var(--paper);background:none;border:0;border-bottom:1px solid var(--accent,var(--amber));padding:0 0 3px;cursor:pointer}
+.transport{flex:0 1 430px;min-width:min(100%,280px);background:rgba(29,22,56,.78);border:1px solid var(--line);border-radius:16px;
+  padding:.8rem 1rem .75rem;backdrop-filter:blur(10px)}
+.turn-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;color:var(--muted)}
+.turn-label b{color:var(--paper);font-weight:500;font-variant-numeric:tabular-nums}
+.rail-row{display:flex;align-items:center;gap:.7rem;margin-top:.55rem}
+.round{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--paper);cursor:pointer;font-size:1rem;line-height:1}
+.round:hover:not(:disabled){border-color:var(--signal);color:var(--signal)}
+.round:disabled{opacity:.3;cursor:default}
+.rail{position:relative;flex:1;min-width:0;height:38px}
+.ticks{position:absolute;inset:0 9px;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+.ticks i{width:1px;height:9px;background:var(--muted);opacity:.6}
+.ticks i.on{background:var(--accent,var(--amber));opacity:1;height:15px;width:2px}
+#scrub{position:absolute;inset:0;width:100%;height:100%;margin:0;appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer}
+#scrub::-webkit-slider-runnable-track{height:1px;background:var(--line)}
+#scrub::-moz-range-track{height:1px;background:var(--line)}
+#scrub::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--paper);border:4px solid var(--violet);margin-top:-9px}
+#scrub::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--paper);border:4px solid var(--violet)}
+#scrub:focus-visible{outline:2px solid var(--signal);outline-offset:2px;border-radius:8px}
+.years{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.56rem;color:var(--muted);margin:.1rem 47px 0;font-variant-numeric:tabular-nums}
+.years span.on{color:var(--paper)}
+#loading{position:absolute;inset:0;z-index:5;display:grid;place-items:center;background:var(--night);font-family:var(--mono);font-size:.74rem;letter-spacing:.2em;color:var(--muted);transition:opacity .6s}
+#loading.gone{opacity:0;pointer-events:none}
+dialog{background:var(--paper);color:var(--ink);border:0;border-radius:6px;padding:0;width:min(46rem,calc(100% - 32px));max-height:86%;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+dialog::backdrop{background:rgba(10,7,22,.72)}
+.inside{padding:clamp(1.2rem,3.5vw,2.4rem);position:relative}
+.inside .smallcap{color:var(--violet)}
+.inside h2{font-weight:800;font-size:clamp(1.5rem,3.4vw,2.3rem);letter-spacing:-.03em;line-height:1;margin:.4rem 2.5rem .3rem 0;text-wrap:balance}
+.inside .lede{font-family:var(--serif);font-style:italic;font-size:1.1rem;margin:0 0 1rem;max-width:36rem}
+.inside ol{list-style:none;padding:0;margin:0 0 1.2rem;display:grid;gap:.9rem;counter-reset:t}
+.inside li{counter-increment:t;display:grid;grid-template-columns:2.2rem 1fr;gap:.2rem .6rem;border-top:1px solid rgba(27,21,51,.16);padding-top:.8rem}
+.inside li::before{content:counter(t,decimal-leading-zero);font-family:var(--mono);font-size:.74rem;color:var(--violet);padding-top:.22rem}
+.inside li b{font-weight:800;font-size:1.06rem;letter-spacing:-.01em}
+.inside li p{grid-column:2;margin:0;font-family:var(--serif);font-size:1rem;line-height:1.4;max-width:34rem}
+.inside figure{margin:0 0 1rem}
+.inside figure img{display:block;width:100%;border:1px solid rgba(27,21,51,.16);background:#fff}
+.inside figcaption,.inside .src{font-family:var(--mono);font-size:.66rem;letter-spacing:.04em;color:rgba(27,21,51,.7);margin-top:.5rem;overflow-wrap:anywhere}
+.inside .src a{color:var(--violet)}
+.close{position:absolute;top:.9rem;right:.9rem;width:36px;height:36px;border-radius:50%;border:1px solid rgba(27,21,51,.3);background:transparent;color:var(--ink);font-size:1.1rem;cursor:pointer}
+.close:focus-visible{outline:2px solid var(--violet);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+@media (max-width:640px){
+  .btn span{display:none}
+  #line{min-height:0}
+  .years span:nth-child(even){visibility:hidden}
+}
+</style>
+</head>
+<body>
+<main id="table" aria-label="Dix éditions du radar du RSSI Wavestone, en livre animé">
+  <canvas id="world" tabindex="0" role="img" aria-label="Un livre ouvert en trois dimensions. Faites glisser pour tourner les pages, ou utilisez les flèches du clavier."></canvas>
+  <div class="shade" aria-hidden="true"></div>
+  <div class="ui">
+    <header class="head">
+      <div class="brand">
+        <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="9" fill="#6a3df0"/><circle cx="20" cy="20" r="12" fill="none" stroke="#efeadd" stroke-width="1.4" opacity=".55"/><circle cx="20" cy="20" r="7" fill="none" stroke="#efeadd" stroke-width="1.4" opacity=".8"/><path d="M20 20 L20 7 A13 13 0 0 1 31.3 13.5 Z" fill="#35e6b8"/><circle cx="20" cy="20" r="2" fill="#efeadd"/></svg>
+        <div><b>Radar du RSSI</b><small>WAVESTONE · 10 ÉDITIONS EN RELIEF</small></div>
+      </div>
+      <nav aria-label="Outils"><button class="btn" id="look" title="Revenir à la place du lecteur">↺ <span>Recentrer</span></button></nav>
+    </header>
+    <section class="chapter" aria-label="Édition en cours">
+      <div class="eyebrow"><span id="folio"></span></div>
+      <h1 id="year"></h1>
+      <p id="tagline"></p>
+    </section>
+    <div class="grow"></div>
+    <div class="bottom">
+      <div class="narration">
+        <div class="smallcap" id="lineLabel">LE SIGNAL DE L’ANNÉE</div>
+        <p id="line"></p>
+        <button class="link" id="read" aria-haspopup="dialog">Lire cette édition à plat</button>
+      </div>
+      <div class="transport" aria-label="Tourner les pages">
+        <div class="turn-label"><span id="turnHint">GLISSEZ POUR TOURNER LA PAGE</span><b id="counter"></b></div>
+        <div class="rail-row">
+          <button class="round" id="previous" aria-label="Édition précédente">←</button>
+          <div class="rail"><div class="ticks" id="ticks" aria-hidden="true"></div>
+            <input id="scrub" type="range" min="0" max="9" step=".005" value="0" aria-label="Tourner la page lentement"></div>
+          <button class="round" id="next" aria-label="Édition suivante">→</button>
+        </div>
+        <div class="years" id="years" aria-hidden="true"></div>
+      </div>
+    </div>
+  </div>
+  <div id="loading">LE LIVRE S’OUVRE…</div>
+</main>
+<dialog id="pageDialog" aria-labelledby="readTitle"><div class="inside">
+  <button class="close" aria-label="Fermer">×</button>
+  <div class="smallcap" id="readFolio"></div>
+  <h2 id="readTitle"></h2>
+  <p class="lede" id="readLede"></p>
+  <ol id="readThemes"></ol>
+  <figure><img id="readImg" alt=""><figcaption id="readCap"></figcaption></figure>
+  <p class="src" id="readSrc"></p>
+</div></dialog>
+<p class="sr" id="announcement" role="status" aria-live="polite"></p>
+
+<script src="editions.js"></script>
+<script type="module">
+import * as T from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.module.min.js';
+
+const ED = window.EDITIONS, N = ED.length;
+const $ = id => document.getElementById(id);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const smooth = (a,b,x) => { const t = clamp((x-a)/(b-a),0,1); return t*t*(3-2*t); };
+const PAPER = '#efeadd', INK = '#1b1533', VIOLET = '#6a3df0';
+
+/* ---------- dimensions du livre ---------- */
+const W = 4.5, D = 5.1, TH = .34;            // largeur de page, profondeur, épaisseur du bloc
+const DISC = 1.98, DISC_X = -W/2 - .02, HINGE_Z = 2.12;   // radar : rayon, centre, charnière
+const CARD_W = 3.75, CARD_L = 1.0, STEP_D = .86, STEP_H = .46, STAIR_Z0 = 2.02, STAIR_X = W/2 + .06;
+
+/* ---------- rendu ---------- */
+const canvas = $('world');
+let renderer;
+try { renderer = new T.WebGLRenderer({canvas, antialias:true, powerPreference:'high-performance'}); }
+catch(e){ $('loading').textContent = 'AFFICHAGE 3D INDISPONIBLE — OUVREZ « LIRE CETTE ÉDITION À PLAT »'; }
+const scene = new T.Scene();
+scene.background = new T.Color('#120d24');
+scene.fog = new T.Fog('#120d24', 22, 46);
+const camera = new T.PerspectiveCamera(33, 1, .1, 120);
+if (renderer){
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
+  renderer.outputColorSpace = T.SRGBColorSpace;
+  renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12;
+}
+const maxAniso = renderer ? renderer.capabilities.getMaxAnisotropy() : 1;
+
+scene.add(new T.HemisphereLight('#cfc6ff', '#241a44', .95));
+const key = new T.DirectionalLight('#fff1d6', 2.5);
+key.position.set(-5.5, 11, 6.5); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048); key.shadow.bias = -.0004; key.shadow.normalBias = .02; key.shadow.radius = 5;
+Object.assign(key.shadow.camera, {left:-8, right:8, top:8, bottom:-8, near:1, far:30});
+scene.add(key);
+const rim = new T.DirectionalLight('#7a5cff', 1.1); rim.position.set(6, 5, -7); scene.add(rim);
+
+/* ---------- petites fabriques ---------- */
+function makeCanvas(w,h){ const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function tex(c){ const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.anisotropy = maxAniso; return t; }
+function grain(g, w, h, n, a){ for(let i=0;i<n;i++){ g.fillStyle = `rgba(${Math.random()<.5?'60,40,90':'255,255,255'},${Math.random()*a})`; g.fillRect(Math.random()*w, Math.random()*h, 1.4, 1.4); } }
+function wrap(g, text, x, y, maxW, lh, maxLines=9){
+  const words = text.split(' '); let line = '', n = 0;
+  for (let i=0;i<words.length;i++){
+    const t = line ? line+' '+words[i] : words[i];
+    if (g.measureText(t).width > maxW && line){
+      if (++n === maxLines){ g.fillText(line.replace(/[ ,;:]+$/,'')+'…', x, y); return y+lh; }
+      g.fillText(line, x, y); y += lh; line = words[i];
+    } else line = t;
+  }
+  g.fillText(line, x, y); return y+lh;
+}
+const lam = (color, extra={}) => new T.MeshStandardMaterial({color, roughness:.92, metalness:0, ...extra});
+
+/* ---------- table ---------- */
+{ const c = makeCanvas(512,512), g = c.getContext('2d');
+  const r = g.createRadialGradient(256,256,20,256,256,256); r.addColorStop(0,'#2c2259'); r.addColorStop(.45,'#1c153c'); r.addColorStop(1,'#120d24');
+  g.fillStyle = r; g.fillRect(0,0,512,512);
+  g.strokeStyle = 'rgba(53,230,184,.10)'; g.lineWidth = 1;
+  for (let i=1;i<=7;i++){ g.beginPath(); g.arc(256,256,i*34,0,7); g.stroke(); }
+  for (let i=0;i<12;i++){ g.beginPath(); g.moveTo(256,256); g.lineTo(256+Math.cos(i*Math.PI/6)*250, 256+Math.sin(i*Math.PI/6)*250); g.stroke(); }
+  const m = new T.Mesh(new T.PlaneGeometry(64,64), new T.MeshStandardMaterial({map:tex(c), roughness:1}));
+  m.rotation.x = -Math.PI/2; m.position.y = -TH-.09; m.receiveShadow = true; scene.add(m); }
+
+/* ---------- le livre (couverture, blocs de pages) ---------- */
+const book = new T.Group(); scene.add(book);
+{ const cover = new T.Mesh(new T.BoxGeometry(W*2+.5, .08, D+.34), lam(VIOLET, {roughness:.6}));
+  cover.position.y = -TH-.04; cover.castShadow = cover.receiveShadow = true; book.add(cover);
+  const c = makeCanvas(64,64), g = c.getContext('2d'); g.fillStyle = '#e4dcc8'; g.fillRect(0,0,64,64);
+  for (let y=0;y<64;y+=4){ g.fillStyle = 'rgba(70,50,110,.20)'; g.fillRect(0,y,64,1); }
+  const edge = tex(c); edge.wrapS = edge.wrapT = T.RepeatWrapping; edge.repeat.set(1,3);
+  for (const s of [-1,1]){ const b = new T.Mesh(new T.BoxGeometry(W, TH, D), new T.MeshStandardMaterial({map:edge, roughness:1}));
+    b.position.set(s*W/2, -TH/2-.004, 0); b.castShadow = b.receiveShadow = true; book.add(b); }
+  const rib = new T.Mesh(new T.BoxGeometry(.32, .012, 1.1), lam('#35e6b8', {roughness:.5}));
+  rib.position.set(.5, -TH-.075, D/2+.55); book.add(rib);
+}
+
+/* ---------- textures des pages ---------- */
+const PW = 800, PH = Math.round(PW*D/W);
+const u2p = PW / W;                                       // unités -> pixels de page
+function pageBase(g, left){
+  g.fillStyle = PAPER; g.fillRect(0,0,PW,PH); grain(g, PW, PH, 5000, .06);
+  const s = g.createLinearGradient(left?PW:0, 0, left?PW-130:130, 0);   // ombre de la reliure
+  s.addColorStop(0,'rgba(40,25,80,.34)'); s.addColorStop(1,'rgba(40,25,80,0)');
+  g.fillStyle = s; g.fillRect(0,0,PW,PH);
+  g.strokeStyle = 'rgba(27,21,51,.22)'; g.lineWidth = 1.5; g.strokeRect(26,26,PW-52,PH-52);
+}
+function leftPage(i){
+  const e = ED[i], c = makeCanvas(PW,PH), g = c.getContext('2d'); pageBase(g, true);
+  const cx = (DISC_X + W)*u2p, cy = (HINGE_Z - DISC + D/2)*u2p, r = DISC*u2p;
+  // l'empreinte imprimée du radar, là où le relief se replie
+  g.save(); g.beginPath(); g.arc(cx,cy,r+3,0,7); g.clip(); g.globalAlpha = .34;
+  g.drawImage(discCanvas(i), cx-r, cy-r, r*2, r*2); g.restore();
+  g.strokeStyle = 'rgba(27,21,51,.4)'; g.setLineDash([3,6]); g.beginPath(); g.arc(cx,cy,r+5,0,7); g.stroke(); g.setLineDash([]);
+  g.fillStyle = INK; g.font = '500 17px "JetBrains Mono",monospace';
+  g.fillText(`PLANCHE ${String(i+1).padStart(2,'0')} · RADAR ${e.year}`, 46, 58);
+  g.textAlign = 'right'; g.fillText('WAVESTONE', PW-46, 58);
+  return tex(c);
+}
+function rightPage(i){
+  const e = ED[i], c = makeCanvas(PW,PH), g = c.getContext('2d'); pageBase(g, false);
+  g.fillStyle = INK; g.font = '500 17px "JetBrains Mono",monospace';
+  g.fillText(`LES THÈMES FORTS · ${e.year}`, 46, 58);
+  g.textAlign = 'right'; g.fillText(String(i+1).padStart(2,'0')+' / '+N, PW-46, 58); g.textAlign = 'left';
+  // lignes de pli de l'escalier
+  g.strokeStyle = 'rgba(27,21,51,.28)'; g.setLineDash([3,6]);
+  for (let k=0;k<=e.themes.length;k++){ const y = (STAIR_Z0 - k*STEP_D + D/2)*u2p; g.beginPath(); g.moveTo(60,y); g.lineTo(PW-60,y); g.stroke(); }
+  g.setLineDash([]);
+  g.globalAlpha = .1; g.font = '800 250px "Bricolage Grotesque",sans-serif'; g.fillText(e.year, 40, 300); g.globalAlpha = 1;
+  return tex(c);
+}
+
+/* ---------- le radar : image recadrée sur un disque ---------- */
+const images = new Map(), discCache = new Map();
+function loadImage(i){ return new Promise(res => { const e = ED[i]; if (!e.img) return res(null);
+  const im = new Image(); im.onload = () => { images.set(i, im); res(im); }; im.onerror = () => res(null); im.src = e.img; }); }
+function discCanvas(i){
+  if (discCache.has(i)) return discCache.get(i);
+  const e = ED[i], S = 1024, c = makeCanvas(S,S), g = c.getContext('2d'), im = images.get(i);
+  g.fillStyle = e.discBg || '#ffffff'; g.fillRect(0,0,S,S);
+  if (im){
+    // e.crop = {cx, cy, r} en fractions de l'image (r relatif à la largeur) : le cercle du radar remplit le disque
+    const k = e.crop || {cx:.5, cy:.5, r:.5*Math.min(1, im.height/im.width)};
+    const sc = (S/2) / (k.r*im.width);
+    g.drawImage(im, S/2 - k.cx*im.width*sc, S/2 - k.cy*im.height*sc, im.width*sc, im.height*sc);
+  } else {
+    // image indisponible : un radar schématique, sans donnée
+    const a = e.accent; g.fillStyle = '#fbf9f2'; g.fillRect(0,0,S,S);
+    [[1,.16],[.68,.3],[.36,.5]].forEach(([r,al]) => { g.globalAlpha = al; g.fillStyle = a; g.beginPath(); g.arc(S/2,S/2,S/2*r,0,7); g.fill(); });
+    g.globalAlpha = 1; g.strokeStyle = INK; g.lineWidth = 2;
+    for (let q=0;q<6;q++){ g.beginPath(); g.moveTo(S/2,S/2); g.lineTo(S/2+Math.cos(q*Math.PI/3)*S/2, S/2+Math.sin(q*Math.PI/3)*S/2); g.stroke(); }
+    g.fillStyle = INK; g.textAlign = 'center'; g.font = '800 120px "Bricolage Grotesque",sans-serif'; g.fillText(e.year, S/2, S/2+40);
+  }
+  discCache.set(i, c); return c;
+}
+
+/* ---------- relief gauche : le radar en gradins ---------- */
+function buildRadar(i){
+  const e = ED[i], root = new T.Group(), tilt = new T.Group();
+  root.position.set(DISC_X, .012, HINGE_Z); root.add(tilt);
+  const map = tex(discCanvas(i));
+  const rings = e.rings || [.34, .67, 1], K = rings.length, tiers = [];
+  const wallMat = lam('#d9d1ba'), topMat = new T.MeshStandardMaterial({map, roughness:.85});
+  for (let k=0;k<K;k++){
+    const r0 = k ? rings[k-1]*DISC : 0, r1 = rings[k]*DISC;
+    const geo = k ? new T.RingGeometry(r0, r1, 96, 1) : new T.CircleGeometry(r1, 96);
+    const p = geo.attributes.position, uv = geo.attributes.uv;
+    for (let n=0;n<p.count;n++) uv.setXY(n, p.getX(n)/(2*DISC)+.5, p.getY(n)/(2*DISC)+.5);
+    const top = new T.Mesh(geo, topMat); top.rotation.x = -Math.PI/2; top.castShadow = top.receiveShadow = true;
+    const wall = new T.Mesh(new T.CylinderGeometry(r1, r1, 1, 96, 1, true), wallMat); wall.castShadow = true;
+    const g = new T.Group(); g.position.z = -DISC; g.add(top, wall); tilt.add(g);
+    tiers.push({g, wall, level:K-1-k});
+  }
+  const back = new T.Mesh(new T.CircleGeometry(DISC, 96), lam('#cfc6ae', {side:T.BackSide}));
+  back.rotation.x = -Math.PI/2; back.position.set(0, -.002, -DISC); tilt.add(back);
+  // faisceau de balayage
+  const sc = makeCanvas(256,256), sg = sc.getContext('2d'), cg = sg.createConicGradient(0,128,128);
+  cg.addColorStop(0,'rgba(53,230,184,0)'); cg.addColorStop(.86,'rgba(53,230,184,0)'); cg.addColorStop(.992,'rgba(53,230,184,.55)'); cg.addColorStop(1,'rgba(220,255,245,.9)');
+  sg.fillStyle = cg; sg.beginPath(); sg.arc(128,128,127,0,7); sg.fill();
+  const sweepPivot = new T.Group(); sweepPivot.rotation.x = -Math.PI/2; sweepPivot.position.z = -DISC; tilt.add(sweepPivot);
+  const sweep = new T.Mesh(new T.CircleGeometry(DISC*1.0, 64), new T.MeshBasicMaterial({map:tex(sc), transparent:true, depthWrite:false, blending:T.AdditiveBlending, opacity:.8}));
+  sweepPivot.add(sweep);
+  const hub = new T.Mesh(new T.CylinderGeometry(.05,.05,.12,16), lam('#35e6b8', {emissive:'#35e6b8', emissiveIntensity:.8}));
+  tilt.add(hub);
+  // béquilles de papier
+  const props = [-1,1].map(s => { const m = new T.Mesh(new T.BoxGeometry(.5,.02,1), lam('#d9d1ba')); m.castShadow = true; m.userData.x = s*DISC*.52; root.add(m); return m; });
+  const TIER = .2;
+  function set(o, t){
+    const a = o*.74; tilt.rotation.x = a;
+    tiers.forEach(({g, wall, level}) => { const h = .02 + level*TIER*o; g.position.y = h; wall.scale.y = Math.max(h,.001); wall.position.y = -h/2; });
+    const topH = .02 + (K-1)*TIER*o + .03;
+    sweepPivot.position.y = topH; hub.position.set(0, topH, -DISC); hub.scale.y = .2+o;
+    sweep.rotation.z = -t*.9; sweep.material.opacity = .5*o;
+    props.forEach(m => { const d = DISC*1.25, y = d*Math.sin(a), z = -d*Math.cos(a), z0 = -DISC*1.9;   // de la page au dos du disque
+      const len = Math.hypot(y, z-z0); m.visible = o > .04; m.scale.z = len; m.position.set(m.userData.x, y/2, (z+z0)/2); m.rotation.x = -Math.atan2(y, z-z0) ; });
+  }
+  return {root, set, tops:tiers.map(x => x.g.children[0]), dispose(){ map.dispose(); }};
+}
+
+/* ---------- relief droit : l'escalier des thèmes ---------- */
+function cardTexture(e, k){
+  const th = e.themes[k], c = makeCanvas(1200, 320), g = c.getContext('2d');
+  g.fillStyle = '#fbf8ef'; g.fillRect(0,0,1200,320); grain(g, 1200, 320, 1500, .05);
+  g.fillStyle = e.accent; g.fillRect(0,0,150,320);
+  g.fillStyle = e.accentInk || '#fff'; g.font = '800 92px "Bricolage Grotesque",sans-serif'; g.textAlign = 'center';
+  g.fillText(String(k+1).padStart(2,'0'), 75, 190);
+  g.textAlign = 'left'; g.fillStyle = INK;
+  let size = 62; g.font = `800 ${size}px "Bricolage Grotesque",sans-serif`;
+  while (size > 40 && g.measureText(th.t).width > 990*2) { size -= 4; g.font = `800 ${size}px "Bricolage Grotesque",sans-serif`; }
+  const one = g.measureText(th.t).width <= 990;
+  let y = wrap(g, th.t, 185, one ? 118 : 88, 990, size*1.02, 2);
+  if (th.k){ g.font = '500 30px "JetBrains Mono",monospace'; g.fillStyle = 'rgba(27,21,51,.72)'; wrap(g, th.k.toUpperCase(), 187, Math.max(y+14, 236), 990, 38, one ? 2 : 1); }
+  return tex(c);
+}
+function buildStairs(i){
+  const e = ED[i], root = new T.Group(), n = e.themes.length, steps = [], maps = [];
+  root.position.set(STAIR_X, .012, 0);
+  const riserMat = lam(e.accent, {roughness:.7}), blockMat = lam('#ded6c0');
+  for (let k=0;k<n;k++){
+    const z = STAIR_Z0 - k*STEP_D;
+    const block = new T.Mesh(new T.BoxGeometry(CARD_W, 1, STEP_D), [blockMat,blockMat,blockMat,blockMat,riserMat,blockMat]);
+    block.position.z = z - STEP_D/2; block.castShadow = block.receiveShadow = true; root.add(block);
+    const hinge = new T.Group(); hinge.position.z = z; root.add(hinge);
+    const map = cardTexture(e, k); maps.push(map);
+    const geo = new T.BoxGeometry(CARD_W, .022, CARD_L); geo.translate(0, .011, -CARD_L/2);
+    const side = lam('#fbf8ef');
+    const card = new T.Mesh(geo, [side, side, new T.MeshStandardMaterial({map, roughness:.8, emissive:'#ffffff', emissiveIntensity:0, emissiveMap:map}), lam('#d9d1ba'), side, side]);
+    card.castShadow = card.receiveShadow = true; card.userData.theme = k; hinge.add(card);
+    steps.push({block, hinge, card, k, lift:0});
+  }
+  // le millésime, dressé au sommet
+  const yc = makeCanvas(1024, 400), yg = yc.getContext('2d');
+  yg.font = '800 400px "Bricolage Grotesque",sans-serif'; yg.textAlign = 'center'; yg.textBaseline = 'alphabetic';
+  yg.lineJoin = 'round'; yg.lineWidth = 26; yg.strokeStyle = '#fbf8ef'; yg.strokeText(e.year, 512, 350); yg.fillStyle = e.accent; yg.fillText(e.year, 512, 350);
+  const ymap = tex(yc); maps.push(ymap);
+  const yh = new T.Group(); yh.position.z = STAIR_Z0 - n*STEP_D; root.add(yh);
+  const ygeo = new T.PlaneGeometry(3.3, 1.29); ygeo.rotateX(-Math.PI/2); ygeo.translate(0, .012, -.645);
+  const ymat = new T.MeshStandardMaterial({map:ymap, alphaTest:.5, side:T.DoubleSide, roughness:.8});
+  const ysign = new T.Mesh(ygeo, ymat); ysign.castShadow = true;
+  ysign.customDepthMaterial = new T.MeshDepthMaterial({depthPacking:T.RGBADepthPacking, map:ymap, alphaTest:.5});
+  yh.add(ysign);
+  const yblock = new T.Mesh(new T.BoxGeometry(CARD_W, 1, .12), [blockMat,blockMat,blockMat,blockMat,riserMat,blockMat]);
+  yblock.position.z = STAIR_Z0 - n*STEP_D - .06; yblock.castShadow = true; root.add(yblock);
+  function set(o, t, sel){
+    steps.forEach(s => {
+      const h = Math.max(s.k*STEP_H*o, .0015*(s.k+1));
+      s.block.scale.y = Math.max(h,.001); s.block.position.y = h/2; s.block.visible = s.k > 0 && o > .02;
+      s.lift += ((sel === s.k ? 1 : 0) - s.lift)*.16;
+      s.hinge.position.y = h; s.hinge.rotation.x = o*(.86 + s.lift*.22);
+      s.card.material[2].emissiveIntensity = s.lift*.16;
+    });
+    const h = Math.max(n*STEP_H*o, .0015*(n+1));
+    yblock.scale.y = Math.max(h,.001); yblock.position.y = h/2; yblock.visible = o > .02;
+    yh.position.y = h; yh.rotation.x = o*1.36;
+  }
+  return {root, set, cards:steps.map(s => s.card), dispose(){ maps.forEach(m => m.dispose()); }};
+}
+
+/* ---------- pages fixes + feuille qui tourne ---------- */
+function flatPage(left){
+  const geo = new T.PlaneGeometry(W, D); geo.rotateX(-Math.PI/2);
+  const m = new T.Mesh(geo, new T.MeshStandardMaterial({roughness:.95})); m.position.set(left?-W/2:W/2, 0, 0); m.receiveShadow = true; book.add(m); return m;
+}
+const pageL = flatPage(true), pageR = flatPage(false);
+const NX = 30, NZ = 10;
+const sheetGeo = new T.BufferGeometry(), sheetGeoB = new T.BufferGeometry();
+{ const pos = new Float32Array((NX+1)*(NZ+1)*3), uvF = [], uvB = [], idx = [];
+  for (let j=0;j<=NZ;j++) for (let i=0;i<=NX;i++){ uvF.push(i/NX, 1-j/NZ); uvB.push(1-i/NX, 1-j/NZ); }
+  for (let j=0;j<NZ;j++) for (let i=0;i<NX;i++){ const a = j*(NX+1)+i, b = a+1, c = a+NX+1, d = c+1; idx.push(a,c,b, b,c,d); }
+  const pa = new T.BufferAttribute(pos, 3), na = new T.BufferAttribute(new Float32Array(pos.length), 3);
+  for (const [g,uv] of [[sheetGeo,uvF],[sheetGeoB,uvB]]){ g.setAttribute('position', pa); g.setAttribute('normal', na); g.setAttribute('uv', new T.Float32BufferAttribute(uv,2)); g.setIndex(idx); }
+}
+const sheetF = new T.Mesh(sheetGeo, new T.MeshStandardMaterial({roughness:.95, side:T.FrontSide}));
+const sheetB = new T.Mesh(sheetGeoB, new T.MeshStandardMaterial({roughness:.95, side:T.BackSide}));
+sheetF.castShadow = sheetB.castShadow = true; sheetF.receiveShadow = sheetB.receiveShadow = true; sheetF.frustumCulled = sheetB.frustumCulled = false;
+book.add(sheetF, sheetB);
+const onSheetF = new T.Group(), onSheetB = new T.Group(), onStatic = new T.Group(); book.add(onSheetF, onSheetB, onStatic);
+function bendSheet(p){
+  // la feuille pivote autour de la reliure ; le bord libre prend de l'avance et un coin se soulève
+  const pos = sheetGeo.attributes.position, s = Math.sin(Math.PI*p), du = W/NX;
+  for (let j=0;j<=NZ;j++){
+    const zn = j/NZ - .5; let x = 0, y = .006 + .02*s;
+    for (let i=0;i<=NX;i++){
+      const un = i/NX, a = Math.PI*p + s*(.42*(un-.45) - .30*zn*un);
+      if (i){ x += Math.cos(a)*du; y += Math.sin(a)*du; }
+      pos.setXYZ(j*(NX+1)+i, x, Math.max(y, .006), zn*D);
+    }
+  }
+  pos.needsUpdate = true; sheetGeo.computeVertexNormals(); sheetGeo.attributes.normal.needsUpdate = true;
+}
+
+/* ---------- éditions montées à la demande ---------- */
+const built = new Map();
+function edition(i){
+  if (!built.has(i)) built.set(i, {L:leftPage(i), R:rightPage(i), radar:buildRadar(i), stairs:buildStairs(i)});
+  return built.get(i);
+}
+
+/* ---------- état ---------- */
+let s = 0, tween = null, dragging = null, selected = -1, intro = reduced ? 1 : 0, shown = -1;
+let yaw = 0, tiltCam = 0, yawT = 0, tiltT = 0, userYaw = 0;
+const openness = x => smooth(.22, .96, x);
+
+function layout(p, i, t){
+  const cur = edition(i), nxt = i+1 < N ? edition(i+1) : null, turning = p > .0005 && nxt;
+  for (const [j,e] of built){ const vis = j === i || (turning && j === i+1); e.radar.root.visible = e.stairs.root.visible = vis; }
+  pageL.material.map = cur.L; pageR.material.map = turning ? nxt.R : cur.R;
+  sheetF.visible = sheetB.visible = !!turning;
+  const oc = openness(1-p)*intro, on = openness(p);
+  onStatic.add(cur.radar.root); cur.radar.set(oc, t);
+  if (turning){
+    bendSheet(p); sheetF.material.map = cur.R; sheetB.material.map = nxt.L;
+    const A = Math.PI*p;
+    onSheetF.rotation.z = A; onSheetB.rotation.z = A - Math.PI;
+    onSheetF.add(cur.stairs.root); onSheetB.add(nxt.radar.root); onStatic.add(nxt.stairs.root);
+    nxt.radar.set(on, t); nxt.stairs.set(on, t, -1);
+  } else onStatic.add(cur.stairs.root);
+  cur.stairs.set(oc, t, turning ? -1 : selected);
+}
+
+/* ---------- interface ---------- */
+const ticks = $('ticks'), years = $('years');
+ED.forEach(e => { ticks.appendChild(document.createElement('i')); const sp = document.createElement('span'); sp.textContent = "’"+e.year.slice(2); years.appendChild(sp); });
+$('scrub').max = N-1;
+function showLine(){
+  const e = ED[shown], th = selected >= 0 ? e.themes[selected] : null;
+  $('lineLabel').textContent = th ? `THÈME ${String(selected+1).padStart(2,'0')} · ${e.year}` : 'LE SIGNAL DE L’ANNÉE';
+  $('line').innerHTML = '';
+  if (th){ const b = document.createElement('b'); b.textContent = th.t+'. '; $('line').append(b, th.d || ''); }
+  else $('line').textContent = e.signal;
+}
+function showEdition(i){
+  if (i === shown) return; shown = i; selected = -1; const e = ED[i];
+  document.documentElement.style.setProperty('--accent', e.accentUi || e.accent);
+  $('folio').textContent = `ÉDITION ${String(i+1).padStart(2,'0')} / ${N} · ${e.published}`;
+  $('year').textContent = e.year; $('tagline').textContent = e.title;
+  $('counter').textContent = `${String(i+1).padStart(2,'0')} / ${N}`;
+  [...ticks.children].forEach((d,j) => d.classList.toggle('on', j === i));
+  [...years.children].forEach((d,j) => d.classList.toggle('on', j === i));
+  $('previous').disabled = i === 0; $('next').disabled = i === N-1;
+  $('announcement').textContent = `Radar ${e.year}. ${e.title}. ${e.signal}`;
+  showLine();
+}
+function go(to, perPage=1.5){
+  to = clamp(Math.round(to), 0, N-1); const from = s, dist = Math.abs(to-from); if (dist < .001){ s = to; return; }
+  tween = {from, to, t0:performance.now(), dur:(reduced ? .01 : Math.min(perPage*Math.max(dist,.35), 1.2+dist*.45))*1000};
+}
+$('next').onclick = () => go(Math.floor(s+.001)+1);
+$('previous').onclick = () => go(Math.ceil(s-.001)-1);
+$('scrub').addEventListener('input', e => { tween = null; s = +e.target.value; });
+$('scrub').addEventListener('change', e => go(+e.target.value, .6));
+addEventListener('keydown', e => { if (document.querySelector('dialog[open]')) return;
+  if (e.key === 'ArrowRight' || e.key === 'PageDown'){ $('next').click(); e.preventDefault(); }
+  if (e.key === 'ArrowLeft' || e.key === 'PageUp'){ $('previous').click(); e.preventDefault(); }
+  if (e.key === 'Home') go(0); if (e.key === 'End') go(N-1); });
+$('look').onclick = () => { userYaw = 0; };
+let wheelAcc = 0, wheelLock = 0;
+canvas.addEventListener('wheel', e => { e.preventDefault(); const now = performance.now(); if (now < wheelLock) return;
+  wheelAcc += e.deltaY + e.deltaX; if (Math.abs(wheelAcc) > 60){ (wheelAcc > 0 ? $('next') : $('previous')).click(); wheelAcc = 0; wheelLock = now+700; } }, {passive:false});
+
+const ray = new T.Raycaster(), ndc = new T.Vector2();
+function pick(ev){
+  const r = canvas.getBoundingClientRect(); ndc.set((ev.clientX-r.left)/r.width*2-1, -((ev.clientY-r.top)/r.height*2-1));
+  ray.setFromCamera(ndc, camera); const e = built.get(shown); if (!e) return -1;
+  const hit = ray.intersectObjects([...e.stairs.cards, ...e.radar.tops], false)[0]; return !hit ? -1 : hit.object.userData.theme ?? -2;
+}
+canvas.addEventListener('pointerdown', e => { canvas.setPointerCapture(e.pointerId); tween = null;
+  dragging = {x:e.clientX, y:e.clientY, s0:s, yaw0:userYaw, moved:false, orbit:e.shiftKey || e.button === 2}; canvas.classList.add('dragging'); });
+canvas.addEventListener('pointermove', e => {
+  const r = canvas.getBoundingClientRect();
+  yawT = ((e.clientX-r.left)/r.width-.5)*-.16; tiltT = ((e.clientY-r.top)/r.height-.5)*.07;
+  if (!dragging){ canvas.style.cursor = (s%1 === 0 && pick(e) !== -1) ? 'pointer' : ''; return; }
+  const dx = e.clientX-dragging.x; if (Math.abs(dx) > 5) dragging.moved = true;
+  if (dragging.orbit) userYaw = clamp(dragging.yaw0 - dx/r.width*1.6, -.7, .7);
+  else if (dragging.moved) s = clamp(dragging.s0 - dx/(r.width*.42), 0, N-1);
+});
+const release = e => { if (!dragging) return; canvas.classList.remove('dragging');
+  if (!dragging.moved){ const k = pick(e); if (k === -2) $('read').click(); else { selected = (k === selected) ? -1 : k; showLine(); } }
+  else if (!dragging.orbit){ const d = s-dragging.s0; go(Math.abs(d) > .16 ? (d > 0 ? Math.ceil(s) : Math.floor(s)) : dragging.s0, .9); }
+  dragging = null; };
+canvas.addEventListener('pointerup', release); canvas.addEventListener('pointercancel', release);
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+const dlg = $('pageDialog');
+$('read').onclick = () => { const e = ED[shown];
+  $('readFolio').textContent = `RADAR DU RSSI · ÉDITION ${e.year}`; $('readTitle').textContent = e.title; $('readLede').textContent = e.signal;
+  $('readThemes').replaceChildren(...e.themes.map(th => { const li = document.createElement('li'), b = document.createElement('b'), p = document.createElement('p'); b.textContent = th.t; p.textContent = th.d || ''; li.append(b, p); return li; }));
+  const im = $('readImg'); im.hidden = !images.has(shown); if (images.has(shown)) { im.src = e.img; im.alt = `Visuel du radar du RSSI ${e.year}`; }
+  $('readCap').textContent = images.has(shown) ? (e.imgNote || `Radar du RSSI ${e.year} © Wavestone`) : '';
+  const src = $('readSrc'); src.textContent = 'Source : '; const a = document.createElement('a'); a.href = e.source; a.target = '_blank'; a.rel = 'noopener'; a.textContent = e.source.replace(/^https?:\/\//,''); src.append(a);
+  dlg.showModal(); };
+dlg.querySelector('.close').onclick = () => dlg.close();
+dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+
+/* ---------- caméra ---------- */
+function resize(){
+  const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return;
+  renderer.setSize(w, h, false); camera.aspect = w/h; camera.updateProjectionMatrix();
+}
+function placeCamera(){
+  const half = Math.tan(camera.fov*Math.PI/360), portrait = camera.aspect < .9;
+  const dist = Math.max(13.7, (W+.9)/(half*camera.aspect)) * (1 + (1-intro)*.35);
+  const y0 = portrait ? .6 : 1.05, el = .70 + tiltCam, az = yaw + userYaw;
+  camera.position.set(dist*Math.sin(az)*Math.cos(el), y0 + dist*Math.sin(el), .25 + dist*Math.cos(az)*Math.cos(el));
+  camera.lookAt(0, y0, .25);
+}
+
+/* ---------- boucle ---------- */
+let last = performance.now();
+function frame(now){
+  const dt = Math.min(.05, (now-last)/1000); last = now;
+  if (tween){ const k = clamp((now-tween.t0)/tween.dur, 0, 1), e = k<.5 ? 4*k*k*k : 1-Math.pow(-2*k+2,3)/2; s = tween.from + (tween.to-tween.from)*e; if (k >= 1){ s = tween.to; tween = null; } }
+  if (intro < 1) intro = Math.min(1, intro + dt/1.9);
+  const i = clamp(Math.floor(s+1e-6), 0, N-1), p = clamp(s-i, 0, 1);
+  showEdition(clamp(Math.round(s), 0, N-1));
+  if (!dragging && document.activeElement !== $('scrub')) $('scrub').value = s; else if (dragging) $('scrub').value = s;
+  $('turnHint').textContent = p > .02 && p < .98 ? `PAGE EN COURS · ${Math.round(p*100)} %` : 'GLISSEZ POUR TOURNER LA PAGE';
+  const easeIntro = 1-Math.pow(1-intro, 3), keep = intro; intro = easeIntro;
+  layout(p, i, reduced ? 0 : now/1000);
+  yaw += (yawT-yaw)*.05; tiltCam += (tiltT-tiltCam)*.05; placeCamera(); intro = keep;
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+
+async function start(){
+  await Promise.all([document.fonts.load('800 60px "Bricolage Grotesque"'), document.fonts.load('500 20px "JetBrains Mono"'), document.fonts.ready, ...ED.map((_,i) => loadImage(i))]).catch(()=>{});
+  showEdition(0);
+  if (!renderer) return;
+  edition(0); if (N > 1) edition(1);
+  resize(); new ResizeObserver(resize).observe(canvas);
+  $('loading').classList.add('gone');
+  requestAnimationFrame(frame);
+  // monter les autres éditions en tâche de fond pour que la première page tourne sans à-coup
+  let n = 2; const more = () => { if (n < N){ edition(n++); setTimeout(more, 120); } }; setTimeout(more, 900);
+}
+start();
+</script>
+</body>
+</html>
