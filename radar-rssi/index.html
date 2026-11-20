@@ -5,22 +5,23 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>The Cyber Book</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <style>
 /* Layout : un livre blanc posé sur un plan clair de studio ; le texte vit dans les marges, comme sur une page de garde. */
 :root{
+  /* Charte Wavestone : violet 451DC7, violet profond 250F6B, vert 04F06A, vert clair CAFEE0, gris F6F6F6, Aptos */
   color-scheme:light;
-  --studio:#eceef2;     /* plan de studio */
-  --paper:#ffffff;      /* papier */
-  --ink:#1a1040;        /* encre, bleu nuit violacé */
-  --violet:#451dc7;     /* violet signature */
+  --studio:#f6f6f6;
+  --paper:#ffffff;
+  --ink:#000000;
+  --violet:#451dc7;
   --violet-deep:#250f6b;
-  --green:#0fbf6c;      /* accent, avec parcimonie */
-  --muted:#6f6a86;
-  --line:rgba(26,16,64,.16);
-  --accent:var(--violet);
-  --display:"Instrument Serif","Iowan Old Style",Georgia,serif;
-  --sans:"Instrument Sans","Helvetica Neue",Arial,sans-serif;
+  --green:#04f06a;
+  --green-soft:#cafee0;
+  --muted:#5d5a6b;
+  --line:rgba(37,15,107,.18);
+  --display:"Aptos Display","Aptos",Inter,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --sans:"Aptos",Inter,"Segoe UI","Helvetica Neue",Arial,sans-serif;
 }
 html,body{height:100%}
 body{background:var(--studio);color:var(--ink);font-family:var(--sans);overflow:hidden}
@@ -30,14 +31,16 @@ body{background:var(--studio);color:var(--ink);font-family:var(--sans);overflow:
 #world.dragging{cursor:grabbing}
 #world:focus-visible{outline:2px solid var(--violet);outline-offset:-4px}
 .shade{position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(236,238,242,.92) 0,rgba(236,238,242,0) 24%,rgba(236,238,242,0) 76%,rgba(236,238,242,.94) 100%)}
+  background:linear-gradient(180deg,rgba(246,246,246,.92) 0,rgba(246,246,246,0) 24%,rgba(246,246,246,0) 76%,rgba(246,246,246,.94) 100%)}
 .ui{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:space-between;
   padding-block:clamp(14px,2.6vh,30px);padding-inline:clamp(0px,1.4vw,22px);pointer-events:none}
 .ui > *{pointer-events:auto}
 .head{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.brand{display:flex;align-items:baseline;gap:.3rem 1.2rem;min-width:0;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:.3rem 1.1rem;min-width:0;flex-wrap:wrap}
+.logo{height:44px;width:auto;margin:-10px -14px -10px -18px;flex:none}
+.brand i{width:1px;height:22px;background:var(--line);flex:none}
 .brand b,.brand small{flex:none;white-space:nowrap}
-.brand b{font-family:var(--display);font-weight:400;font-size:1.55rem;letter-spacing:-.01em;line-height:1}
+.brand b{font-family:var(--display);font-weight:600;font-size:1.12rem;letter-spacing:-.01em;line-height:1;color:var(--violet-deep)}
 .brand small{font-size:.64rem;font-weight:600;letter-spacing:.2em;color:var(--muted)}
 .btn{font:500 .8rem var(--sans);color:var(--ink);background:rgba(255,255,255,.7);border:1px solid var(--line);
   border-radius:999px;padding:.5rem .95rem;cursor:pointer;backdrop-filter:blur(8px)}
@@ -46,15 +49,15 @@ body{background:var(--studio);color:var(--ink);font-family:var(--sans);overflow:
 .chapter{margin-top:clamp(10px,3vh,34px);max-width:min(30rem,92%);pointer-events:none}
 .eyebrow{font-size:.66rem;font-weight:600;letter-spacing:.2em;color:var(--violet);display:flex;gap:.8rem;align-items:center}
 .eyebrow::before{content:"";width:28px;height:1px;background:currentColor}
-#year{font-family:var(--display);font-weight:400;font-size:clamp(4rem,10.5vw,8.4rem);line-height:.86;letter-spacing:-.03em;margin:.1em 0 .1em;
-  font-variant-numeric:lining-nums tabular-nums;color:var(--ink)}
+#year{font-family:var(--display);font-weight:600;font-size:clamp(3.6rem,9.4vw,7.4rem);line-height:.86;letter-spacing:-.055em;margin:.12em 0 .12em -.04em;
+  font-variant-numeric:lining-nums tabular-nums;color:var(--violet-deep)}
 #tagline{font-size:clamp(.95rem,1.35vw,1.1rem);font-weight:500;line-height:1.35;color:var(--ink);margin:0;text-wrap:balance;max-width:24rem}
 .grow{flex:1}
 .bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap}
 .narration{max-width:min(34rem,100%);min-width:0;flex:1 1 300px}
 .smallcap{font-size:.64rem;font-weight:600;letter-spacing:.2em;color:var(--violet)}
-#line{font-family:var(--display);font-size:clamp(1.2rem,1.95vw,1.6rem);line-height:1.2;margin:.45rem 0 .7rem;min-height:2.4em;text-wrap:pretty}
-#line b{font-family:var(--sans);font-weight:700;font-size:.72em;letter-spacing:-.005em}
+#line{font-family:var(--sans);font-size:clamp(1rem,1.45vw,1.22rem);line-height:1.35;margin:.45rem 0 .7rem;min-height:2.7em;text-wrap:pretty}
+#line b{font-weight:700;color:var(--violet-deep)}
 .link{font:600 .8rem var(--sans);color:var(--ink);background:none;border:0;border-bottom:1px solid var(--violet);padding:0 0 3px;cursor:pointer}
 .link:hover{color:var(--violet)}
 .transport{flex:0 1 430px;min-width:min(100%,280px);background:rgba(255,255,255,.78);border:1px solid var(--line);border-radius:4px;
@@ -68,7 +71,7 @@ body{background:var(--studio);color:var(--ink);font-family:var(--sans);overflow:
 .rail{position:relative;flex:1;min-width:0;height:38px}
 .ticks{position:absolute;inset:0 9px;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
 .ticks i{width:1px;height:9px;background:var(--muted);opacity:.55}
-.ticks i.on{background:var(--violet);opacity:1;height:15px;width:2px}
+.ticks i.on{background:var(--green);opacity:1;height:15px;width:3px}
 #scrub{position:absolute;inset:0;width:100%;height:100%;margin:0;appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer}
 #scrub::-webkit-slider-runnable-track{height:1px;background:var(--line)}
 #scrub::-moz-range-track{height:1px;background:var(--line)}
@@ -80,13 +83,13 @@ body{background:var(--studio);color:var(--ink);font-family:var(--sans);overflow:
 #loading{position:absolute;inset:0;z-index:5;display:grid;place-items:center;background:var(--studio);font-size:.7rem;font-weight:600;letter-spacing:.22em;color:var(--muted);transition:opacity .6s}
 #loading.gone{opacity:0;pointer-events:none}
 dialog{background:var(--paper);color:var(--ink);border:0;border-radius:2px;padding:0;width:min(48rem,calc(100% - 32px));max-height:88%;box-shadow:0 30px 80px rgba(26,16,64,.35)}
-dialog::backdrop{background:rgba(26,16,64,.5)}
+dialog::backdrop{background:rgba(37,15,107,.55)}
 .inside{padding:clamp(1.4rem,4vw,3rem);position:relative}
-.inside h2{font-family:var(--display);font-weight:400;font-size:clamp(1.8rem,4vw,2.8rem);letter-spacing:-.01em;line-height:1.02;margin:.5rem 2.5rem .4rem 0;text-wrap:balance}
+.inside h2{font-family:var(--display);font-weight:600;color:var(--violet-deep);font-size:clamp(1.8rem,4vw,2.8rem);letter-spacing:-.01em;line-height:1.02;margin:.5rem 2.5rem .4rem 0;text-wrap:balance}
 .inside .lede{font-size:1.02rem;line-height:1.45;margin:0 0 1.3rem;max-width:36rem;color:var(--muted)}
 .inside ol{list-style:none;padding:0;margin:0 0 1.4rem;display:grid;gap:.9rem;counter-reset:t}
 .inside li{counter-increment:t;display:grid;grid-template-columns:2.4rem 1fr;gap:.2rem .6rem;border-top:1px solid var(--line);padding-top:.85rem}
-.inside li::before{content:counter(t,decimal-leading-zero);font-family:var(--display);font-size:1.25rem;color:var(--violet);line-height:1.1}
+.inside li::before{content:counter(t,decimal-leading-zero);font-family:var(--display);font-weight:600;font-size:1.1rem;color:var(--violet);line-height:1.25}
 .inside li b{font-weight:700;font-size:1.02rem;letter-spacing:-.005em}
 .inside li p{grid-column:2;margin:0;font-size:.95rem;line-height:1.5;max-width:36rem}
 .inside figure{margin:0 0 1rem}
@@ -111,7 +114,7 @@ dialog::backdrop{background:rgba(26,16,64,.5)}
     <header class="head">
       <div class="brand">
         
-        <div><b>The Cyber Book</b><small>LE RADAR DU RSSI WAVESTONE · 2017–2026</small></div>
+        <svg class="logo" role="img" aria-label="Wavestone" viewBox="0 0 1133.93 283.1" xmlns="http://www.w3.org/2000/svg" overflow="hidden"><g><path d="M94.34 96.61 144.2 187.93 157.34 163.85 120.5 96.61 94.34 96.61Z" fill="#451DC7"/><path d="M777.96 94.38C747.58 94.38 723.55 112.29 723.55 141.55 723.55 170.81 747.58 188.72 777.96 188.72 808.34 188.72 832.37 170.81 832.37 141.55 832.37 112.29 808.34 94.38 777.96 94.38ZM777.96 178.76C755.38 178.76 745.05 162.24 745.05 141.55 745.05 120.86 755.38 104.34 777.96 104.34 800.54 104.34 810.87 120.86 810.87 141.55 810.87 162.24 800.54 178.76 777.96 178.76Z" fill="#451DC7"/><path d="M629.75 108.98 662.64 108.98 662.64 186.38 683.15 186.38 683.15 108.98 716.04 108.98 716.04 96.59 629.75 96.59 629.75 108.98Z" fill="#451DC7"/><path d="M577.85 130.9C564.75 127.48 552.38 124.26 552.38 116.17 552.38 108.08 563.76 104.37 575.04 104.37 586.32 104.37 596.89 107.17 607.55 112.94L610.14 114.34 610.14 102.47 609.12 101.97C599.5 97.19 586.81 94.34 575.2 94.34 555.72 94.34 534.91 101.52 534.91 121.67 534.91 141.82 554.91 146.39 572.56 151.06 585.84 154.58 598.39 157.9 598.39 166.52 598.39 175.14 586.52 178.72 575.49 178.72 562.44 178.72 549.49 174.63 537 166.66L535.6 165.77 529.8 174.19 531.37 175.25C543.8 183.67 560.81 188.69 576.86 188.69 601.16 188.69 616.86 177.87 616.86 161.34 616.86 141.06 595.23 135.42 577.84 130.88Z" fill="#451DC7"/><path d="M456.39 147.59 507.25 147.59 507.28 135.17 456.39 135.17 456.39 108.98 511.23 108.98 511.27 96.56 435.88 96.56 435.88 186.29 512.04 186.29 512.08 173.87 456.39 173.87 456.39 147.59Z" fill="#451DC7"/><path d="M983.9 173.87 983.9 147.59 1034.76 147.59 1034.8 135.17 983.9 135.17 983.9 108.98 1038.75 108.98 1038.78 96.56 963.39 96.56 963.39 186.29 1039.55 186.29 1039.59 173.87 983.9 173.87Z" fill="#451DC7"/><path d="M233.33 186.29 247.67 186.31 256.37 170.13 300.86 170.13 309.72 186.29 333.03 186.29 283.17 94.97 233.34 186.29ZM263.04 157.71 278.39 129.12 294.05 157.71 263.03 157.71Z" fill="#451DC7"/><path d="M373.56 153.78 342.24 96.61 318.93 96.61 368.79 187.93 418.62 96.61 404.27 96.59 373.56 153.78Z" fill="#451DC7"/><path d="M926.72 96.56 926.74 152.44 852.51 94.95 852.51 186.32 864.91 186.32 865 130.49 939.12 187.95 939.14 96.56 939.12 96.56 926.72 96.56Z" fill="#451DC7"/><path d="M280.32 61.15 263.98 61.15C246.14 79.85 229.59 99.65 216.72 120.44 211.4 129.04 206.57 137.75 202.21 146.54L174.85 96.6 148.69 96.6 198.55 187.92 198.55 187.87C213.93 141.7 242.07 98.85 280.32 61.15Z" fill="#451DC7"/></g><rect x="425.41" y="-425.41" width="283.11" height="1133.93" fill="none" transform="matrix(6.12323e-17 1 -1 6.12323e-17 708.52 -425.41)"/></svg><i aria-hidden="true"></i><b>The Cyber Book</b><small id="span"></small>
       </div>
       <nav aria-label="Outils"><button class="btn" id="look" title="Revenir à la place du lecteur">↺ <span>Recentrer</span></button></nav>
     </header>
@@ -161,8 +164,8 @@ const $ = id => document.getElementById(id);
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
 const smooth = (a,b,x) => { const t = clamp((x-a)/(b-a),0,1); return t*t*(3-2*t); };
-const PAPER = '#ffffff', INK = '#1a1040', VIOLET = '#451dc7', DEEP = '#250f6b', STUDIO = '#eceef2';
-const SANS = '"Instrument Sans",Helvetica,Arial,sans-serif', SERIF = '"Instrument Serif",Georgia,serif';
+const PAPER = '#ffffff', INK = '#000000', VIOLET = '#451dc7', DEEP = '#250f6b', GREEN = '#04f06a', STUDIO = '#f6f6f6';
+const SANS = 'Aptos,Inter,"Segoe UI",Helvetica,Arial,sans-serif', SERIF = SANS;   // une seule famille, comme la charte
 
 /* ---------- dimensions du livre ---------- */
 const W = 4.5, D = 5.1, TH = .34;            // largeur de page, profondeur, épaisseur du bloc
@@ -213,7 +216,7 @@ const lam = (color, extra={}) => new T.MeshStandardMaterial({color, roughness:.9
 
 /* ---------- plan de studio ---------- */
 { const c = makeCanvas(512,512), g = c.getContext('2d');
-  const r = g.createRadialGradient(256,256,20,256,256,256); r.addColorStop(0,'#fbfbfd'); r.addColorStop(.5,'#f1f2f5'); r.addColorStop(1,STUDIO);
+  const r = g.createRadialGradient(256,256,20,256,256,256); r.addColorStop(0,'#ffffff'); r.addColorStop(.5,'#f9f9f9'); r.addColorStop(1,STUDIO);
   g.fillStyle = r; g.fillRect(0,0,512,512);
   const m = new T.Mesh(new T.PlaneGeometry(64,64), new T.MeshStandardMaterial({map:tex(c), roughness:1}));
   m.rotation.x = -Math.PI/2; m.position.y = -TH-.09; m.receiveShadow = true; scene.add(m); }
@@ -227,7 +230,7 @@ const book = new T.Group(); scene.add(book);
   const edge = tex(c); edge.wrapS = edge.wrapT = T.RepeatWrapping; edge.repeat.set(1,3);
   for (const s of [-1,1]){ const b = new T.Mesh(new T.BoxGeometry(W, TH, D), new T.MeshStandardMaterial({map:edge, roughness:1}));
     b.position.set(s*W/2, -TH/2-.004, 0); b.castShadow = b.receiveShadow = true; book.add(b); }
-  const rib = new T.Mesh(new T.BoxGeometry(.32, .012, 1.1), lam('#0fbf6c', {roughness:.5}));
+  const rib = new T.Mesh(new T.BoxGeometry(.32, .012, 1.1), lam(GREEN, {roughness:.5}));
   rib.position.set(.5, -TH-.075, D/2+.55); book.add(rib);
 }
 
@@ -259,13 +262,15 @@ function leftPage(i){
 function rightPage(i){
   const e = ED[i], c = makeCanvas(PW,PH), g = c.getContext('2d'); pageBase(g, false);
   running(g, 'LES THÈMES FORTS', `ÉDITION ${e.year}`);
-  g.fillStyle = 'rgba(69,29,199,.09)'; g.font = `400 330px ${SERIF}`; g.fillText(e.year, 44, 350);
+  g.fillStyle = 'rgba(69,29,199,.08)'; g.font = `600 300px ${SANS}`; g.letterSpacing = '-14px'; g.fillText(e.year, 40, 340); g.letterSpacing = '0px';
   g.fillStyle = INK; g.font = `500 14px ${SANS}`; g.textAlign = 'right'; g.fillText(String(i*2+3).padStart(2,'0'), PW-52, PH-44);
   return tex(c);
 }
 
 /* ---------- le radar : image recadrée sur un disque ---------- */
-const images = new Map(), discCache = new Map();
+const images = new Map(), photos = new Map(), discCache = new Map();
+function loadPhoto(i){ return new Promise(res => { const e = ED[i]; if (!e.photo) return res(null);
+  const im = new Image(); im.onload = () => { photos.set(i, im); res(im); }; im.onerror = () => res(null); im.src = e.photo; }); }
 function loadImage(i){ return new Promise(res => { const e = ED[i]; if (!e.img) return res(null);
   const im = new Image(); im.onload = () => { images.set(i, im); res(im); }; im.onerror = () => res(null); im.src = e.img; }); }
 function discCanvas(i){
@@ -283,7 +288,7 @@ function discCanvas(i){
     [[1,.08],[.68,.14],[.36,.9]].forEach(([r,al]) => { g.globalAlpha = al; g.fillStyle = a; g.beginPath(); g.arc(S/2,S/2,S/2*r,0,7); g.fill(); });
     g.globalAlpha = 1; g.strokeStyle = 'rgba(26,16,64,.35)'; g.lineWidth = 1.5;
     for (let q=0;q<6;q++){ g.beginPath(); g.moveTo(S/2,S/2); g.lineTo(S/2+Math.cos(q*Math.PI/3)*S/2, S/2+Math.sin(q*Math.PI/3)*S/2); g.stroke(); }
-    g.fillStyle = '#fff'; g.textAlign = 'center'; g.font = `400 130px ${SERIF}`; g.fillText(e.year, S/2, S/2+42);
+    g.fillStyle = '#fff'; g.textAlign = 'center'; g.font = `600 120px ${SANS}`; g.fillText(e.year, S/2, S/2+42);
   }
   discCache.set(i, c); return c;
 }
@@ -309,12 +314,12 @@ function buildRadar(i){
   back.rotation.x = -Math.PI/2; back.position.set(0, -.002, -DISC); tilt.add(back);
   // faisceau de balayage, discret
   const sc = makeCanvas(256,256), sg = sc.getContext('2d'), cg = sg.createConicGradient(0,128,128);
-  cg.addColorStop(0,'rgba(69,29,199,0)'); cg.addColorStop(.84,'rgba(69,29,199,0)'); cg.addColorStop(.994,'rgba(69,29,199,.20)'); cg.addColorStop(1,'rgba(15,191,108,.9)');
+  cg.addColorStop(0,'rgba(69,29,199,0)'); cg.addColorStop(.84,'rgba(69,29,199,0)'); cg.addColorStop(.994,'rgba(69,29,199,.20)'); cg.addColorStop(1,'rgba(4,240,106,.95)');
   sg.fillStyle = cg; sg.beginPath(); sg.arc(128,128,127,0,7); sg.fill();
   const sweepPivot = new T.Group(); sweepPivot.rotation.x = -Math.PI/2; sweepPivot.position.z = -DISC; tilt.add(sweepPivot);
   const sweep = new T.Mesh(new T.CircleGeometry(DISC*1.0, 64), new T.MeshBasicMaterial({map:tex(sc), transparent:true, depthWrite:false}));
   sweepPivot.add(sweep);
-  const hub = new T.Mesh(new T.CylinderGeometry(.035,.035,.1,16), lam('#0fbf6c'));
+  const hub = new T.Mesh(new T.CylinderGeometry(.035,.035,.1,16), lam(GREEN));
   tilt.add(hub);
   // béquilles de papier
   const props = [-1,1].map(s => { const m = new T.Mesh(new T.BoxGeometry(.5,.02,1), lam('#f4f3f8')); m.castShadow = true; m.userData.x = s*DISC*.5; root.add(m); return m; });
@@ -336,11 +341,11 @@ function cardTexture(e, k){
   const th = e.themes[k], c = makeCanvas(1200, 320), g = c.getContext('2d');
   g.fillStyle = '#ffffff'; g.fillRect(0,0,1200,320); grain(g, 1200, 320, 800, .03);
   g.fillStyle = VIOLET; g.fillRect(0,0,1200,7);
-  g.font = `400 150px ${SERIF}`; g.textAlign = 'left'; g.fillText(String(k+1).padStart(2,'0'), 44, 205);
+  g.font = `600 124px ${SANS}`; g.letterSpacing = '-6px'; g.textAlign = 'left'; g.fillText(String(k+1).padStart(2,'0'), 44, 205); g.letterSpacing = '0px';
   g.fillStyle = 'rgba(26,16,64,.2)'; g.fillRect(228, 58, 1, 214);
   g.fillStyle = INK;
-  let size = 58; g.font = `700 ${size}px ${SANS}`;
-  while (size > 40 && g.measureText(th.t).width > 900*2) { size -= 4; g.font = `700 ${size}px ${SANS}`; }
+  let size = 58; g.font = `600 ${size}px ${SANS}`;
+  while (size > 40 && g.measureText(th.t).width > 900*2) { size -= 4; g.font = `600 ${size}px ${SANS}`; }
   const one = g.measureText(th.t).width <= 900;
   let y = wrap(g, th.t, 268, one ? 126 : 100, 900, size*1.06, 2);
   if (th.k){ g.font = `600 25px ${SANS}`; g.letterSpacing = '3px'; g.fillStyle = VIOLET; wrap(g, th.k.toUpperCase(), 270, Math.max(y+10, 232), 900, 34, one ? 2 : 1); g.letterSpacing = '0px'; }
@@ -362,17 +367,21 @@ function buildStairs(i){
     card.castShadow = card.receiveShadow = true; card.userData.theme = k; hinge.add(card);
     steps.push({block, hinge, card, k, lift:0});
   }
-  // le millésime, dressé au sommet
-  const yc = makeCanvas(1024, 400), yg = yc.getContext('2d');
-  yg.font = `400 440px ${SERIF}`; yg.textAlign = 'center'; yg.textBaseline = 'alphabetic';
-  yg.lineJoin = 'round'; yg.lineWidth = 22; yg.strokeStyle = '#ffffff'; yg.strokeText(e.year, 512, 350); yg.fillStyle = VIOLET; yg.fillText(e.year, 512, 350);
+  // au sommet : une photo de la charte, le millésime par-dessus
+  const yc = makeCanvas(1200, 500), yg = yc.getContext('2d'), ph = photos.get(i);
+  yg.fillStyle = DEEP; yg.fillRect(0,0,1200,500);
+  if (ph){ const sc = Math.max(1200/ph.width, 500/ph.height), w = ph.width*sc, h = ph.height*sc; yg.imageSmoothingQuality = 'high'; yg.drawImage(ph, (1200-w)/2, (500-h)/2, w, h); }
+  const og = yg.createLinearGradient(0,0,1200,500); og.addColorStop(0,'rgba(37,15,107,.92)'); og.addColorStop(.5,'rgba(69,29,199,.55)'); og.addColorStop(1,'rgba(69,29,199,.08)');
+  yg.fillStyle = og; yg.fillRect(0,0,1200,500);
+  yg.fillStyle = '#ffffff'; yg.font = `600 300px ${SANS}`; yg.letterSpacing = '-14px'; yg.fillText(e.year, 50, 372); yg.letterSpacing = '0px';
+  yg.fillStyle = GREEN; yg.fillRect(62, 420, 150, 10);
+  yg.fillStyle = '#ffffff'; yg.font = `600 24px ${SANS}`; yg.letterSpacing = '5px'; yg.fillText('RADAR DU RSSI', 240, 434); yg.letterSpacing = '0px';
   const ymap = tex(yc); maps.push(ymap);
   const yh = new T.Group(); yh.position.z = STAIR_Z0 - n*STEP_D; root.add(yh);
-  const ygeo = new T.PlaneGeometry(3.3, 1.29); ygeo.rotateX(-Math.PI/2); ygeo.translate(0, .012, -.645);
-  const ymat = new T.MeshStandardMaterial({map:ymap, alphaTest:.5, side:T.DoubleSide, roughness:.8});
-  const ysign = new T.Mesh(ygeo, ymat); ysign.castShadow = true;
-  ysign.customDepthMaterial = new T.MeshDepthMaterial({depthPacking:T.RGBADepthPacking, map:ymap, alphaTest:.5});
-  yh.add(ysign);
+  const ygeo = new T.BoxGeometry(CARD_W, .03, 1.56); ygeo.translate(0, .015, -.78);
+  const yside = lam('#ffffff');
+  const ysign = new T.Mesh(ygeo, [yside, yside, new T.MeshStandardMaterial({map:ymap, roughness:.7}), lam('#f1f0f6'), yside, yside]);
+  ysign.castShadow = true; yh.add(ysign);
   const yblock = new T.Mesh(new T.BoxGeometry(CARD_W, 1, .12), [blockMat,blockMat,blockMat,blockMat,riserMat,blockMat]);
   yblock.position.z = STAIR_Z0 - n*STEP_D - .06; yblock.castShadow = true; root.add(yblock);
   function set(o, t, sel){
@@ -455,7 +464,7 @@ function layout(p, i, t){
 /* ---------- interface ---------- */
 const ticks = $('ticks'), years = $('years');
 ED.forEach(e => { ticks.appendChild(document.createElement('i')); const sp = document.createElement('span'); sp.textContent = "’"+e.year.slice(2); years.appendChild(sp); });
-$('scrub').max = N-1;
+$('scrub').max = N-1; $('span').textContent = `LE RADAR DU RSSI · ${ED[0].year}–${ED[N-1].year}`;
 function showLine(){
   const e = ED[shown], th = selected >= 0 ? e.themes[selected] : null;
   $('lineLabel').textContent = th ? `THÈME ${String(selected+1).padStart(2,'0')} · ${e.year}` : 'LE SIGNAL DE L’ANNÉE';
@@ -556,7 +565,7 @@ function frame(now){
 }
 
 async function start(){
-  await Promise.all([document.fonts.load('400 60px "Instrument Serif"'), document.fonts.load('700 40px "Instrument Sans"'), document.fonts.load('600 20px "Instrument Sans"'), document.fonts.load('500 20px "Instrument Sans"'), document.fonts.ready, ...ED.map((_,i) => loadImage(i))]).catch(()=>{});
+  await Promise.all([document.fonts.load('600 60px Inter'), document.fonts.load('500 20px Inter'), document.fonts.load('700 20px Inter'), document.fonts.ready, ...ED.map((_,i) => loadImage(i)), ...ED.map((_,i) => loadPhoto(i))]).catch(()=>{});
   showEdition(0);
   if (!renderer) return;
   edition(0); if (N > 1) edition(1);
