@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Cyber Book</title>
+<meta name="description" content="Seize éditions du radar du RSSI, de 2011 à 2026, en livre à feuilleter.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : un livre relié posé sur une étagère lilas. Une édition par double page : à gauche la planche du radar, à droite les cadrans cliquables.
+   Un seul univers visuel, clair, assumé dans les deux thèmes du système. */
+:root{
+  color-scheme:light;
+  --shelf:#e6defc; --shelf2:#cbbcf7; --edge:#a891f0;
+  --cover:#250f6b; --paper:#fffefb; --paper2:#f4f0ff; --ink:#1a0d4a; --soft:#4a4270; --muted:#6f6890; --rule:rgba(37,15,107,.16);
+  --violet:#451dc7; --lilac:#b9a6ff; --neon:#04f06a; --deep-green:#0a8a4e;
+  --display:"Poppins","Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+[hidden]{display:none!important}
+body{background:linear-gradient(180deg,var(--shelf) 0,var(--shelf) 72%,var(--shelf2) 100%);color:var(--ink);font-family:var(--display);font-weight:400;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+button{font-family:inherit}
+button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--violet);outline-offset:2px}
+
+.top{max-width:84rem;margin:0 auto;padding-block:clamp(.9rem,2.4vh,1.6rem) .6rem;display:flex;justify-content:space-between;align-items:flex-end;gap:.6rem 1.5rem;flex-wrap:wrap}
+.top .eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.top h1{font-weight:600;font-size:clamp(1.5rem,3vw,2.2rem);letter-spacing:-.04em;line-height:1;margin:.25rem 0 0}
+.top h1 span{color:var(--violet)}
+.top p{margin:0;font-size:.85rem;color:var(--soft);max-width:36rem}
+
+.desk{max-width:84rem;margin:0 auto;display:flex;flex-direction:column;align-items:center}
+.book{position:relative;width:min(100%,calc((100svh - 11.5rem) * 1.62));min-width:0;container-type:inline-size;padding-right:3.4cqw}
+.spread{aspect-ratio:1.56;background:var(--cover);border-radius:.6cqw;padding:1cqw 1.3cqw 1.1cqw;box-shadow:0 2.6cqw 2.4cqw -1.6cqw rgba(26,13,74,.6),inset 0 0 0 .25cqw rgba(255,255,255,.06)}
+.pages{position:relative;height:100%;user-select:none;-webkit-user-select:none;touch-action:pan-y;
+  box-shadow:.25cqw 0 0 #ebe6f6,.5cqw 0 0 #d6cfec,-.25cqw 0 0 #ebe6f6,-.5cqw 0 0 #d6cfec}
+.pg{position:absolute;top:0;bottom:0;width:50%;background:var(--paper);color:var(--ink);padding:2.4cqw 2.8cqw 2.2cqw;font-size:1.2cqw;line-height:1.4;overflow:hidden;display:flex;flex-direction:column}
+.pg.l{left:0;box-shadow:inset -2.6cqw 0 2.4cqw -1.8cqw rgba(26,13,74,.28)}
+.pg.r{right:0;box-shadow:inset 2.6cqw 0 2.4cqw -1.8cqw rgba(26,13,74,.28)}
+.folio{position:absolute;bottom:1.1cqw;font-family:var(--mono);font-size:.72em;color:var(--muted)}
+.pg.l .folio{left:2.8cqw}.pg.r .folio{right:2.8cqw}
+.plate{font-family:var(--mono);font-size:.7em;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;gap:1em}
+.flag{color:#9a5b00;letter-spacing:.08em}
+
+/* pli */
+.fold{position:absolute;left:50%;top:0;width:50%;height:100%;z-index:3;transform-origin:0 0;pointer-events:none}
+.fold.mir{transform:scaleX(-1)}
+.fold.mir .pg{transform:scaleX(-1)}
+.face{position:absolute;left:0;top:0;width:100%;height:100%;transform-origin:0 0}
+.face>.pg{width:100%;left:0;right:auto}
+.flap{position:absolute;inset:0;filter:drop-shadow(0 0 1.3cqw rgba(26,13,74,.5))}
+.grad{position:absolute}
+
+/* planche */
+.radar{display:block;width:100%;height:auto;margin-top:.4em;flex:none}
+.radar .dot{cursor:pointer}
+.radar text{font-family:var(--display)}
+.under{display:flex;align-items:flex-end;justify-content:space-between;gap:1em;margin-top:auto;padding-bottom:1.2em}
+.big{font-weight:700;font-size:5.4em;letter-spacing:-.065em;line-height:.8;color:var(--violet)}
+.legend{display:grid;gap:.35em;font-size:.74em;color:var(--soft);justify-items:start}
+.legend span{display:flex;align-items:center;gap:.5em}
+.legend i{width:.85em;height:.85em;border-radius:50%;display:inline-block;background:var(--violet)}
+.legend i.n{background:#fff;border:.22em solid var(--neon)}
+.legend i.g{background:#c9c3dd}
+
+/* texte */
+.pg h2{font-weight:600;font-size:1.62em;line-height:1.08;letter-spacing:-.03em;margin:.45em 0 .3em;color:var(--cover);text-wrap:balance}
+.sig{font-size:.88em;line-height:1.45;margin:0 0 .7em;color:var(--soft);font-weight:300}
+.stats{display:flex;flex-wrap:wrap;gap:.3em 1.2em;font-family:var(--mono);font-size:.7em;color:var(--muted);margin:0 0 .6em;padding-bottom:.6em;border-bottom:1px solid var(--rule)}
+.stats b{font-family:var(--display);font-weight:600;font-size:1.25em;color:var(--ink)}
+.stats .new b{color:var(--deep-green)}
+.themes{flex:1;min-height:0;overflow:auto;scrollbar-width:thin;margin-right:-1em;padding-right:1em}
+.th{display:grid;grid-template-columns:.75em minmax(0,1fr) auto;align-items:center;gap:.7em;width:100%;text-align:left;font:500 .98em var(--display);color:var(--ink);background:none;border:0;border-top:1px solid var(--rule);padding:.5em 0;cursor:pointer}
+.th:first-child{border-top:0}
+.th i{width:.75em;height:.75em;border-radius:2px}
+.th span{font-family:var(--mono);font-weight:400;font-size:.68em;color:var(--muted);white-space:nowrap}
+.th:hover{color:var(--violet)}
+.th[aria-expanded="true"]{font-weight:600;color:var(--violet)}
+.ring{display:grid;grid-template-columns:5.6em minmax(0,1fr);gap:.2em .6em;margin:.1em 0 .55em}
+.ring small{font-family:var(--mono);font-size:.62em;letter-spacing:.12em;color:var(--muted);padding-top:.5em}
+.chips{display:flex;flex-wrap:wrap;gap:.28em}
+.chip{font:400 .76em var(--display);color:var(--ink);background:var(--paper2);border:1px solid transparent;border-radius:.3em;padding:.16em .45em;cursor:pointer;text-align:left;line-height:1.3}
+.chip:hover{border-color:var(--lilac)}
+.chip.new{background:#e2fbee;box-shadow:inset .22em 0 0 var(--neon)}
+.chip[aria-pressed="true"]{background:var(--violet);color:#fff;box-shadow:none}
+.card{flex:none;margin-top:.6em;border-top:2px solid var(--violet);padding-top:.55em;min-height:5.6em}
+.card .k{font-weight:600;font-size:1.05em;line-height:1.15}
+.card .m{font-size:.78em;color:var(--soft);margin:.15em 0 .45em}
+.card .hint{font-size:.78em;color:var(--muted);font-weight:300}
+.strip{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:.18em;align-items:end;height:2.3em}
+.strip i{display:block;border-radius:.15em;background:var(--rule)}
+.strip i.on{background:var(--violet)}
+.strip i.cur{background:var(--neon)}
+.years{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:.18em;font-family:var(--mono);font-size:.5em;color:var(--muted);margin-top:.25em;text-align:center}
+.card .life{font-size:.74em;color:var(--soft);margin-top:.35em}
+
+/* ouverture */
+.title-pg h2{font-size:3.6em;letter-spacing:-.06em;line-height:.9;margin:.5em 0 .25em}
+.title-pg .sig{font-size:1em;max-width:30ch}
+.figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1em;margin:1.2em 0 0;padding-top:1em;border-top:1px solid var(--rule)}
+.figs b{display:block;font-weight:600;font-size:2.2em;letter-spacing:-.04em;line-height:1;color:var(--violet);font-variant-numeric:tabular-nums}
+.figs span{font-size:.74em;color:var(--soft)}
+.hist{display:block;width:100%;height:auto;margin-top:auto;margin-bottom:1.4em}
+.toc{list-style:none;margin:.6em 0 0;padding:0;display:grid;flex:1;min-height:0;overflow:auto}
+.toc button{display:grid;grid-template-columns:3.2em minmax(0,1fr) auto;gap:.8em;align-items:baseline;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--rule);padding:.34em 0;cursor:pointer;color:var(--ink);font-size:.9em}
+.toc button:hover{color:var(--violet)}
+.toc b{font-weight:600;font-variant-numeric:tabular-nums}
+.toc em{font-style:normal;font-weight:300;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--soft)}
+.toc span{font-family:var(--mono);font-size:.72em;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* onglets et commandes */
+.tabs{position:absolute;right:0;top:3%;bottom:3%;width:3.4cqw;display:flex;flex-direction:column;gap:.25cqw}
+.tabs button{flex:1;font:500 max(.6rem,.95cqw) var(--display);color:var(--ink);background:#d9cdfd;border:0;border-radius:0 .4cqw .4cqw 0;padding:0;cursor:pointer;font-variant-numeric:tabular-nums;writing-mode:vertical-rl;transform:rotate(180deg)}
+.tabs button:hover{background:var(--lilac)}
+.tabs button[aria-pressed="true"]{background:var(--violet);color:#fff}
+.controls{display:flex;align-items:center;justify-content:center;gap:.6rem 1rem;flex-wrap:wrap;padding-block:1rem 1.4rem}
+.controls button{font:500 .82rem var(--display);color:var(--ink);background:#fff;border:1px solid var(--rule);border-radius:999px;padding:.45rem 1rem;cursor:pointer}
+.controls button:hover:not(:disabled){border-color:var(--violet);color:var(--violet)}
+.controls button:disabled{opacity:.4;cursor:default}
+.controls p{margin:0;font-family:var(--mono);font-size:.68rem;color:var(--muted);letter-spacing:.04em}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+
+/* téléphone : les deux pages l'une sous l'autre, onglets en ruban */
+@media (max-width:760px){
+  .book{width:100%;padding-right:0}
+  .spread{aspect-ratio:auto;padding:2.4cqw}
+  .pages{display:flex;flex-direction:column;gap:2.4cqw;box-shadow:none;touch-action:auto}
+  .pg{position:relative;width:100%;font-size:3.7cqw;padding:5cqw 5cqw 7cqw;box-shadow:none!important}
+  .pg.r{max-height:none}
+  .themes{overflow:visible}
+  .toc{overflow:visible}
+  .folio{bottom:2cqw}
+  .tabs{position:static;width:auto;flex-direction:row;overflow-x:auto;gap:.3rem;margin-top:.7rem;padding-bottom:.3rem}
+  .tabs button{flex:none;writing-mode:horizontal-tb;transform:none;border-radius:999px;padding:.35rem .7rem;font-size:.75rem}
+  .controls p{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <div class="eyebrow">Radar du RSSI · 2011 – 2026</div>
+    <h1>The Cyber <span>Book</span></h1>
+  </div>
+  <p>Une édition par double page. Cliquez un cadran pour voir ses mots-clés, puis un mot-clé pour suivre sa trajectoire. Tirez le coin d’une page pour la tourner.</p>
+</header>
+<main class="desk">
+  <div class="book">
+    <div class="spread"><div class="pages" id="pages" aria-live="polite"></div></div>
+    <nav class="tabs" id="tabs" aria-label="Aller à une édition"></nav>
+  </div>
+  <div class="controls">
+    <button id="prev">← Page précédente</button>
+    <p id="where"></p>
+    <button id="next">Page suivante →</button>
+  </div>
+</main>
+<p class="sr" id="say" role="status"></p>
+
+<script src="data.js"></script>
+<script>
+(() => {
+const NS = 'http://www.w3.org/2000/svg';
+const $ = s => document.querySelector(s);
+const S = (t, a = {}, p, txt) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; if (p) p.appendChild(e); return e; };
+const H = (t, a = {}, p, txt) => { const e = document.createElement(t); for (const k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; if (p) p.appendChild(e); return e; };
+const f = n => +n.toFixed(1), rad = d => d * Math.PI / 180;
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fmt = n => n.toLocaleString('fr-FR');
+
+const RAD = window.RADARS, SUB = window.SUBJECTS, YEARS = RAD.map(e => e.y);
+const INK = '#1a0d4a', DEEP = '#250f6b', VIOLET = '#451dc7', NEON = '#04f06a';
+/* Couleur de bande par famille de cadran, et couleur du texte posé dessus. */
+const COL = {idt: ['#2b1a78', '#fff'], pro: ['#451dc7', '#fff'], det: ['#a56bf5', '#fff'], rsk: ['#d2bcff', INK], cmp: ['#0a9d58', '#fff'], res: ['#04f06a', INK]};
+const DOT = {idt: '#2b1a78', pro: '#451dc7', det: '#8f4ff0', rsk: '#9a7ad8', cmp: '#0a8a4e', res: '#0a9d58'};
+const RING = ['Mature', 'Trending', 'Emerging'], RF = [.24, .43, .65, .93];
+/* Titres et signaux des éditions publiées sur riskinsight-wavestone.com et wavestone.com. */
+const INFO = {
+  2018: ['6C : six clés pour la cybersécurité en 2018', 'Après WannaCry et NotPetya, 2018 est l’année où se définissent les stratégies de cyber-résilience.'],
+  2019: ['Le RSSI au cœur de la révolution du SI', 'Agilité, cloud, API-fication : le SI fait sa révolution et oblige à revoir les fondamentaux, sur fond de pénurie de compétences.'],
+  2020: ['RSSI, changez de posture, pensez attaquant !', 'Le cycle d’investissement ouvert en 2017 par WannaCry et NotPetya s’achève : place à une stratégie fondée sur l’attaquant, sous contrainte de coûts.'],
+  2021: ['Entre nouveau monde et menaces persistantes', 'Le ransomware restera la menace majeure ; la transformation numérique à marche forcée devient une opportunité pour la cybersécurité.'],
+  2022: ['Quelles priorités pour 2022 ?', ''],
+  2023: ['Une année de transition vers un meilleur modèle de cybersécurité et de résilience', 'Un nouveau cycle stratégique 2023-2026 s’ouvre, après une réponse de plus en plus structurée au ransomware.'],
+  2024: ['Année d’adaptation, de collaboration et de transformation', 'Dix mouvements pour la période 2024-2027, des fondamentaux à adapter jusqu’à l’IA et au post-quantique.'],
+  2025: ['À quoi s’attendre en 2025 ?', '2025 marque un tournant stratégique : après des années d’investissements, les budgets sont sous pression.'],
+  2026: ['Top 30 des actions pour 2030', 'Accélérer la cybersécurité : vers une résilience numérique en temps réel.'],
+};
+
+/* ---------- préparation : angles des cadrans, positions, entrées et sorties ---------- */
+const cx = 500, cy = 470, R = 400;
+const P = (a, r) => [f(cx + r * Math.sin(rad(a))), f(cy - r * Math.cos(rad(a)))];
+const arc = (a0, a1, r) => `M${P(a0, r)}A${f(r)} ${f(r)} 0 ${Math.abs(a1 - a0) > 180 ? 1 : 0} ${a1 > a0 ? 1 : 0} ${P(a1, r)}`;
+const sec = (a0, a1, r0, r1) => { const L = Math.abs(a1 - a0) > 180 ? 1 : 0;
+  return `M${P(a0, r1)}A${f(r1)} ${f(r1)} 0 ${L} 1 ${P(a1, r1)}L${P(a1, r0)}A${f(r0)} ${f(r0)} 0 ${L} 0 ${P(a0, r0)}Z`; };
+const cv = document.createElement('canvas').getContext('2d');
+const mw = (s, wt) => { cv.font = `${wt} 10px Poppins, "Segoe UI", sans-serif`; return cv.measureText(s).width; };
+
+function cellPts(a0, a1, r0, r1, n) {
+  const span = a1 - a0, pad = Math.min(3, span / 8), depth = r1 - r0, len = rad(span) * (r0 + r1) / 2;
+  const rows = Math.max(1, Math.min(6, Math.round(Math.sqrt(n * depth / len))));
+  const rr = [...Array(rows)].map((_, i) => r0 + depth * (i + .5) / rows), tot = rr.reduce((s, x) => s + x, 0);
+  const out = []; let left = n;
+  rr.forEach((r, i) => { const k = i === rows - 1 ? left : Math.min(left, Math.round(n * r / tot)); left -= k;
+    for (let j = 0; j < k; j++) out.push([a0 + pad + (span - 2 * pad) * (j + .5) / k, r + (j % 2 ? 1 : -1) * depth / rows * .14]); });
+  return out;
+}
+RAD.forEach((e, ei) => {
+  const tot = e.kw.length, n = e.quads.length, MIN = 24, free = 266 - MIN * n; let a = -133;
+  e.q = e.quads.map(([k, name]) => { const c = e.kw.filter(x => x.f === k).length, w = MIN + free * c / tot, q = {k, name, a0: a, a1: a + w, n: c}; a += w; return q; });
+  e.q.forEach(q => [0, 1, 2].forEach(ri => { const ks = e.kw.filter(x => x.f === q.k && x.r === ri);
+    const pts = cellPts(q.a0, q.a1, R * RF[ri] + 10, R * RF[ri + 1] - 10, ks.length); ks.forEach((k, i) => { k.a = pts[i][0]; k.rr = pts[i][1]; }); }));
+  const prev = ei ? RAD[ei - 1] : null, prevT = new Set(prev ? prev.kw.map(k => k.t) : []), here = new Set(e.kw.map(k => k.t));
+  e.kw.forEach(k => { const s = k.t != null ? SUB[k.t] : null, ys = s ? Object.keys(s.y) : [e.y];
+    k.first = ys[0]; k.isNew = ei > 0 && ys[0] === e.y; k.back = ei > 0 && !k.isNew && !prevT.has(k.t); });
+  e.nNew = e.kw.filter(k => k.isNew).length;
+  e.nOut = prev ? [...prevT].filter(t => t != null && !here.has(t)).length : 0;
+  e.sel = {q: e.q.reduce((b, q) => q.n > b.n ? q : b).k, k: null};
+});
+
+/* ---------- pages ---------- */
+const N = RAD.length + 1;   // double page 0 = ouverture
+const label = i => i ? RAD[i - 1].y : 'Ouverture';
+
+function radarSVG(e) {
+  const svg = S('svg', {class: 'radar', viewBox: '40 26 920 760', role: 'img', 'aria-label': `Radar ${e.y} : ${e.kw.length} mots-clés répartis en ${e.q.length} cadrans.`});
+  S('path', {d: sec(-133, 133, R * RF[0], R * RF[3]), fill: '#f4f0ff'}, svg);
+  e.q.forEach((q, i) => {
+    const on = q.k === e.sel.q, [c, txt] = COL[q.k];
+    if (on) S('path', {d: sec(q.a0, q.a1, R * RF[0], R * RF[3]), fill: '#e8e0ff'}, svg);
+    S('path', {d: sec(q.a0 + .3, q.a1 - .3, R * .935, R * (on ? 1.03 : 1)), fill: c, opacity: on ? 1 : .85}, svg);
+    if (i) S('path', {d: `M${P(q.a0, R * RF[0])}L${P(q.a0, R * RF[3])}`, stroke: INK, 'stroke-opacity': .12, fill: 'none'}, svg);
+    const id = `a${e.y}${i}`, len = rad(q.a1 - q.a0) * R * 1.06, name = q.name.toUpperCase();
+    const fs = Math.min(17, (len - 10) / (mw(name, 600) / 10 * 1.05));
+    S('path', {id, d: arc(q.a0, q.a1, R * 1.065), fill: 'none'}, svg);
+    S('textPath', {href: '#' + id, startOffset: '50%', 'text-anchor': 'middle'}, S('text', {'font-size': f(fs), 'font-weight': 600, fill: on ? VIOLET : INK}, svg), name);
+  });
+  [RF[1], RF[2]].forEach(k => S('path', {d: arc(-133, 133, R * k), fill: 'none', stroke: INK, 'stroke-opacity': .3, 'stroke-dasharray': '3 6'}, svg));
+  RING.forEach((s, i) => { const p = P(137.5, R * (RF[i] + RF[i + 1]) / 2);
+    S('text', {x: p[0], y: p[1], transform: `rotate(43 ${p})`, 'text-anchor': 'middle', 'font-size': 13, 'letter-spacing': '.14em', fill: INK, opacity: .6}, svg, s.toUpperCase()); });
+  const draw = k => { const on = k.f === e.sel.q, [x, y] = P(k.a, k.rr), col = DOT[k.f];
+    const c = S('circle', {class: 'dot', cx: x, cy: y, r: on ? 8 : 5.5, fill: k.isNew ? '#fff' : (on ? col : '#c9c3dd'), stroke: k.isNew ? (on ? '#06c95a' : '#8fe8b6') : 'none', 'stroke-width': k.isNew ? (on ? 4 : 3) : 0}, svg);
+    S('title', {}, c, k.w);
+    c.addEventListener('click', ev => { ev.stopPropagation(); e.sel = {q: k.f, k: e.kw.indexOf(k)}; rerender(); }); };
+  e.kw.filter(k => k.f !== e.sel.q).forEach(draw);
+  e.kw.filter(k => k.f === e.sel.q).forEach(draw);
+  S('circle', {cx, cy, r: R * RF[0] - 6, fill: DEEP}, svg);
+  [.7, .45].forEach(k => S('circle', {cx, cy, r: (R * RF[0] - 6) * k, fill: 'none', stroke: '#fff', 'stroke-opacity': .16}, svg));
+  S('text', {x: cx, y: cy + 14, 'text-anchor': 'middle', 'font-size': 42, 'font-weight': 600, fill: '#fff', 'letter-spacing': '-.03em'}, svg, e.y);
+  S('text', {x: cx, y: cy + 40, 'text-anchor': 'middle', 'font-size': 11, 'letter-spacing': '.2em', fill: '#fff', opacity: .7}, svg, 'CISO RADAR');
+  if (e.sel.k != null) { const k = e.kw[e.sel.k], [x, y] = P(k.a, k.rr), left = k.a < 0, tx = x + (left ? -20 : 20);
+    S('circle', {cx: x, cy: y, r: 15, fill: 'none', stroke: VIOLET, 'stroke-width': 3}, svg);
+    S('text', {x: tx, y: y + 7, 'text-anchor': left ? 'end' : 'start', 'font-size': 21, 'font-weight': 600, fill: INK, stroke: '#fffefb', 'stroke-width': 6, 'paint-order': 'stroke'}, svg, k.w); }
+  return svg;
+}
+
+function opening(side) {
+  const p = H('div', {class: 'pg ' + side});
+  if (side === 'l') {
+    p.classList.add('title-pg');
+    H('div', {class: 'plate'}, p, 'Radar du RSSI · Wavestone');
+    H('h2', {}, p, 'The Cyber Book');
+    H('p', {class: 'sig'}, p, 'Seize éditions du radar du RSSI, de 2011 à 2026. Chaque double page rassemble la planche d’une année et les mots-clés de ses cadrans.');
+    const figs = H('div', {class: 'figs'}, p), total = RAD.reduce((s, e) => s + e.kw.length, 0);
+    [[RAD.length, 'éditions'], [fmt(total), 'mots-clés'], [fmt(SUB.length), 'sujets suivis d’une édition à l’autre']].forEach(([b, s]) => { const d = H('div', {}, figs); H('b', {}, d, b); H('span', {}, d, s); });
+    const max = Math.max(...RAD.map(e => e.kw.length)), svg = S('svg', {class: 'hist', viewBox: '0 0 480 150', role: 'img', 'aria-label': 'Nombre de mots-clés par édition, de 2011 à 2026.'}, p), bw = 480 / RAD.length;
+    RAD.forEach((e, i) => { const h = 112 * e.kw.length / max, x = i * bw + 3, nn = 112 * e.nNew / max;
+      S('rect', {x: f(x), y: f(122 - h), width: f(bw - 6), height: f(h), rx: 2, fill: '#d9cdfd'}, svg);
+      if (i) S('rect', {x: f(x), y: f(122 - nn), width: f(bw - 6), height: f(nn), rx: 2, fill: VIOLET}, svg);
+      S('text', {x: f(x + (bw - 6) / 2), y: 140, 'text-anchor': 'middle', 'font-size': 10.5, fill: '#6f6890', 'font-family': 'IBM Plex Mono, monospace'}, svg, "’" + e.y.slice(2));
+      S('text', {x: f(x + (bw - 6) / 2), y: f(117 - h), 'text-anchor': 'middle', 'font-size': 10, fill: INK, 'font-weight': 500}, svg, e.kw.length); });
+    const lg = H('div', {class: 'legend', style: 'grid-auto-flow:column;justify-content:start;gap:1.4em;margin:-.8em 0 1.6em'}, p);
+    [['g', 'mots-clés de l’édition'], ['', 'dont nouveaux sujets']].forEach(([c, s]) => { const sp = H('span', {}, lg); H('i', {class: c, style: c ? 'background:#d9cdfd' : ''}, sp); sp.append(s); });
+    H('div', {class: 'folio'}, p, '1');
+  } else {
+    H('div', {class: 'plate'}, p, 'Sommaire');
+    H('h2', {}, p, 'Seize radars');
+    const ol = H('ol', {class: 'toc'}, p);
+    RAD.forEach((e, i) => { const b = H('button', {}, H('li', {}, ol)); H('b', {}, b, e.y); H('em', {}, b, INFO[e.y] ? INFO[e.y][0] : e.name); H('span', {}, b, `${e.kw.length} · p. ${2 * i + 4}`);
+      b.onclick = () => go(i + 1); });
+    H('div', {class: 'folio'}, p, '3');
+  }
+  return p;
+}
+
+function page(i, side) {
+  if (!i) return opening(side);
+  const e = RAD[i - 1], p = H('div', {class: 'pg ' + side});
+  if (side === 'l') {
+    const pl = H('div', {class: 'plate'}, p); H('span', {}, pl, `Planche ${i} · le radar ${e.y}`);
+    if (e.check) H('span', {class: 'flag', title: 'Catégories ou anneaux relevés sans visuel haute définition : positions à contrôler.'}, pl, '◇ Positions à vérifier');
+    p.append(radarSVG(e));
+    const u = H('div', {class: 'under'}, p); H('div', {class: 'big'}, u, e.y);
+    const lg = H('div', {class: 'legend'}, u);
+    [['', 'mot-clé du cadran ouvert'], ['n', 'nouveau sujet cette édition'], ['g', 'autres cadrans']].forEach(([c, s], j) => { if (j === 1 && i === 1) return; const sp = H('span', {}, lg); H('i', {class: c}, sp); sp.append(s); });
+    H('div', {class: 'folio'}, p, 2 * i + 2);
+    return p;
+  }
+  const info = INFO[e.y];
+  H('div', {class: 'plate'}, p, e.name);
+  H('h2', {}, p, info ? info[0] : `Le radar ${e.y}`);
+  if (info && info[1]) H('p', {class: 'sig'}, p, info[1]);
+  const st = H('div', {class: 'stats'}, p);
+  const stat = (b, s, c) => { const d = H('span', {class: c || ''}, st); H('b', {}, d, b); d.append(' ' + s); };
+  stat(e.kw.length, 'mots-clés'); stat(e.q.length, 'cadrans');
+  if (i > 1) { stat(e.nNew, 'nouveaux sujets', 'new'); stat(e.nOut, `sortis depuis ${RAD[i - 2].y}`); }
+  const th = H('div', {class: 'themes'}, p);
+  e.q.forEach(q => { const on = q.k === e.sel.q, b = H('button', {class: 'th', 'aria-expanded': on}, th);
+    H('i', {style: `background:${COL[q.k][0]}`}, b); b.append(q.name); const nn = e.kw.filter(k => k.f === q.k && k.isNew).length;
+    H('span', {}, b, `${q.n} mots-clés${i > 1 && nn ? ` · ${nn} nouv.` : ''}`);
+    b.onclick = () => { e.sel = {q: q.k, k: null}; rerender(); };
+    if (!on) return;
+    [0, 1, 2].forEach(ri => { const ks = e.kw.filter(k => k.f === q.k && k.r === ri); if (!ks.length) return;
+      const row = H('div', {class: 'ring'}, th); H('small', {}, row, RING[ri].toUpperCase()); const box = H('div', {class: 'chips'}, row);
+      ks.forEach(k => { const idx = e.kw.indexOf(k), c = H('button', {class: 'chip' + (k.isNew ? ' new' : ''), 'aria-pressed': idx === e.sel.k, title: k.m || k.w}, box, k.w);
+        c.onclick = () => { e.sel = {q: q.k, k: e.sel.k === idx ? null : idx}; rerender(); }; }); });
+  });
+  const card = H('div', {class: 'card'}, p);
+  if (e.sel.k == null) H('p', {class: 'hint', style: 'margin:0'}, card, 'Cliquez un mot-clé, ici ou sur la planche, pour voir sa trajectoire sur les seize éditions.');
+  else {
+    const k = e.kw[e.sel.k], s = k.t != null ? SUB[k.t] : null;
+    H('div', {class: 'k'}, card, k.w);
+    H('div', {class: 'm'}, card, (k.m ? k.m + ' · ' : '') + `${e.q.find(q => q.k === k.f).name}, ${RING[k.r].toLowerCase()}`);
+    const strip = H('div', {class: 'strip', 'aria-hidden': 'true'}, card), ys = H('div', {class: 'years', 'aria-hidden': 'true'}, card);
+    YEARS.forEach(y => { const v = s ? s.y[y] : (y === e.y ? k.r : undefined), here = v !== undefined;
+      H('i', {class: here ? (y === e.y ? 'cur' : 'on') : '', style: `height:${here && v != null ? [100, 66, 36][v] : (here ? 50 : 8)}%`, title: here ? `${y} : ${v != null ? RING[v] : '?'}` : `${y} : absent`}, strip);
+      H('span', {}, ys, "’" + y.slice(2)); });
+    const yrs = s ? Object.keys(s.y) : [e.y], label = s && s.n !== k.w ? ` Suivi sous le nom « ${s.n} ».` : '';
+    H('div', {class: 'life'}, card, `${yrs.length === 1 ? 'Présent sur cette seule édition.' : `Présent sur ${yrs.length} éditions, de ${yrs[0]} à ${yrs[yrs.length - 1]}.`}${k.isNew ? ' Nouveau cette année.' : k.back ? ' De retour après une absence.' : ''}${label} Barre haute = mature, basse = emerging.`);
+  }
+  H('div', {class: 'folio'}, p, 2 * i + 3);
+  return p;
+}
+const left = i => page(i, 'l'), right = i => page(i, 'r');
+
+/* ---------- navigation ---------- */
+const pages = $('#pages'), tabs = $('#tabs'), prevB = $('#prev'), nextB = $('#next');
+let cur = 0, busy = false;
+const wide = () => !matchMedia('(max-width:760px)').matches;
+function show() {
+  const th = pages.querySelector('.themes'), keep = th ? th.scrollTop : 0;
+  pages.replaceChildren(left(cur), right(cur));
+  [...tabs.children].forEach((b, i) => b.setAttribute('aria-pressed', i === cur));
+  prevB.disabled = cur === 0; nextB.disabled = cur === N - 1;
+  $('#where').textContent = cur ? `Édition ${cur} sur ${N - 1}` : 'Ouverture';
+  return keep;
+}
+function rerender() { const th = pages.querySelector('.themes'), keep = th ? th.scrollTop : 0; show(); const t2 = pages.querySelector('.themes'); if (t2) t2.scrollTop = keep; }
+function arrive(j) { cur = j; show(); $('#say').textContent = j ? `Radar ${RAD[j - 1].y}` : 'Ouverture du livre';
+  try { history.replaceState(null, '', j ? '#r' + RAD[j - 1].y : location.pathname); } catch (_) {} }
+
+  /* Pli de page : la feuille se replie le long de la médiatrice entre le point saisi (C) et sa position courante (P).
+     Repère local : x = 0 à la reliure, x = w au bord extérieur. Pour tourner en arrière, tout le pli est dessiné en miroir. */
+  let flip = null, press = null, swallow = false;
+  const cut = (pts, M, n, s) => { const out = [], d = q => s * ((q[0] - M[0]) * n[0] + (q[1] - M[1]) * n[1]);
+    pts.forEach((a, i) => { const b = pts[(i + 1) % pts.length], da = d(a), db = d(b);
+      if (da >= 0) out.push(a);
+      if ((da >= 0) !== (db >= 0)) { const t = da / (da - db); out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); } });
+    return out; };
+  const clip = pts => pts.length > 2 ? `polygon(${pts.map(q => `${f(q[0])}px ${f(q[1])}px`).join(',')})` : 'polygon(0 0,0 0,0 0)';
+  const face = (pg, parent) => { const d = H('div', {class: 'face'}, parent); d.append(pg); return d; };
+  const grad = (el, M, n, D, css) => { el.style.cssText = `left:${f(M[0] - D)}px;top:${f(M[1] - D)}px;width:${2 * D}px;height:${2 * D}px;transform:rotate(${Math.atan2(n[1], n[0])}rad);background:linear-gradient(90deg,${css})`; };
+  function begin(j, cy) {
+    const fwd = j > cur, w = pages.clientWidth / 2, h = pages.clientHeight, fold = H('div', {class: 'fold' + (fwd ? '' : ' mir')});
+    const front = face(fwd ? right(cur) : left(cur), fold), reveal = H('div', {class: 'face'}, fold), rg = H('i', {class: 'grad'}, reveal);
+    const back = face(fwd ? left(j) : right(j), H('div', {class: 'flap'}, fold)), bg = H('i', {class: 'grad'}, back);
+    pages.replaceChildren(fwd ? left(cur) : left(j), fwd ? right(j) : right(cur), fold);
+    busy = true; flip = {j, fwd, w, h, C: [w, cy], P: [w, cy], front, reveal, rg, back, bg};
+  }
+  function fold(P) {
+    const F = flip, {w, h, C} = F;
+    for (let k = 0; k < 3; k++) [[0, 0], [0, h]].forEach(s => {   // la feuille reste attachée à la reliure
+      const r = Math.hypot(C[0] - s[0], C[1] - s[1]), d = Math.hypot(P[0] - s[0], P[1] - s[1]);
+      if (d > r) P = [s[0] + (P[0] - s[0]) * r / d, s[1] + (P[1] - s[1]) * r / d]; });
+    if (Math.hypot(C[0] - P[0], C[1] - P[1]) < 1) P = [C[0] - 1, C[1]];
+    F.P = P;
+    const len = Math.hypot(C[0] - P[0], C[1] - P[1]), n = [(C[0] - P[0]) / len, (C[1] - P[1]) / len], M = [(C[0] + P[0]) / 2, (C[1] + P[1]) / 2], fw = len / 2;
+    const rect = [[0, 0], [w, 0], [w, h], [0, h]], lifted = cut(rect, M, n, 1);
+    F.front.style.clipPath = clip(cut(rect, M, n, -1));
+    F.reveal.style.clipPath = clip(lifted);
+    F.back.style.clipPath = clip(lifted.map(q => [w - q[0], q[1]]));
+    const a = 1 - 2 * n[0] * n[0], b = -2 * n[0] * n[1], d = 1 - 2 * n[1] * n[1], k0 = 2 * ((w - M[0]) * n[0] - M[1] * n[1]);
+    F.back.style.transform = `matrix(${-a},${-b},${b},${d},${w - k0 * n[0]},${-k0 * n[1]})`;
+    const D = 2 * (w + h), dk = 'rgba(26,13,74,';
+    grad(F.rg, M, n, D, `transparent 50%,${dk}.5) 50%,${dk}0) calc(50% + ${f(Math.min(fw, w * .45))}px)`);
+    grad(F.bg, [w - M[0], M[1]], [-n[0], n[1]], D, `transparent 50%,${dk}.34) 50%,rgba(255,255,255,.62) calc(50% + ${f(fw * .12)}px),rgba(255,255,255,.1) calc(50% + ${f(fw * .55)}px),${dk}.16) calc(50% + ${f(fw)}px),${dk}.16) 100%`);
+  }
+  const finish = done => { const j = flip.j; flip = null; busy = false; done ? arrive(j) : show(); };
+  function settle(done) {
+    const F = flip, from = F.P.slice(), to = done ? [-F.w, F.C[1]] : F.C.slice(), t0 = performance.now();
+    const dur = 240 + 420 * Math.min(1, Math.hypot(to[0] - from[0], to[1] - from[1]) / (2 * F.w));
+    requestAnimationFrame(function step(t) { const k = Math.min(1, Math.max(0, (t - t0) / dur)), e = 1 - Math.pow(1 - k, 3);
+      fold([from[0] + (to[0] - from[0]) * e, from[1] + (to[1] - from[1]) * e]);
+      k < 1 ? requestAnimationFrame(step) : finish(done); });
+  }
+  function go(j) {
+    if (busy || j === cur || j < 0 || j >= N) return;
+    if (reduced) { arrive(j); return; }
+    if (!wide()) { busy = true; pages.animate([{opacity: 1}, {opacity: 0}], {duration: 160}).finished.then(() => {
+      arrive(j); $('.book').scrollIntoView({block: 'start', behavior: 'smooth'}); busy = false; pages.animate([{opacity: 0}, {opacity: 1}], {duration: 220}); }); return; }
+    begin(j, pages.clientHeight); const F = flip, t0 = performance.now();
+    requestAnimationFrame(function step(t) { const k = Math.min(1, Math.max(0, (t - t0) / 1000)), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(2 - 2 * k, 3) / 2;
+      fold([F.w - 2 * F.w * e, F.h - Math.sin(Math.PI * e) * F.h * .22]);
+      k < 1 ? requestAnimationFrame(step) : finish(true); });
+  }
+  const local = (x, y) => { const r = pages.getBoundingClientRect(); return [x - r.left - r.width / 2, y - r.top]; };
+  pages.addEventListener('pointerdown', e => {
+    swallow = false; if (busy || e.button || !wide()) return;
+    const [x] = local(e.clientX, e.clientY), w = pages.clientWidth / 2, side = x > 0 ? 1 : -1, j = cur + side;
+    if (Math.abs(x) < w * .4 || j < 0 || j >= N) return;
+    press = {x: e.clientX, y: e.clientY, side, j, id: e.pointerId};
+  });
+  pages.addEventListener('pointermove', e => {
+    if (!press) return;
+    if (!flip) {
+      if ((e.clientX - press.x) * press.side > -8) { if (Math.abs(e.clientY - press.y) > 40) press = null; return; }
+      const [x, y] = local(press.x, press.y);
+      begin(press.j, Math.max(0, Math.min(pages.clientHeight, y)));
+      flip.off = flip.w - Math.abs(x); flip.drag = true; swallow = true;
+      try { pages.setPointerCapture(press.id); } catch (_) {}
+    }
+    if (flip && flip.drag) { const [x, y] = local(e.clientX, e.clientY), lx = x * press.side + flip.off;
+      flip.vx = lx - (flip.lx == null ? lx : flip.lx); flip.lx = lx; fold([lx, y]); e.preventDefault(); }
+  });
+  const release = () => { if (flip && flip.drag) { flip.drag = false; settle(flip.vx < -5 || (flip.P[0] < flip.w * .3 && !(flip.vx > 5))); } press = null; };
+  pages.addEventListener('pointerup', release); pages.addEventListener('pointercancel', release);
+  pages.addEventListener('click', e => { if (swallow) { swallow = false; e.stopPropagation(); e.preventDefault(); } }, true);
+
+[...Array(N)].forEach((_, i) => { const b = H('button', {'aria-label': i ? 'Radar ' + RAD[i - 1].y : 'Ouverture'}, tabs, i ? RAD[i - 1].y : '✦'); b.onclick = () => go(i); });
+prevB.onclick = () => go(cur - 1); nextB.onclick = () => go(cur + 1);
+addEventListener('keydown', e => { if (e.target.closest && e.target.closest('input,textarea')) return;
+  if (e.key === 'ArrowRight') go(cur + 1); else if (e.key === 'ArrowLeft') go(cur - 1); });
+const fromHash = () => { const m = /^#r(\d{4})$/.exec(location.hash), i = m ? YEARS.indexOf(m[1]) : -1; return i < 0 ? 0 : i + 1; };
+addEventListener('hashchange', () => { const j = fromHash(); if (j !== cur) go(j); });
+let lastWide = wide(); addEventListener('resize', () => { if (wide() !== lastWide && !busy) { lastWide = wide(); show(); } });
+cur = fromHash();
+const start = () => show();
+const fonts = document.fonts && document.fonts.load ? Promise.all(['400', '600', '700'].map(w => document.fonts.load(w + ' 10px Poppins'))) : Promise.resolve();
+show(); Promise.race([fonts, new Promise(r => setTimeout(r, 2500))]).catch(() => {}).then(start);
+})();
+</script>
+</body>
+</html>
