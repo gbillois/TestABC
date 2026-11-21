@@ -92,6 +92,45 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .chips button[data-s="2"]::before{border-color:#0a8a4e;background:#0a8a4e}
 .qhit{cursor:pointer}
 
+/* 7 Livre */
+.shelf{background:linear-gradient(#ece6ff 0,#e0d6ff 88%,#b9a6ff 88%,#a38cf2 100%)}
+.bookwrap{overflow-x:auto;padding:1.6rem 1rem 0}
+.book{position:relative;width:min(100%,60rem);min-width:640px;margin:0 auto;padding-right:2.7rem;container-type:inline-size}
+.spread{aspect-ratio:1.5;background:var(--deep);border-radius:.5cqw .5cqw 0 0;padding:1cqw 1.4cqw 1.1cqw;box-shadow:0 2.4cqw 2cqw -1.4cqw rgba(26,13,74,.6)}
+.pages{position:relative;height:100%;perspective:210cqw;perspective-origin:50% 40%;box-shadow:.25cqw 0 0 #ebe6f6,.5cqw 0 0 #d6cfec,-.25cqw 0 0 #ebe6f6,-.5cqw 0 0 #d6cfec}
+.pg{position:absolute;top:0;bottom:0;width:50%;background:#fffefb;color:var(--ink);padding:3cqw 3.4cqw;font-size:1.42cqw;line-height:1.4;overflow:hidden}
+.pg.l{left:0;box-shadow:inset -2.6cqw 0 2.4cqw -1.8cqw rgba(26,13,74,.3)}
+.pg.r{right:0;box-shadow:inset 2.6cqw 0 2.4cqw -1.8cqw rgba(26,13,74,.3)}
+.leaf{position:absolute;top:0;bottom:0;left:50%;width:50%;transform-origin:left center;transform-style:preserve-3d;z-index:3}
+.leaf .pg{width:100%;left:0;right:auto;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.leaf .pg.l{transform:rotateY(180deg)}
+.leaf .pg::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(26,13,74,.2),rgba(255,255,255,0) 45%,rgba(26,13,74,.12))}
+.leaf .pg.l::after{transform:scaleX(-1)}
+.shade{position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(90deg,rgba(26,13,74,.6),rgba(26,13,74,0) 70%)}
+.pg.l .shade{transform:scaleX(-1)}
+.pg .plate{font-family:var(--mono);font-size:.7em;letter-spacing:.14em;text-transform:uppercase;color:#6f6890}
+.pg svg{display:block;width:100%;height:auto;margin-top:.8em}
+.pg .big{font-weight:600;font-size:5.6em;letter-spacing:-.06em;line-height:.9;color:var(--violet);margin-top:.15em}
+.pg .note{font-size:.78em;color:#6f6890;margin:.5em 0 0;max-width:32ch}
+.pg h3{font-weight:600;font-size:1.7em;line-height:1.08;letter-spacing:-.03em;margin:.5em 0 .4em;color:var(--deep);text-wrap:balance}
+.pg .sig{font-size:.92em;line-height:1.45;margin:0 0 1.1em;color:#4a4270}
+.th{display:flex;justify-content:space-between;align-items:baseline;gap:1em;width:100%;text-align:left;font:500 1em var(--display);color:var(--ink);background:none;border:0;border-top:1px solid rgba(37,15,107,.2);padding:.55em 0;cursor:pointer}
+.th span{font-family:var(--mono);font-weight:400;font-size:.68em;color:#6f6890;white-space:nowrap}
+.th:hover,.th[aria-expanded="true"]{color:var(--violet)}
+.th[aria-expanded="true"]{font-weight:600}
+.kws{list-style:none;margin:0 0 .8em;padding:0;display:grid;gap:.32em}
+.kws li{display:grid;grid-template-columns:1.6em minmax(0,1fr) auto;gap:.55em;align-items:center;font-size:.9em;font-weight:400}
+.kws i{font-style:normal;font-weight:600;font-size:.82em;width:1.9em;height:1.9em;border-radius:50%;display:grid;place-items:center}
+.kws small{font-family:var(--mono);font-size:.66em;color:#6f6890;white-space:nowrap}
+.folio{position:absolute;bottom:1.7cqw;font-family:var(--mono);font-size:.72em;color:#6f6890}
+.pg.l .folio{left:3.4cqw}.pg.r .folio{right:3.4cqw}
+.tabs{position:absolute;right:0;top:7%;width:2.7rem;display:flex;flex-direction:column;gap:.35rem}
+.tabs button{font:500 .72rem var(--display);color:var(--ink);background:#cfc2ff;border:0;border-radius:0 5px 5px 0;padding:.5rem 0;cursor:pointer;font-variant-numeric:tabular-nums}
+.tabs button[aria-pressed="true"]{background:var(--violet);color:#fff}
+.bar.mid{justify-content:center;align-items:center;padding:1.1rem .9rem .9rem}
+.shelf .bar.mid button{background:#fff}
+.shelf .bar.mid button:disabled{opacity:.4;cursor:default}
+
 .reco h2{font-weight:600;font-size:clamp(1.6rem,3vw,2.3rem);letter-spacing:-.035em;margin:.4rem 0 1rem}
 .tbl{overflow-x:auto}
 table{border-collapse:collapse;width:100%;min-width:40rem;font-size:.9rem}
@@ -124,7 +163,7 @@ td strong{font-weight:600;color:var(--ok)}
       <span><b>270°</b> d’éventail ouvert vers le bas</span><span><b>6</b> cadrans de largeur inégale</span><span><b>3</b> anneaux : mature, trending, emerging</span><span><b>≈150</b> mots-clés, les sujets clés en gras</span>
     </div>
     <nav class="toc" aria-label="Concepts">
-      <a href="#sonar">Sonar</a><a href="#cernes">Cernes</a><a href="#eventail">Éventail</a><a href="#affiche">Affiche</a><a href="#horizon">Horizon</a><a href="#monradar">Mon radar</a><a href="#reco">Ma recommandation</a>
+      <a href="#sonar">Sonar</a><a href="#cernes">Cernes</a><a href="#eventail">Éventail</a><a href="#affiche">Affiche</a><a href="#horizon">Horizon</a><a href="#monradar">Mon radar</a><a href="#livre">Livre</a><a href="#reco">Ma recommandation</a>
     </nav>
   </header>
 
@@ -239,6 +278,28 @@ td strong{font-weight:600;color:var(--ok)}
       <p class="cap">États d’exemple, fictifs · cliquez un cadran puis un sujet pour changer son état</p></div>
   </section>
 
+  <section class="concept" id="livre">
+    <div class="txt">
+      <div class="mono">Le feuilleter · votre idée</div>
+      <h2>Livre</h2>
+      <p class="tag">Un volume debout, une édition par double page, des thèmes qui pointent vers le radar.</p>
+      <p>Oui, et c’est sans doute la piste la plus lisible. À gauche, la planche : le radar de l’année. À droite, le texte : titre, signal, thèmes. Cliquer un thème déplie ses mots-clés, numérotés, et les mêmes numéros s’allument sur la planche, à la manière d’un atlas. C’est le lien qui manque aujourd’hui entre l’article et le radar.</p>
+      <p>La page qui tourne porte le passage d’une édition à l’autre, et les onglets de tranche donnent l’accès direct. Par rapport au pop-up actuel, c’est plus calme, plus durable, et ça fonctionne sur tablette.</p>
+      <dl>
+        <div><dt>Ce qu’on garde</dt><dd>Le radar entier comme planche, ses cadrans, ses anneaux ; les mots-clés à leur place.</dd></div>
+        <div><dt>Où ça sert</dt><dd>La vue principale du Cyber Book, à la place ou à côté du « Livre à plat ».</dd></div>
+        <div><dt>Effort</dt><dd>Moyen. Le vrai travail est éditorial : relier chaque thème à ses mots-clés.</dd></div>
+      </dl>
+    </div>
+    <div class="stage paper shelf">
+      <div class="bookwrap"><div class="book">
+        <div class="spread"><div class="pages" id="bk-pages"></div></div>
+        <div class="tabs" id="bk-tabs" role="group" aria-label="Aller à une édition"></div>
+      </div></div>
+      <div class="bar mid"><button id="bk-prev">← Édition précédente</button><button id="bk-next">Édition suivante →</button></div>
+      <p class="cap">Quatre éditions dans cette maquette · liens thème → mots-clés proposés par moi, à valider</p></div>
+  </section>
+
   <section class="reco" id="reco">
     <div class="mono">Ma recommandation</div>
     <h2>Par où commencer</h2>
@@ -247,13 +308,14 @@ td strong{font-weight:600;color:var(--ok)}
       <tbody>
         <tr><td>Cernes</td><td>Le seul visuel qui raconte dix ans en une image. Personne d’autre ne peut le produire.</td><td>Forte</td><td>Moyen</td><td><strong>À faire en premier</strong></td></tr>
         <tr><td>Éventail</td><td>Règle un vrai problème : le radar est illisible sur téléphone.</td><td>Forte</td><td>Faible à moyen</td><td><strong>À faire en premier</strong></td></tr>
+        <tr><td>Livre</td><td>La lecture guidée : le thème mène aux mots-clés, la planche les situe.</td><td>Totale</td><td>Moyen</td><td><strong>À faire en premier</strong>, comme vue principale</td></tr>
         <tr><td>Sonar</td><td>Un effet d’ouverture immédiat, pour très peu de travail.</td><td>Totale</td><td>Faible</td><td>Ensuite, comme entrée</td></tr>
         <tr><td>Affiche</td><td>Un objet qu’on a envie d’accrocher.</td><td>Totale</td><td>Faible</td><td>Ensuite, pour le tirage</td></tr>
         <tr><td>Mon radar</td><td>Transforme le radar en outil de mission.</td><td>Totale</td><td>Moyen à élevé</td><td>Décision produit à prendre</td></tr>
         <tr><td>Horizon</td><td>L’effet le plus spectaculaire.</td><td>Faible</td><td>Moyen à élevé</td><td>Pour un événement</td></tr>
       </tbody>
     </table></div>
-    <p class="notes">Sources des maquettes. Les mots-clés 2026 sont relevés à la main sur le visuel de l’édition ; leur anneau est approximatif près des limites. Les fils de Cernes reprennent ceux déjà saisis dans <code>editions.js</code>, complétés de deux fils du cadran Risk &amp; Governance lus sur les visuels. Les radars 2018, 2022 et 2023 ne sont pas dans le dépôt. Le brouillon 2027 est laissé de côté.</p>
+    <p class="notes">Sources des maquettes. Les mots-clés 2026 sont relevés à la main sur le visuel de l’édition ; leur anneau est approximatif près des limites. Les fils de Cernes reprennent ceux déjà saisis dans <code>editions.js</code>, complétés de deux fils du cadran Risk &amp; Governance lus sur les visuels. Les radars 2018, 2022 et 2023 ne sont pas dans le dépôt. Le brouillon 2027 est laissé de côté. Dans le Livre, le rattachement des mots-clés aux thèmes et leur anneau sont ma lecture des visuels 2019, 2021, 2025 et 2026 ; les éditions 2020 et 2024 restent à relever.</p>
   </section>
 </div>
 
@@ -332,7 +394,7 @@ function frame(svg, G, R, o) {
   Q.forEach((q, i) => {
     S('path', {d: G.sec(q.a0, q.a1, R * .93, R), fill: o.dark ? q.l : q.c}, g);
     S('path', {id: `${o.id}n${i}`, d: G.arc(q.a0, q.a1, R * 1.03), fill: 'none'}, g);
-    const t = S('text', {'font-size': 11.5, 'font-weight': 600, 'letter-spacing': '.05em', fill: o.ink}, g);
+    const t = S('text', {'font-size': o.fs || 11.5, 'font-weight': 600, 'letter-spacing': o.ls != null ? o.ls : '.05em', fill: o.ink}, g);
     S('textPath', {href: `#${o.id}n${i}`, startOffset: '50%', 'text-anchor': 'middle'}, t, q.n.toUpperCase());
   });
   if (!o.bare) {
@@ -340,7 +402,7 @@ function frame(svg, G, R, o) {
     [[-133, 0], [133, 5]].forEach(([a, i]) => S('path', {d: `M${G.P(a, R * .24)}L${G.P(a, R)}`, stroke: o.dark ? Q[i].l : Q[i].c, 'stroke-width': 2, fill: 'none'}, g));
   }
   RING.forEach((s, i) => { const p = G.P(137.5, R * [.335, .54, .775][i]);
-    S('text', {x: p[0], y: p[1], transform: `rotate(43 ${p})`, 'text-anchor': 'middle', 'font-size': 8.5, 'letter-spacing': '.14em', fill: o.ink, opacity: .7}, g, s); });
+    S('text', {x: p[0], y: p[1], transform: `rotate(43 ${p})`, 'text-anchor': 'middle', 'font-size': o.rfs || 8.5, 'letter-spacing': '.14em', fill: o.ink, opacity: .7}, g, s); });
   return g;
 }
 function hub(svg, G, r, big, small, fill = DEEP) {
@@ -561,7 +623,92 @@ function monRadar() {
   list(); paint();
 }
 
-const run = () => [sonar, cernes, eventail, affiche, horizon, monRadar].forEach(fn => { try { fn(); } catch (e) { console.error(fn.name, e); } });
+/* ---------- 7. Livre ---------- */
+function livre() {
+  /* mot@cadran,anneau : cadran 0..5 dans l'ordre du radar, anneau 0 mature · 1 trending · 2 emerging. */
+  const ED = [
+    {y: '2019', pub: 'Publié en décembre 2018', title: 'Le RSSI au cœur de la révolution du SI', sig: 'Agilité, cloud, API-fication : le SI fait sa révolution et oblige à revoir les fondamentaux, sur fond de pénurie de compétences.', th: [
+      ['La cyber-résilience bâtie sur le cloud', 'Cyber resilience@51|Active Directory rebuild@51|Multi-cloud continuity@52|Serverless continuity@52|Fast IS rebuilding@52'],
+      ['Le SOC est mort, vivent les Fusion Centers', 'Fusion centers@22|SOC/CERT automation (SIRP/SOAR)@22|Data lake@21|Threat Intelligence@21'],
+      ['Le début de la fin pour les mots de passe', 'Beyond Password@01|WebAuthn, Biometrics, FIDO@01|Contextual & behavior based authn.@01|Nextgen access control@02'],
+      ['L’IA et le machine learning', 'Machine learning@22|AI & Robot@11|Nextgen risk analysis@32|Predictive anti-fraud@02'],
+      ['Les tiers et les fournisseurs sous microscope', 'Software providers trust@32|Partners & Suppliers compliance@41|Supply chain resilience@51|Critical service providers@50']]},
+    {y: '2021', pub: 'Publié en février 2021', title: 'Entre nouveau monde et menaces persistantes', sig: 'Le ransomware restera la menace majeure ; la transformation numérique à marche forcée devient une opportunité pour la cybersécurité.', th: [
+      ['Maîtriser les fondamentaux', 'Active Directory redesign@11|Vuln/patch management@11|Secure administration@10|PAM & PwdVault@00'],
+      ['Concrétiser la cyber-résilience', 'Active Directory rebuild@51|Fast IS rebuilding@51|Pandemic business continuity@51|One day DRP@52|Lockdown mode cyber crisis mgt.@52'],
+      ['La transformation numérique à marche forcée', 'Remote access / teleworking@10|Zero Trust (soft. defined perimeter)@11|Beyond Password WebAuthn/Bio/FIDO@01|CWPP workload protection@12|CSPM (Cloud control tower)@22'],
+      ['Efficacité cyber', 'Cyber Efficiency@31|“All” Cyber TOM@31|Risk Quantification@32|Dashboard industrialization@32'],
+      ['Frontières dans l’espace numérique', 'Cyber borders / protectionism@42|Cloud trust level strategy@42|Confidential computing@12']]},
+    {y: '2025', pub: 'Publié en janvier 2025', title: 'À quoi s’attendre en 2025 ?', sig: '2025 marque un tournant stratégique : après des années d’investissements, les budgets sont sous pression.', th: [
+      ['Rationaliser et optimiser le fonctionnement', 'Smart Sourcing@31|Risk Quantification@31|Talent Mgt.@32|Cyber efficiency & rationalisation@32'],
+      ['Passer à l’échelle sur les enjeux clés', 'Zero Trust Access@10|CNAPP@11|CICD Security@11|Zero trust metrics@12|SOC/Fusion centers@21|XDR@21'],
+      ['L’ère du « regulatory management »', 'Critical infra NIS2/REC@41|DORA@41|CRA/Product@41|AI Act@41|Regulatory Mgt.@42|Unified compliance strategy@42'],
+      ['L’IA pour la cyber : il est temps de commencer', 'Deep fake protection@12|AI for security@12|AI red teaming@12|AI risk assessment MLSecOps@11|AI for IAM@02'],
+      ['Post-quantique : commencez dès maintenant', 'Post Quantum Crypto@02|Crypto agility@02|Homomorphic encryption@02']]},
+    {y: '2026', pub: 'Publié en novembre 2025', title: 'Top 30 des actions pour 2030', sig: 'Accélérer la cybersécurité : vers une résilience numérique en temps réel.', th: [
+      ['Visibilité', 'AI-BoM@12|IT/OT convergence@12|IT/OT VOC@11|UEBA@22|Business App surveillance@32|Insider Threat program@32|Digital dependencies mapping@42'],
+      ['Confiance', 'Crypto agility@02|Post Quantum Crypto roadmap@02|Non-Human Identities@02|IAM of AI Agents@02|Converged identity platform@01|Trustworthy AI@31|Decoupled IT@51'],
+      ['Vitesse d’exécution', 'Agentic AI cyber platform@22|Cyber data lake@22|Real-time AI response@22|Real-time risk evaluation@32|AI automated assurance@42'],
+      ['Valeur', 'Value realization office@32|Cyber Data & AI Office@32|Cyber efficiency & rationalization@32|Risk Quantification@31']]},
+  ];
+  const ROM = ['I', 'II', 'III', 'IV'], QS = ['Identity', 'Protect', 'Detect', 'Risk & Gov.', 'Compliance', 'Resilience'];
+  const G = geo(500, 470), R = 400, pages = $('#bk-pages'), tabs = $('#bk-tabs'), prev = $('#bk-prev'), next = $('#bk-next');
+  ED.forEach(e => {
+    e.th = e.th.map(([t, ks]) => ({t, k: ks.split('|').map(x => { const [w, c] = x.split('@'); return {w, q: +c[0], r: +c[1]}; })}));
+    const all = e.th.flatMap(t => t.k);
+    Q.forEach((q, qi) => [0, 1, 2].forEach(ri => { const ks = all.filter(k => k.q === qi && k.r === ri), pts = cellPts(q, R * RF[ri] + 18, R * RF[ri + 1] - 18, ks.length); ks.forEach((k, i) => { k.a = pts[i].a; k.rr = pts[i].r; }); }));
+  });
+  const pick = ED.map(() => 0); let cur = ED.length - 1, busy = false, uid = 0;
+  function left(i) {
+    const e = ED[i], p = H('div', {class: 'pg l'});
+    H('div', {class: 'plate'}, p, `Planche ${ROM[i]} · le radar ${e.y}`);
+    const svg = S('svg', {viewBox: '40 28 920 752', role: 'img', 'aria-label': `Radar ${e.y} : les mots-clés du thème ouvert sont numérotés.`}, p);
+    S('path', {d: G.sec(-133, 133, R * .24, R * .93), fill: '#f4f0ff'}, svg);
+    frame(svg, G, R, {id: 'bk' + uid++, ink: INK, dash: 'rgba(37,15,107,.35)', fs: 14, ls: 0, rfs: 12});
+    Q.slice(1).forEach(q => S('path', {d: `M${G.P(q.a0, R * .24)}L${G.P(q.a0, R * .93)}`, stroke: INK, 'stroke-opacity': .12, fill: 'none'}, svg));
+    e.th.forEach((t, ti) => { if (ti !== pick[i]) t.k.forEach(k => { const c = G.P(k.a, k.rr); S('circle', {cx: c[0], cy: c[1], r: 6, fill: '#fff', stroke: Q[k.q].c === '#dcc8ff' ? '#a56bf5' : Q[k.q].c, 'stroke-width': 2.4}, svg); }); });
+    e.th[pick[i]].k.forEach((k, j) => { const c = G.P(k.a, k.rr);
+      S('circle', {cx: c[0], cy: c[1], r: 17, fill: Q[k.q].c, stroke: '#fff', 'stroke-width': 2.5}, svg);
+      S('text', {x: c[0], y: c[1] + 7, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 600, fill: Q[k.q].on}, svg, j + 1); });
+    hub(svg, G, R * .24, e.y, 'CISO RADAR');
+    H('div', {class: 'big'}, p, e.y);
+    H('p', {class: 'note'}, p, 'Les pastilles numérotées situent les mots-clés du thème ouvert page de droite. Les cercles vides sont ceux des autres thèmes.');
+    H('div', {class: 'folio'}, p, 2 * i + 2);
+    return p;
+  }
+  function right(i) {
+    const e = ED[i], p = H('div', {class: 'pg r'});
+    H('div', {class: 'plate'}, p, e.pub); H('h3', {}, p, e.title); H('p', {class: 'sig'}, p, e.sig);
+    e.th.forEach((t, ti) => { const on = ti === pick[i], b = H('button', {class: 'th', 'aria-expanded': on}, p);
+      H('b', {style: 'font-weight:inherit'}, b, t.t); H('span', {}, b, `${t.k.length} mots-clés`);
+      b.onclick = () => { if (busy) return; pick[i] = ti; show(); };
+      if (on) { const ol = H('ol', {class: 'kws'}, p); t.k.forEach((k, j) => { const li = H('li', {}, ol);
+        H('i', {style: `background:${Q[k.q].c};color:${Q[k.q].on}`}, li, j + 1); H('span', {}, li, k.w); H('small', {}, li, `${QS[k.q]} · ${RING[k.r].toLowerCase()}`); }); } });
+    H('div', {class: 'folio'}, p, 2 * i + 3);
+    return p;
+  }
+  function show() {
+    pages.replaceChildren(left(cur), right(cur));
+    [...tabs.children].forEach((b, i) => b.setAttribute('aria-pressed', i === cur));
+    prev.disabled = cur === 0; next.disabled = cur === ED.length - 1;
+  }
+  function go(j) {
+    if (busy || j === cur || j < 0 || j >= ED.length) return;
+    if (reduced || !pages.animate) { cur = j; show(); return; }
+    busy = true; const fwd = j > cur, a = fwd ? cur : j, b = fwd ? j : cur;   // a = édition de gauche dans l'ordre, b = suivante
+    const L = left(a), Rg = right(b), leaf = H('div', {class: 'leaf'}), under = fwd ? Rg : L, sh = H('div', {class: 'shade'}, under);
+    leaf.append(right(a), left(b)); pages.replaceChildren(L, Rg, leaf);
+    const ease = 'cubic-bezier(.5,.05,.25,1)', dur = 1150;
+    sh.animate([{opacity: .9}, {opacity: 0}], {duration: dur, easing: 'ease-out'});
+    leaf.animate([{transform: `rotateY(${fwd ? 0 : -180}deg)`}, {transform: `rotateY(${fwd ? -180 : 0}deg)`}], {duration: dur, easing: ease, fill: 'forwards'})
+      .finished.catch(() => {}).then(() => { cur = j; busy = false; show(); });
+  }
+  ED.forEach((e, i) => { H('button', {'aria-label': 'Édition ' + e.y}, tabs, e.y).onclick = () => go(i); });
+  prev.onclick = () => go(cur - 1); next.onclick = () => go(cur + 1);
+  show();
+}
+
+const run = () => [sonar, cernes, eventail, affiche, horizon, monRadar, livre].forEach(fn => { try { fn(); } catch (e) { console.error(fn.name, e); } });
 const fonts = document.fonts && document.fonts.load ? Promise.all(['300', '400', '500', '600', '700'].map(w => document.fonts.load(w + ' 10px Poppins'))) : Promise.resolve();
 Promise.race([fonts, new Promise(r => setTimeout(r, 2500))]).catch(() => {}).then(run);
 })();
