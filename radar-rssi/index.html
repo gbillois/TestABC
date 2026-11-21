@@ -196,7 +196,17 @@ body:not([data-view="popup"]) .story *{pointer-events:none}
 .col .more li{counter-increment:c;font-size:.82rem;font-weight:500;line-height:1.25;display:grid;grid-template-columns:1.7rem 1fr}
 .col .more li::before{content:counter(c,decimal-leading-zero);color:var(--accent);font-weight:600}
 .col .tag{font-size:.56rem;font-weight:600;letter-spacing:.12em;color:var(--on-accent);background:var(--accent);border-radius:2px;padding:.12rem .35rem}
-/* mots en mouvement */
+/* enseignements + mots en mouvement */
+.ins{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.8rem;margin:0 0 .9rem}
+.ins button{font-family:var(--font);text-align:left;color:var(--fg);background:var(--panel);border:0;border-top:3px solid var(--line);padding:.6rem .8rem .7rem;cursor:pointer;min-width:0}
+.ins button:hover{border-top-color:var(--accent)}
+.ins button[aria-pressed="true"]{border-top-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.ins button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ins b{display:block;font-weight:600;font-size:clamp(1.2rem,2vw,1.75rem);letter-spacing:-.04em;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.ins strong{display:block;font-weight:600;font-size:.84rem;line-height:1.2;margin:.35rem 0 .2rem}
+.ins span{display:block;font-weight:300;font-size:.72rem;line-height:1.4;color:var(--fg-soft)}
+.fr .moves{margin-top:calc(var(--u)*1);font-size:calc(var(--u)*.9);line-height:1.45;color:#2c2550}
+.fr .moves b{font-weight:600;color:#250f6b}
 .legend{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font-size:.7rem;color:var(--muted);margin:-.3rem 0 .7rem}
 .legend i{display:inline-block;width:1.4em;height:.5em;border-radius:3px;margin-right:.4em;vertical-align:.05em}
 .wd{flex:1;min-height:0;position:relative;display:flex;flex-direction:column;--lab:clamp(120px,21vw,290px)}
@@ -220,6 +230,9 @@ body:not([data-view="popup"]) .story *{pointer-events:none}
   .head{flex-wrap:wrap}
   .brand{flex-wrap:nowrap}
   .switch{width:100%;justify-content:flex-start}
+  .ins{grid-template-columns:1fr 1fr}
+  .ins span{display:none}
+  .wd{min-height:430px}
   .wd .cols b{font-size:.5rem;padding-left:.1rem}
   .seg button{padding:.34rem .6rem;font-size:.7rem}
   .view{padding-top:158px}
@@ -249,8 +262,9 @@ body:not([data-view="popup"]) .story *{pointer-events:none}
     <div class="tl" id="tl"></div>
   </section>
   <section class="view" id="words" hidden aria-label="Mots en mouvement">
-    <p class="kicker">LES MOTS EN MOUVEMENT</p>
+    <p class="kicker">DIX ANS DE RECUL</p>
     <h2 class="vtitle">Ce qui entre sur le radar, ce qui y reste, ce qui en sort.</h2>
+    <div class="ins" id="ins"></div>
     <div class="legend" id="legend"></div>
     <div class="wd" id="wd"><div class="cols" id="wcols"></div><div class="rows" id="wrows"></div></div>
   </section>
@@ -262,7 +276,7 @@ body:not([data-view="popup"]) .story *{pointer-events:none}
       </div>
       <nav class="switch" aria-label="Version visuelle">
         <div class="seg" role="group" aria-label="Mise en page" id="segView">
-          <button data-v="popup">Pop-up</button><button data-v="flat">Livre à plat</button><button data-v="timeline">Frise</button><button data-v="words">Mots</button>
+          <button data-v="popup">Pop-up</button><button data-v="flat">Livre à plat</button><button data-v="timeline">Frise</button><button data-v="words">Décennie</button>
         </div>
         <div class="seg" role="group" aria-label="Fond" id="segLook">
           <button data-l="blanc"><i class="dot" style="background:#fff"></i>Blanc</button><button data-l="violet"><i class="dot" style="background:#250f6b"></i>Violet</button>
@@ -755,7 +769,16 @@ function flatRight(i){ const e = ED[i], w = el('div','fl fr');
   const chips = el('div','chips'); (e.words || []).forEach(x => chips.append(el('span','', x)));
   w.append(run, el('div','yy', e.year), el('h3','', e.title), el('p','sig', e.signal));
   if (e.draft || e.missing) w.append(el('div','flag', e.draft ? 'BROUILLON À VALIDER' : 'À COMPLÉTER'));
-  w.append(ol, chips); return w; }
+  const mv = moves(i); if (mv){ const m = el('div','moves');
+    if (mv.inn.length){ const p = el('div'); p.append(el('b','', mv.prev ? `Entrés depuis le radar ${mv.prev} : ` : 'Présents dès ce radar : '), mv.inn.join(' · ')); m.append(p); }
+    if (mv.out.length){ const p = el('div'); p.append(el('b','', 'N’y figurent plus : '), mv.out.join(' · ')); m.append(p); }
+    if (m.children.length) w.append(ol, m, chips); else w.append(ol, chips); } else w.append(ol, chips);
+  return w; }
+// mouvements d'une édition, parmi les mots suivis : entrés depuis le radar précédent disponible, absents depuis
+function moves(i){ const y = +ED[i].year, NR = window.NO_RADAR; if (NR.includes(ED[i].year)) return null;
+  let prev = null; for (let j=i-1;j>=0;j--) if (!NR.includes(ED[j].year)){ prev = +ED[j].year; break; }
+  const T_ = window.THREADS || [], short = w => w.split(' → ').pop();
+  return {prev, inn: T_.filter(t => t.y[0] === y).map(t => short(t.w)), out: prev ? T_.filter(t => t.y[t.y.length-1] === prev).map(t => short(t.w)) : []}; }
 let flatShown = -1;
 function renderFlat(i, from){
   const L = $('pgL'), Rp = $('pgR'), leaf = $('leaf'), mobile = matchMedia('(max-width:860px)').matches;
@@ -779,7 +802,7 @@ function buildTimeline(){
 
 // --- mots en mouvement : la durée de vie des mots-clés sur le radar
 const FAM_COLOR = {ia:'var(--ai)', id:'#6b8cff', protect:'#451dc7', detect:'#b9a6ff', conf:'#0a9a4c', res:'#04f06a'};
-let wordsBuilt = false;
+let wordsBuilt = false, insight = -1;
 function buildWords(){
   const years = ED.map(e => +e.year), y0 = years[0], n = years.length, TH_ = window.THREADS || [];
   $('legend').replaceChildren(...Object.entries(window.FAMILIES).map(([k,v]) => { const sp = el('span'), i = el('i'); i.style.background = FAM_COLOR[k]; sp.append(i, v); return sp; }),
@@ -792,13 +815,17 @@ function buildWords(){
     const note = gone ? `plus vu après ${b}` : (a === b ? `nouveau en ${a}` : '');
     if (note){ const em = el('em','', note); if (b === years[n-1]){ em.style.right = (100-(b-y0+.5)/n*100)+'%'; em.style.padding = '0 14px 0 0'; } else em.style.left = ((b-y0+.5)/n*100)+'%'; em.style.setProperty('--d', (k*.045)+'s'); trk.append(em); }
     return r; }));
-  wordsBuilt = true;
+  $('ins').replaceChildren(...(window.INSIGHTS || []).map((x, k) => { const b = el('button'); b.setAttribute('aria-pressed', 'false');
+    b.append(el('b','', x.n), el('strong','', x.t), el('span','', x.d));
+    b.onclick = () => { insight = insight === k ? -1 : k; [...$('ins').children].forEach((c,j) => c.setAttribute('aria-pressed', j === insight)); syncViews(shown, shown); }; return b; }));
+  insight = -1; wordsBuilt = true;
 }
 function syncViews(prev, i){
   if (view === 'flat') renderFlat(i, prev);
   [...$('tl').children].forEach((c,j) => { c.classList.toggle('on', j === i); if (j === i && view === 'timeline') c.scrollIntoView({inline:'center', block:'nearest', behavior: reduced ? 'auto' : 'smooth'}); });
   if (wordsBuilt){ const y = ED[i].year; [...$('wcols').children].forEach((b,j) => b.classList.toggle('on', j === i));
-    [...$('wrows').children].forEach(r => r.classList.toggle('dim', !window.NO_RADAR.includes(y) && !r.dataset.y.split(' ').includes(y))); }
+    const set = insight >= 0 ? window.INSIGHTS[insight].w : null;
+    [...$('wrows').children].forEach(r => r.classList.toggle('dim', set ? !set.includes(r.firstChild.textContent) : (!window.NO_RADAR.includes(y) && !r.dataset.y.split(' ').includes(y)))); }
 }
 window.cyberBook = {scrub(v){ tween = null; s = clamp(v, 0, N-1); }, go, view:setView, look:setLook};
 

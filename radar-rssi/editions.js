@@ -180,3 +180,19 @@ window.THREADS = [
   {w: 'Rogue agent', f: 'ia', y: [2027]},
   {w: 'Rebuild as code', f: 'res', y: [2027]},
 ];
+
+// Enseignements de la décennie : chacun s'appuie sur les fils ci-dessus (w = mots mis en avant).
+window.INSIGHTS = [
+  {n: '7 sur 7', t: 'Les fondamentaux ne quittent pas le radar',
+   d: 'Post Quantum Crypto, Passwordless, Zero Trust et Active Directory rebuild figurent sur les sept radars disponibles depuis 2019.',
+   w: ['Post Quantum Crypto', 'Beyond Password → Passwordless', 'Software Defined Perimeter → Zero Trust', 'Active Directory rebuild']},
+  {n: '1 à 3 radars', t: 'Les effets de mode passent vite',
+   d: 'Blockchain based trust disparaît après 2020, Immune systems après 2021 ; les sujets nés de la pandémie ne tiennent qu’une édition.',
+   w: ['Blockchain based trust', 'Immune systems', 'Remote access / teleworking', 'Pandemic business continuity']},
+  {n: '2024', t: 'La réglementation s’installe',
+   d: 'DORA et l’AI Act figurent sur chaque radar depuis 2024 (ceux de 2022 et 2023 n’ont pas été retrouvés).',
+   w: ['DORA', 'AI Act']},
+  {n: '31 / 150', t: 'L’IA devient un axe à part entière',
+   d: 'Un seul fil « AI security » en 2020 ; sur le radar 2027, 31 des 150 mots-clés sont signalés comme liés à l’IA.',
+   w: ['AI security → AI risk assessment', 'AI red teaming', 'Deepfake protection', 'Agentic AI cyber platform', 'MCP / Skills security', 'Agentic Identity', 'Rogue agent']},
+];
