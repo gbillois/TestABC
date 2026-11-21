@@ -97,17 +97,17 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 .bookwrap{overflow-x:auto;padding:1.6rem 1rem 0}
 .book{position:relative;width:min(100%,60rem);min-width:640px;margin:0 auto;padding-right:2.7rem;container-type:inline-size}
 .spread{aspect-ratio:1.5;background:var(--deep);border-radius:.5cqw .5cqw 0 0;padding:1cqw 1.4cqw 1.1cqw;box-shadow:0 2.4cqw 2cqw -1.4cqw rgba(26,13,74,.6)}
-.pages{position:relative;height:100%;perspective:210cqw;perspective-origin:50% 40%;box-shadow:.25cqw 0 0 #ebe6f6,.5cqw 0 0 #d6cfec,-.25cqw 0 0 #ebe6f6,-.5cqw 0 0 #d6cfec}
+.pages{position:relative;height:100%;user-select:none;-webkit-user-select:none;touch-action:pan-y;box-shadow:.25cqw 0 0 #ebe6f6,.5cqw 0 0 #d6cfec,-.25cqw 0 0 #ebe6f6,-.5cqw 0 0 #d6cfec}
 .pg{position:absolute;top:0;bottom:0;width:50%;background:#fffefb;color:var(--ink);padding:3cqw 3.4cqw;font-size:1.42cqw;line-height:1.4;overflow:hidden}
 .pg.l{left:0;box-shadow:inset -2.6cqw 0 2.4cqw -1.8cqw rgba(26,13,74,.3)}
 .pg.r{right:0;box-shadow:inset 2.6cqw 0 2.4cqw -1.8cqw rgba(26,13,74,.3)}
-.leaf{position:absolute;top:0;bottom:0;left:50%;width:50%;transform-origin:left center;transform-style:preserve-3d;z-index:3}
-.leaf .pg{width:100%;left:0;right:auto;backface-visibility:hidden;-webkit-backface-visibility:hidden}
-.leaf .pg.l{transform:rotateY(180deg)}
-.leaf .pg::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(26,13,74,.2),rgba(255,255,255,0) 45%,rgba(26,13,74,.12))}
-.leaf .pg.l::after{transform:scaleX(-1)}
-.shade{position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(90deg,rgba(26,13,74,.6),rgba(26,13,74,0) 70%)}
-.pg.l .shade{transform:scaleX(-1)}
+.fold{position:absolute;left:50%;top:0;width:50%;height:100%;z-index:3;transform-origin:0 0;pointer-events:none}
+.fold.mir{transform:scaleX(-1)}
+.fold.mir .pg{transform:scaleX(-1)}
+.face{position:absolute;left:0;top:0;width:100%;height:100%;transform-origin:0 0}
+.face>.pg{width:100%;left:0;right:auto}
+.flap{position:absolute;inset:0;filter:drop-shadow(0 0 1.3cqw rgba(26,13,74,.5))}
+.grad{position:absolute}
 .pg .plate{font-family:var(--mono);font-size:.7em;letter-spacing:.14em;text-transform:uppercase;color:#6f6890}
 .pg svg{display:block;width:100%;height:auto;margin-top:.8em}
 .pg .big{font-weight:600;font-size:5.6em;letter-spacing:-.06em;line-height:.9;color:var(--violet);margin-top:.15em}
@@ -297,7 +297,7 @@ td strong{font-weight:600;color:var(--ok)}
         <div class="tabs" id="bk-tabs" role="group" aria-label="Aller à une édition"></div>
       </div></div>
       <div class="bar mid"><button id="bk-prev">← Édition précédente</button><button id="bk-next">Édition suivante →</button></div>
-      <p class="cap">Quatre éditions dans cette maquette · liens thème → mots-clés proposés par moi, à valider</p></div>
+      <p class="cap">Tirez le bord d’une page pour la tourner · quatre éditions · liens thème → mots-clés proposés par moi, à valider</p></div>
   </section>
 
   <section class="reco" id="reco">
@@ -692,17 +692,80 @@ function livre() {
     [...tabs.children].forEach((b, i) => b.setAttribute('aria-pressed', i === cur));
     prev.disabled = cur === 0; next.disabled = cur === ED.length - 1;
   }
+  /* Pli de page : la feuille se replie le long de la médiatrice entre le point saisi (C) et sa position courante (P).
+     Repère local : x = 0 à la reliure, x = w au bord extérieur. Pour tourner en arrière, tout le pli est dessiné en miroir. */
+  let flip = null, press = null, swallow = false;
+  const cut = (pts, M, n, s) => { const out = [], d = q => s * ((q[0] - M[0]) * n[0] + (q[1] - M[1]) * n[1]);
+    pts.forEach((a, i) => { const b = pts[(i + 1) % pts.length], da = d(a), db = d(b);
+      if (da >= 0) out.push(a);
+      if ((da >= 0) !== (db >= 0)) { const t = da / (da - db); out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]); } });
+    return out; };
+  const clip = pts => pts.length > 2 ? `polygon(${pts.map(q => `${f(q[0])}px ${f(q[1])}px`).join(',')})` : 'polygon(0 0,0 0,0 0)';
+  const face = (pg, parent) => { const d = H('div', {class: 'face'}, parent); d.append(pg); return d; };
+  const grad = (el, M, n, D, css) => { el.style.cssText = `left:${f(M[0] - D)}px;top:${f(M[1] - D)}px;width:${2 * D}px;height:${2 * D}px;transform:rotate(${Math.atan2(n[1], n[0])}rad);background:linear-gradient(90deg,${css})`; };
+  function begin(j, cy) {
+    const fwd = j > cur, w = pages.clientWidth / 2, h = pages.clientHeight, fold = H('div', {class: 'fold' + (fwd ? '' : ' mir')});
+    const front = face(fwd ? right(cur) : left(cur), fold), reveal = H('div', {class: 'face'}, fold), rg = H('i', {class: 'grad'}, reveal);
+    const back = face(fwd ? left(j) : right(j), H('div', {class: 'flap'}, fold)), bg = H('i', {class: 'grad'}, back);
+    pages.replaceChildren(fwd ? left(cur) : left(j), fwd ? right(j) : right(cur), fold);
+    busy = true; flip = {j, fwd, w, h, C: [w, cy], P: [w, cy], front, reveal, rg, back, bg};
+  }
+  function fold(P) {
+    const F = flip, {w, h, C} = F;
+    for (let k = 0; k < 3; k++) [[0, 0], [0, h]].forEach(s => {   // la feuille reste attachée à la reliure
+      const r = Math.hypot(C[0] - s[0], C[1] - s[1]), d = Math.hypot(P[0] - s[0], P[1] - s[1]);
+      if (d > r) P = [s[0] + (P[0] - s[0]) * r / d, s[1] + (P[1] - s[1]) * r / d]; });
+    if (Math.hypot(C[0] - P[0], C[1] - P[1]) < 1) P = [C[0] - 1, C[1]];
+    F.P = P;
+    const len = Math.hypot(C[0] - P[0], C[1] - P[1]), n = [(C[0] - P[0]) / len, (C[1] - P[1]) / len], M = [(C[0] + P[0]) / 2, (C[1] + P[1]) / 2], fw = len / 2;
+    const rect = [[0, 0], [w, 0], [w, h], [0, h]], lifted = cut(rect, M, n, 1);
+    F.front.style.clipPath = clip(cut(rect, M, n, -1));
+    F.reveal.style.clipPath = clip(lifted);
+    F.back.style.clipPath = clip(lifted.map(q => [w - q[0], q[1]]));
+    const a = 1 - 2 * n[0] * n[0], b = -2 * n[0] * n[1], d = 1 - 2 * n[1] * n[1], k0 = 2 * ((w - M[0]) * n[0] - M[1] * n[1]);
+    F.back.style.transform = `matrix(${-a},${-b},${b},${d},${w - k0 * n[0]},${-k0 * n[1]})`;
+    const D = 2 * (w + h), dk = 'rgba(26,13,74,';
+    grad(F.rg, M, n, D, `transparent 50%,${dk}.5) 50%,${dk}0) calc(50% + ${f(Math.min(fw, w * .45))}px)`);
+    grad(F.bg, [w - M[0], M[1]], [-n[0], n[1]], D, `transparent 50%,${dk}.34) 50%,rgba(255,255,255,.62) calc(50% + ${f(fw * .12)}px),rgba(255,255,255,.1) calc(50% + ${f(fw * .55)}px),${dk}.16) calc(50% + ${f(fw)}px),${dk}.16) 100%`);
+  }
+  const finish = done => { if (done) cur = flip.j; flip = null; busy = false; show(); };
+  function settle(done) {
+    const F = flip, from = F.P.slice(), to = done ? [-F.w, F.C[1]] : F.C.slice(), t0 = performance.now();
+    const dur = 240 + 420 * Math.min(1, Math.hypot(to[0] - from[0], to[1] - from[1]) / (2 * F.w));
+    requestAnimationFrame(function step(t) { const k = Math.min(1, Math.max(0, (t - t0) / dur)), e = 1 - Math.pow(1 - k, 3);
+      fold([from[0] + (to[0] - from[0]) * e, from[1] + (to[1] - from[1]) * e]);
+      k < 1 ? requestAnimationFrame(step) : finish(done); });
+  }
   function go(j) {
     if (busy || j === cur || j < 0 || j >= ED.length) return;
-    if (reduced || !pages.animate) { cur = j; show(); return; }
-    busy = true; const fwd = j > cur, a = fwd ? cur : j, b = fwd ? j : cur;   // a = édition de gauche dans l'ordre, b = suivante
-    const L = left(a), Rg = right(b), leaf = H('div', {class: 'leaf'}), under = fwd ? Rg : L, sh = H('div', {class: 'shade'}, under);
-    leaf.append(right(a), left(b)); pages.replaceChildren(L, Rg, leaf);
-    const ease = 'cubic-bezier(.5,.05,.25,1)', dur = 1150;
-    sh.animate([{opacity: .9}, {opacity: 0}], {duration: dur, easing: 'ease-out'});
-    leaf.animate([{transform: `rotateY(${fwd ? 0 : -180}deg)`}, {transform: `rotateY(${fwd ? -180 : 0}deg)`}], {duration: dur, easing: ease, fill: 'forwards'})
-      .finished.catch(() => {}).then(() => { cur = j; busy = false; show(); });
+    if (reduced) { cur = j; show(); return; }
+    begin(j, pages.clientHeight); const F = flip, t0 = performance.now();
+    requestAnimationFrame(function step(t) { const k = Math.min(1, Math.max(0, (t - t0) / 1000)), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(2 - 2 * k, 3) / 2;
+      fold([F.w - 2 * F.w * e, F.h - Math.sin(Math.PI * e) * F.h * .22]);
+      k < 1 ? requestAnimationFrame(step) : finish(true); });
   }
+  const local = (x, y) => { const r = pages.getBoundingClientRect(); return [x - r.left - r.width / 2, y - r.top]; };
+  pages.addEventListener('pointerdown', e => {
+    swallow = false; if (busy || e.button) return;
+    const [x] = local(e.clientX, e.clientY), w = pages.clientWidth / 2, side = x > 0 ? 1 : -1, j = cur + side;
+    if (Math.abs(x) < w * .4 || j < 0 || j >= ED.length) return;
+    press = {x: e.clientX, y: e.clientY, side, j, id: e.pointerId};
+  });
+  pages.addEventListener('pointermove', e => {
+    if (!press) return;
+    if (!flip) {
+      if ((e.clientX - press.x) * press.side > -8) { if (Math.abs(e.clientY - press.y) > 40) press = null; return; }
+      const [x, y] = local(press.x, press.y);
+      begin(press.j, Math.max(0, Math.min(pages.clientHeight, y)));
+      flip.off = flip.w - Math.abs(x); flip.drag = true; swallow = true;
+      try { pages.setPointerCapture(press.id); } catch (_) {}
+    }
+    if (flip && flip.drag) { const [x, y] = local(e.clientX, e.clientY), lx = x * press.side + flip.off;
+      flip.vx = lx - (flip.lx == null ? lx : flip.lx); flip.lx = lx; fold([lx, y]); e.preventDefault(); }
+  });
+  const release = () => { if (flip && flip.drag) { flip.drag = false; settle(flip.vx < -5 || (flip.P[0] < flip.w * .3 && !(flip.vx > 5))); } press = null; };
+  pages.addEventListener('pointerup', release); pages.addEventListener('pointercancel', release);
+  pages.addEventListener('click', e => { if (swallow) { swallow = false; e.stopPropagation(); e.preventDefault(); } }, true);
   ED.forEach((e, i) => { H('button', {'aria-label': 'Édition ' + e.y}, tabs, e.y).onclick = () => go(i); });
   prev.onclick = () => go(cur - 1); next.onclick = () => go(cur + 1);
   show();
