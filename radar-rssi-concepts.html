@@ -1,0 +1,568 @@
+<title>Radar du RSSI, six mises en scène</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : une planche de studio. Chaque concept = une colonne de texte étroite + une « scène » large qui montre la maquette vivante. */
+:root{
+  --bg:#f7f5fc; --fg:#150b36; --soft:#4a4270; --muted:#6f6890; --line:rgba(37,15,107,.16); --accent:#451dc7; --panel:#ffffff; --ok:#0a8a4e;
+  /* teintes du radar, identiques dans les deux thèmes : elles ne servent que dans les scènes, qui fixent leur propre fond */
+  --night:#0c0528; --deep:#250f6b; --violet:#451dc7; --lilac:#b9a6ff; --lav:#dcc8ff; --neon:#04f06a; --paper:#f4f0ff; --ink:#1a0d4a;
+  --display:"Poppins","Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c0528; --fg:#f4f1ff; --soft:#cfc8ee; --muted:#9f97c6; --line:rgba(255,255,255,.16); --accent:#b9a6ff; --panel:#160b3f; --ok:#04f06a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c0528; --fg:#f4f1ff; --soft:#cfc8ee; --muted:#9f97c6; --line:rgba(255,255,255,.16); --accent:#b9a6ff; --panel:#160b3f; --ok:#04f06a; color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--display);font-weight:300;font-size:1rem;line-height:1.55}
+.wrap{max-width:82rem;margin:0 auto;padding-block:clamp(2rem,6vw,4.5rem);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:clamp(3.5rem,8vw,6.5rem)}
+.mono{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font-weight:600;font-size:clamp(2.2rem,6vw,4.6rem);line-height:.98;letter-spacing:-.045em;margin:.5rem 0 0;text-wrap:balance;max-width:16ch}
+h1 em{font-style:normal;color:var(--accent)}
+.lede{font-size:clamp(1rem,1.5vw,1.2rem);max-width:60ch;color:var(--soft);margin:1.4rem 0 0}
+.dna{display:flex;flex-wrap:wrap;gap:.5rem 1.6rem;margin:1.8rem 0 0;padding:1rem 0 0;border-top:1px solid var(--line)}
+.dna span b{font-weight:600;color:var(--fg)}
+.toc{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.4rem}
+.toc a{font:500 .82rem var(--display);color:var(--fg);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:.35rem .9rem}
+.toc a:hover{border-color:var(--accent);color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+.concept{display:grid;grid-template-columns:minmax(0,21rem) minmax(0,1fr);gap:clamp(1.4rem,3vw,3rem);align-items:start}
+.txt{min-width:0;position:sticky;top:calc(env(safe-area-inset-top,0px) + 1.5rem)}
+.txt h2{font-weight:600;font-size:clamp(1.9rem,3.4vw,2.9rem);letter-spacing:-.04em;line-height:1;margin:.4rem 0 .3rem}
+.txt .tag{font-weight:500;font-size:1.05rem;color:var(--accent);margin:0 0 .9rem;text-wrap:balance}
+.txt p{margin:0 0 1rem;color:var(--soft);max-width:44ch}
+.txt dl{margin:1.2rem 0 0;display:grid;gap:.7rem;border-top:1px solid var(--line);padding-top:1rem}
+.txt dt{font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.txt dd{margin:.1rem 0 0;font-size:.9rem;color:var(--fg);font-weight:400}
+.stage{min-width:0;border-radius:6px;overflow:hidden;position:relative}
+.night{background:radial-gradient(90% 80% at 50% 58%,#2a1180 0,var(--night) 72%);color:#fff}
+.paper{background:var(--paper);color:var(--ink);border:1px solid var(--line)}
+.scroll{overflow-x:auto}
+.scroll>svg{display:block;width:100%;min-width:620px;height:auto}
+.stage svg text{font-family:var(--display)}
+.cap{font-family:var(--mono);font-size:.66rem;letter-spacing:.06em;padding:.6rem .9rem;opacity:.75;margin:0}
+.bar{display:flex;flex-wrap:wrap;gap:.4rem;padding:.8rem .9rem 0}
+.bar button{font:500 .76rem var(--display);border-radius:999px;padding:.34rem .85rem;cursor:pointer;background:transparent}
+.night .bar button{color:#fff;border:1px solid rgba(255,255,255,.3)}
+.night .bar button[aria-pressed="true"]{background:var(--neon);border-color:var(--neon);color:var(--night)}
+.paper .bar button{color:var(--ink);border:1px solid rgba(37,15,107,.3)}
+.paper .bar button[aria-pressed="true"]{background:var(--violet);border-color:var(--violet);color:#fff}
+
+/* 1 Sonar */
+.sweep{transform-origin:500px 470px;animation:spin 9s linear infinite}
+@keyframes spin{from{transform:rotate(-180deg)}to{transform:rotate(180deg)}}
+.blip circle{transform-box:fill-box;transform-origin:center;animation:ping 9s linear infinite;animation-delay:var(--d)}
+.blip text{opacity:0;animation:say 9s linear infinite;animation-delay:var(--d)}
+@keyframes ping{0%{opacity:1;transform:scale(2)}10%{opacity:.95;transform:scale(1)}45%,100%{opacity:.3;transform:scale(1)}}
+@keyframes say{0%,13%{opacity:1}26%,100%{opacity:0}}
+/* 2 Cernes */
+.fib{transition:opacity .35s}
+.dim .fib:not(.hit){opacity:.13}
+/* 3 Éventail */
+.fan3{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:1rem;align-items:center;padding:0 .9rem .4rem}
+.blade{transform-origin:500px 470px;transition:transform .9s cubic-bezier(.3,.8,.2,1);cursor:pointer}
+.phone{justify-self:center;width:min(100%,17.5rem);height:30rem;border:7px solid var(--ink);border-radius:30px;background:#fff;overflow:hidden;display:flex;flex-direction:column;color:var(--ink)}
+.phone header{padding:1.1rem .9rem 1.5rem;display:flex;justify-content:space-between;align-items:center;gap:.5rem}
+.phone header b{font-weight:600;font-size:.86rem;letter-spacing:.04em;text-transform:uppercase;line-height:1.15}
+.phone header button{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer;font-size:.9rem}
+.phone .rings{flex:1;overflow:auto;margin-top:-14px}
+.phone section{border-radius:50%/16px 16px 0 0;padding:1rem .9rem 1.6rem;margin-bottom:-14px}
+.phone section small{display:block;font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;margin-bottom:.35rem;opacity:.75}
+.phone section p{margin:0;font-size:.74rem;line-height:1.6;font-weight:400}
+.phone section p b{font-weight:700}
+.phone .r2{background:#fff}.phone .r1{background:#ebe4ff}.phone .r0{background:#d6c8ff}
+/* 5 Horizon */
+#sv-horizon{touch-action:pan-y;cursor:grab;user-select:none}
+/* 6 Mon radar */
+.tool{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:1rem;padding:.4rem .9rem .4rem;align-items:start}
+.panel{min-width:0;padding-top:1rem}
+.panel h3{font-weight:600;font-size:1.05rem;margin:0 0 .2rem;letter-spacing:-.01em}
+.panel .mono{color:var(--ink);opacity:.7}
+.panel h4{font-family:var(--mono);font-weight:500;font-size:.62rem;letter-spacing:.14em;margin:.9rem 0 .4rem;opacity:.7}
+.chips{display:flex;flex-wrap:wrap;gap:.3rem}
+.chips button{font:400 .7rem var(--display);color:var(--ink);background:#fff;border:1px solid rgba(37,15,107,.28);border-radius:4px;padding:.22rem .45rem;cursor:pointer;text-align:left}
+.chips button::before{content:"";display:inline-block;width:.6em;height:.6em;border-radius:50%;border:1.5px solid #8d86ad;margin-right:.4em;background:#fff}
+.chips button[data-s="1"]{background:#e6dcff;border-color:var(--violet)}
+.chips button[data-s="1"]::before{border-color:var(--violet);background:linear-gradient(90deg,var(--violet) 50%,#fff 50%)}
+.chips button[data-s="2"]{background:#c9f7de;border-color:#0a8a4e}
+.chips button[data-s="2"]::before{border-color:#0a8a4e;background:#0a8a4e}
+.qhit{cursor:pointer}
+
+.reco h2{font-weight:600;font-size:clamp(1.6rem,3vw,2.3rem);letter-spacing:-.035em;margin:.4rem 0 1rem}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:40rem;font-size:.9rem}
+th{font-family:var(--mono);font-weight:500;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:left;padding:.5rem .8rem .5rem 0;border-bottom:1px solid var(--line)}
+td{padding:.7rem .8rem .7rem 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--soft)}
+td:first-child{font-weight:600;color:var(--fg);white-space:nowrap}
+td strong{font-weight:600;color:var(--ok)}
+.notes{font-size:.82rem;color:var(--muted);max-width:75ch;margin:1.4rem 0 0}
+
+@media (min-width:901px){.fan3 .scroll>svg,.tool .scroll>svg{min-width:0}}
+@media (max-width:900px){
+  .concept{grid-template-columns:minmax(0,1fr)}
+  .txt{position:static}
+  .fan3,.tool{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){
+  .sweep{animation:none;transform:rotate(-35deg)}
+  .blip circle{animation:none;opacity:.8}
+  .blip text{animation:none}
+  .blade,.fib{transition:none}
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="mono">Planche de concepts · radar du RSSI · éditions 2019 à 2026</div>
+    <h1>Six façons de <em>mettre en scène</em> le radar</h1>
+    <p class="lede">Le radar est une image fixe, dense, faite pour l’affiche. Ces six pistes gardent ce qui le rend reconnaissable et changent ce qu’on peut en faire : le regarder vivre, le lire dans le temps, le déplier, l’imprimer, s’y promener, le remplir. Chaque scène ci-dessous est une maquette qui tourne avec les vrais mots-clés.</p>
+    <div class="dna mono">
+      <span><b>270°</b> d’éventail ouvert vers le bas</span><span><b>6</b> cadrans de largeur inégale</span><span><b>3</b> anneaux : mature, trending, emerging</span><span><b>≈150</b> mots-clés, les sujets clés en gras</span>
+    </div>
+    <nav class="toc" aria-label="Concepts">
+      <a href="#sonar">Sonar</a><a href="#cernes">Cernes</a><a href="#eventail">Éventail</a><a href="#affiche">Affiche</a><a href="#horizon">Horizon</a><a href="#monradar">Mon radar</a><a href="#reco">Ma recommandation</a>
+    </nav>
+  </header>
+
+  <section class="concept" id="sonar">
+    <div class="txt">
+      <div class="mono">Le regarder vivre</div>
+      <h2>Sonar</h2>
+      <p class="tag">Le radar redevient un radar : un faisceau le balaie.</p>
+      <p>Chaque mot-clé est un écho. Il s’allume au passage du faisceau puis retombe. Seuls les sujets mis en avant affichent leur nom, ce qui règle la densité : on lit trente noms par tour au lieu de cent cinquante d’un coup.</p>
+      <p>En version complète, un clic fige le faisceau sur un cadran, et le changement d’édition fait apparaître ou s’éteindre les échos.</p>
+      <dl>
+        <div><dt>Ce qu’on garde</dt><dd>La forme exacte, les six bandes, les trois anneaux, la position de chaque sujet.</dd></div>
+        <div><dt>Où ça sert</dt><dd>Ouverture de keynote, écran d’accueil du site, boucle sur un stand.</dd></div>
+        <div><dt>Effort</dt><dd>Faible. Tout est déjà dans cette maquette.</dd></div>
+      </dl>
+    </div>
+    <div class="stage night"><div class="scroll"><svg id="sv-sonar" viewBox="0 0 1000 800" role="img" aria-label="Le radar 2026 balayé par un faisceau ; les mots-clés s’allument à son passage."></svg></div>
+      <p class="cap">Édition 2026 · un point = un mot-clé · gros point = sujet mis en avant</p></div>
+  </section>
+
+  <section class="concept" id="cernes">
+    <div class="txt">
+      <div class="mono">Le lire dans le temps</div>
+      <h2>Cernes</h2>
+      <p class="tag">Toutes les éditions dans un seul éventail, comme les cernes d’un arbre.</p>
+      <p>Le rayon ne dit plus la maturité mais l’année : 2019 au cœur, 2026 à l’écorce. Un mot-clé devient une fibre qui traverse les cernes tant qu’il reste sur le radar.</p>
+      <p>La lecture est immédiate. Une fibre du cœur à l’écorce est un fondamental. Un moignon près du cœur est un effet de mode. Une pousse à l’écorce est une nouveauté. Les boutons isolent chaque famille.</p>
+      <dl>
+        <div><dt>Ce qu’on garde</dt><dd>L’éventail, les six cadrans, les anneaux concentriques, les étiquettes d’anneau le long du bord droit.</dd></div>
+        <div><dt>Où ça sert</dt><dd>La vue « Décennie » du Cyber Book, un poster anniversaire, une slide de synthèse.</dd></div>
+        <div><dt>Effort</dt><dd>Moyen. Il faut relever tous les mots-clés de chaque édition ; ici 25 fils seulement.</dd></div>
+      </dl>
+    </div>
+    <div class="stage night">
+      <div class="bar" id="cernes-bar" role="group" aria-label="Isoler une famille de fibres"></div>
+      <div class="scroll"><svg id="sv-cernes" viewBox="0 0 1160 960" role="img" aria-label="Vingt-cinq mots-clés tracés comme des fibres à travers huit cernes annuels, de 2019 au centre à 2026 à l’extérieur."></svg></div>
+      <p class="cap">Trait plein = présent sur le radar · pointillé = visuel non retrouvé (2022, 2023) ou année non relevée</p></div>
+  </section>
+
+  <section class="concept" id="eventail">
+    <div class="txt">
+      <div class="mono">Le déplier</div>
+      <h2>Éventail</h2>
+      <p class="tag">Sa forme est déjà celle d’un éventail. Autant qu’il s’ouvre.</p>
+      <p>Chaque cadran est une lame. Fermé, le radar tient dans une vignette. Sur scène, on le déplie lame après lame au rythme du discours. Sur téléphone, une lame remplit l’écran : les anneaux deviennent trois strates courbes qu’on fait défiler, et on glisse d’une lame à l’autre.</p>
+      <p>C’est la seule piste qui rend le radar lisible sur mobile sans le rétrécir.</p>
+      <dl>
+        <div><dt>Ce qu’on garde</dt><dd>Les couleurs de bande, les largeurs réelles des cadrans, l’ordre des anneaux.</dd></div>
+        <div><dt>Où ça sert</dt><dd>Version mobile, présentation en direct, carrousel pour les réseaux.</dd></div>
+        <div><dt>Effort</dt><dd>Faible à moyen.</dd></div>
+      </dl>
+    </div>
+    <div class="stage paper">
+      <div class="bar"><button id="fold" aria-pressed="false">Replier l’éventail</button></div>
+      <div class="fan3">
+        <div class="scroll"><svg id="sv-fan" viewBox="0 0 1000 800" role="img" aria-label="Le radar en six lames qui se replient et se déplient. Cliquez une lame pour l’ouvrir sur le téléphone."></svg></div>
+        <div class="phone" id="phone" aria-live="polite"></div>
+      </div>
+      <p class="cap">Cliquez une lame, ou utilisez les flèches du téléphone</p></div>
+  </section>
+
+  <section class="concept" id="affiche">
+    <div class="txt">
+      <div class="mono">L’imprimer</div>
+      <h2>Affiche</h2>
+      <p class="tag">Le radar sans un seul trait : les mots dessinent la forme.</p>
+      <p>Les mots-clés courent le long des arcs. Plus de pointillés, plus de rayons : les cadrans et les anneaux apparaissent par la seule typographie. La teinte fonce avec la maturité, le gras reste réservé aux sujets clés, et le corps du texte s’ajuste à chaque case, si bien qu’une case peu remplie parle fort.</p>
+      <dl>
+        <div><dt>Ce qu’on garde</dt><dd>Tout le contenu, mot pour mot, à sa place.</dd></div>
+        <div><dt>Où ça sert</dt><dd>Tirage grand format, couverture du rapport, cadeau client, fond de scène.</dd></div>
+        <div><dt>Effort</dt><dd>Faible. La mise en page est calculée, donc rejouable à chaque édition.</dd></div>
+      </dl>
+    </div>
+    <div class="stage paper"><div class="scroll"><svg id="sv-affiche" viewBox="0 0 1000 800" role="img" aria-label="Le radar 2026 composé uniquement de texte courbe."></svg></div>
+      <p class="cap">Édition 2026 · encre foncée = mature · violet clair = emerging</p></div>
+  </section>
+
+  <section class="concept" id="horizon">
+    <div class="txt">
+      <div class="mono">S’y promener</div>
+      <h2>Horizon</h2>
+      <p class="tag">Se placer au centre du radar et regarder autour de soi.</p>
+      <p>Le RSSI est au moyeu. Ce qui est mature est à ses pieds, en grand. Ce qui émerge est sur la ligne d’horizon, petit et voilé. Les cadrans deviennent des caps, comme sur une boussole. On tourne la tête en glissant, et le petit radar en bas à droite montre où l’on regarde.</p>
+      <p>C’est la piste qui s’éloigne le plus de la forme. Elle la garde comme carte.</p>
+      <dl>
+        <div><dt>Ce qu’on garde</dt><dd>Les cadrans comme directions, les anneaux comme distances, le radar en mini-carte.</dd></div>
+        <div><dt>Où ça sert</dt><dd>Expérience immersive, écran large d’un showroom, casque ou mur d’images.</dd></div>
+        <div><dt>Effort</dt><dd>Moyen ; élevé en vraie 3D.</dd></div>
+      </dl>
+    </div>
+    <div class="stage night"><div class="scroll"><svg id="sv-horizon" viewBox="0 0 1000 520" role="img" aria-label="Panorama depuis le centre du radar : sujets matures au premier plan, émergents à l’horizon. Glissez pour tourner."></svg></div>
+      <p class="cap">Glissez pour tourner · vert = sujet mis en avant</p></div>
+  </section>
+
+  <section class="concept" id="monradar">
+    <div class="txt">
+      <div class="mono">Le remplir</div>
+      <h2>Mon radar</h2>
+      <p class="tag">La publication devient un outil : chaque RSSI y pose son état.</p>
+      <p>Chaque sujet a trois états : à ouvrir, en cours, en place. Les cases du radar se teintent à mesure, et le moyeu affiche la couverture globale. En atelier, le consultant remplit le radar avec le client et repart avec une image qui ne ressemble à celle de personne d’autre.</p>
+      <dl>
+        <div><dt>Ce qu’on garde</dt><dd>Le radar intact ; on y ajoute une seule couche, la couleur d’état.</dd></div>
+        <div><dt>Où ça sert</dt><dd>Atelier client, autodiagnostic en ligne, suivi d’une année sur l’autre.</dd></div>
+        <div><dt>Effort</dt><dd>Moyen. Élevé si l’on sauvegarde et compare les radars.</dd></div>
+      </dl>
+    </div>
+    <div class="stage paper">
+      <div class="tool">
+        <div class="scroll"><svg id="sv-mine" viewBox="0 0 1000 800" role="img" aria-label="Le radar 2026 dont les cases se teintent selon l’avancement. Cliquez un cadran pour lister ses sujets."></svg></div>
+        <div class="panel" id="panel"></div>
+      </div>
+      <p class="cap">États d’exemple, fictifs · cliquez un cadran puis un sujet pour changer son état</p></div>
+  </section>
+
+  <section class="reco" id="reco">
+    <div class="mono">Ma recommandation</div>
+    <h2>Par où commencer</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Piste</th><th>Ce qu’elle apporte</th><th>Fidélité à la forme</th><th>Effort</th><th>Avis</th></tr></thead>
+      <tbody>
+        <tr><td>Cernes</td><td>Le seul visuel qui raconte dix ans en une image. Personne d’autre ne peut le produire.</td><td>Forte</td><td>Moyen</td><td><strong>À faire en premier</strong></td></tr>
+        <tr><td>Éventail</td><td>Règle un vrai problème : le radar est illisible sur téléphone.</td><td>Forte</td><td>Faible à moyen</td><td><strong>À faire en premier</strong></td></tr>
+        <tr><td>Sonar</td><td>Un effet d’ouverture immédiat, pour très peu de travail.</td><td>Totale</td><td>Faible</td><td>Ensuite, comme entrée</td></tr>
+        <tr><td>Affiche</td><td>Un objet qu’on a envie d’accrocher.</td><td>Totale</td><td>Faible</td><td>Ensuite, pour le tirage</td></tr>
+        <tr><td>Mon radar</td><td>Transforme le radar en outil de mission.</td><td>Totale</td><td>Moyen à élevé</td><td>Décision produit à prendre</td></tr>
+        <tr><td>Horizon</td><td>L’effet le plus spectaculaire.</td><td>Faible</td><td>Moyen à élevé</td><td>Pour un événement</td></tr>
+      </tbody>
+    </table></div>
+    <p class="notes">Sources des maquettes. Les mots-clés 2026 sont relevés à la main sur le visuel de l’édition ; leur anneau est approximatif près des limites. Les fils de Cernes reprennent ceux déjà saisis dans <code>editions.js</code>, complétés de deux fils du cadran Risk &amp; Governance lus sur les visuels. Les radars 2018, 2022 et 2023 ne sont pas dans le dépôt. Le brouillon 2027 est laissé de côté.</p>
+  </section>
+</div>
+
+<script>
+(() => {
+const NS = 'http://www.w3.org/2000/svg';
+const $ = s => document.querySelector(s);
+const S = (t, a = {}, p, txt) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; if (p) p.appendChild(e); return e; };
+const H = (t, a = {}, p, txt) => { const e = document.createElement(t); for (const k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; if (p) p.appendChild(e); return e; };
+const f = n => +n.toFixed(1), rad = d => d * Math.PI / 180;
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const NIGHT = '#0c0528', DEEP = '#250f6b', VIOLET = '#451dc7', NEON = '#04f06a', INK = '#1a0d4a';
+
+function geo(cx, cy) {
+  const P = (a, r) => [f(cx + r * Math.sin(rad(a))), f(cy - r * Math.cos(rad(a)))];
+  const arc = (a0, a1, r) => `M${P(a0, r)}A${f(r)} ${f(r)} 0 ${Math.abs(a1 - a0) > 180 ? 1 : 0} ${a1 > a0 ? 1 : 0} ${P(a1, r)}`;
+  const sec = (a0, a1, r0, r1) => { const L = Math.abs(a1 - a0) > 180 ? 1 : 0;
+    return r0 <= 0 ? `M${cx},${cy}L${P(a0, r1)}A${f(r1)} ${f(r1)} 0 ${L} 1 ${P(a1, r1)}Z`
+      : `M${P(a0, r1)}A${f(r1)} ${f(r1)} 0 ${L} 1 ${P(a1, r1)}L${P(a1, r0)}A${f(r0)} ${f(r0)} 0 ${L} 0 ${P(a0, r0)}Z`; };
+  return {P, arc, sec, cx, cy};
+}
+
+/* Cadrans : angles mesurés sur le visuel 2026 (0° = haut, sens horaire). c = couleur de bande, l = variante lisible sur fond nuit. */
+const Q = [
+  {id: 'idt', n: 'Identity & Trust Services', a0: -133, a1: -73, c: '#2b1a78', l: '#8f7bf0', on: '#fff'},
+  {id: 'pro', n: 'Protect', a0: -73, a1: -20, c: '#451dc7', l: '#9d80ff', on: '#fff'},
+  {id: 'det', n: 'Detect & Respond', a0: -20, a1: 17, c: '#a56bf5', l: '#c39bff', on: '#fff'},
+  {id: 'rsk', n: 'Risk & Governance', a0: 17, a1: 63, c: '#dcc8ff', l: '#e6d9ff', on: INK},
+  {id: 'cmp', n: 'Compliance & Privacy', a0: 63, a1: 90, c: '#0a9d58', l: '#35c783', on: '#fff'},
+  {id: 'res', n: 'Operational Resilience', a0: 90, a1: 133, c: '#04f06a', l: '#04f06a', on: INK},
+];
+const RING = ['MATURE', 'TRENDING', 'EMERGING'], RF = [.24, .43, .65, .9];
+/* Mots-clés 2026 relevés sur le visuel : mature | trending | emerging ; * = en gras sur le radar. */
+const RAW = {
+  idt: ['Entra ID|Customer IAM|IAG & SoD|IAMaaS|OAuth2|Identity Federation|MFA|PKI|PAM|KMS',
+    'eIDAS|Frontline workers IAM|SAP IDM end of life|Identity Analytics|Adaptive authentication|*Converged identity platform|Security of admin accounts|CLM|Phishing resistant authn.|Id Threat DR',
+    '*Crypto agility|Homomorphic encryption|*Post Quantum Crypto roadmap|CIAM B2B2C|Zero Standing Privilege|CIdO Chief ID Off.|Attribute access control|*IAM for OT|Extended enterprise IAM|Unstructured data access|IAM orchestration|Decentralized identities|IAM of Things|*Non-Human Identities|*IAM of AI Agents|CICD4IAM|Predictive anti-fraud|Account takeover protection|*AI for IAM'],
+  pro: ['Containers|Secure Wkstn.|Zero Trust Access|EDR|OT probe|DDoS prot.',
+    'API security|Tech debt mgt.|*IT/OT VOC|Micro seg.|CNAPP|CIEM|AD Exit|SAST|DAST|Product security|CICD Security|*AI agent & MCP security|*AI red teaming|*AI risk assessment MLSecOps',
+    '*Digital twin|OPC UA deployment|*AI-BoM|0 day mgt.|AI for security|PLC code security|IT/OT convergence|OT DevSecOps|DRM/DLP|Confidential computing|AI based data classification|Deepfake protection|Extended tier 0|Zero trust enabled app.|Zero trust metrics|SBOM/SCA|Auto Secret detection'],
+  det: ['SOC|Red team|In-house CSIRT|Bug Bounty',
+    '*SOC/Fusion centers|XDR|CTI|Cloud based SIEM|Purple team|*SecApp SDLC Governance',
+    '*Agentic AI cyber platform|*Cyber data lake|*Real-time AI response|Deception|CTEM/BAS/EASM/APM|RASP|Supply chain security|Cyber range|*UEBA|Threat-led risk analysis & pentest'],
+  rsk: ['ISMS|Org. Risk Analysis|Awareness|Insurance|Service catalog|Global maturity framework',
+    'Culture change|Smart Sourcing|Risk Quantification|“All” Risk TOM|*Trustworthy AI|Talent Mgt.|At scale 3rd party mgt|M&A at scale',
+    'Business App surveillance|*Unified security by design|Cyber Sustainability|DevSecOps automation|*Value realization office|Cyber efficiency & rationalization|*Cyber Data & AI Office|Insider Threat program|Real-time risk evaluation|Small entity security|4th party'],
+  cmp: ['Compliance assurance|Privacy mgt.|IR retainer|*DORA',
+    '*Critical infra NIS2/REC|AI Act|Sectorial Compliance|*Product certif./CRA|By design compliance',
+    '*Unified compliance framework|*Digital dependencies mapping|Regulatory Mgt.|AI automated assurance|Synthetic data & anonymization|Unified customer privacy rights'],
+  res: ['BIA|Crisis management|DRP|AD rebuild',
+    'Red button|*Decoupled IT|Critical business services / MVC|OpRes regulations|Severe but plausible scenarios|Airgap storage & backup|*Crisis Info. System',
+    'Supply chain resilience|Workforce resilience|Multi-cloud continuity|Stress test incl. 3rd party|OT Resilience|Cloud erasure resilience|Resilience management tooling|Cyber vault|Fast IS rebuilding|Resilience culture|Isolated Recovery Env.'],
+};
+const KW = [];
+Q.forEach((q, qi) => RAW[q.id].forEach((s, ri) => s.split('|').forEach(w => KW.push({w: w.replace('*', ''), b: w[0] === '*', q: qi, r: ri}))));
+const cell = (qi, ri) => KW.filter(k => k.q === qi && k.r === ri);
+
+const cv = document.createElement('canvas').getContext('2d');
+const mw = (s, wt) => { cv.font = `${wt} 10px Poppins, "Segoe UI", sans-serif`; return cv.measureText(s).width; };
+
+/* Répartit n points dans une case (cadran × anneau), en rangées concentriques. */
+function cellPts(q, r0, r1, n) {
+  const span = q.a1 - q.a0, pad = 3.5, depth = r1 - r0, len = rad(span) * (r0 + r1) / 2;
+  const rows = Math.max(1, Math.min(5, Math.round(Math.sqrt(n * depth / len))));
+  const rr = [...Array(rows)].map((_, i) => r0 + depth * (i + .5) / rows), tot = rr.reduce((s, x) => s + x, 0);
+  const out = []; let left = n;
+  rr.forEach((r, i) => { const k = i === rows - 1 ? left : Math.min(left, Math.round(n * r / tot)); left -= k;
+    for (let j = 0; j < k; j++) out.push({a: q.a0 + pad + (span - 2 * pad) * (j + .5) / k, r: r + (j % 2 ? 1 : -1) * depth / rows * .15}); });
+  return out;
+}
+function place(R) { Q.forEach((q, qi) => RING.forEach((_, ri) => { const ks = cell(qi, ri), pts = cellPts(q, R * RF[ri] + 6, R * RF[ri + 1] - 6, ks.length); ks.forEach((k, i) => { k.a = pts[i].a; k.rr = pts[i].r; }); })); }
+
+/* Cadre commun : bandes de couleur, noms de cadran sur l'arc, anneaux en pointillé, étiquettes d'anneau le long du bord droit. */
+function frame(svg, G, R, o) {
+  const g = S('g', {}, svg);
+  Q.forEach((q, i) => {
+    S('path', {d: G.sec(q.a0, q.a1, R * .93, R), fill: o.dark ? q.l : q.c}, g);
+    S('path', {id: `${o.id}n${i}`, d: G.arc(q.a0, q.a1, R * 1.03), fill: 'none'}, g);
+    const t = S('text', {'font-size': 11.5, 'font-weight': 600, 'letter-spacing': '.05em', fill: o.ink}, g);
+    S('textPath', {href: `#${o.id}n${i}`, startOffset: '50%', 'text-anchor': 'middle'}, t, q.n.toUpperCase());
+  });
+  if (!o.bare) {
+    [.43, .65].forEach(k => S('path', {d: G.arc(-133, 133, R * k), fill: 'none', stroke: o.dash, 'stroke-dasharray': '3 5'}, g));
+    [[-133, 0], [133, 5]].forEach(([a, i]) => S('path', {d: `M${G.P(a, R * .24)}L${G.P(a, R)}`, stroke: o.dark ? Q[i].l : Q[i].c, 'stroke-width': 2, fill: 'none'}, g));
+  }
+  RING.forEach((s, i) => { const p = G.P(137.5, R * [.335, .54, .775][i]);
+    S('text', {x: p[0], y: p[1], transform: `rotate(43 ${p})`, 'text-anchor': 'middle', 'font-size': 8.5, 'letter-spacing': '.14em', fill: o.ink, opacity: .7}, g, s); });
+  return g;
+}
+function hub(svg, G, r, big, small, fill = DEEP) {
+  S('circle', {cx: G.cx, cy: G.cy, r, fill}, svg);
+  [.72, .46].forEach(k => S('circle', {cx: G.cx, cy: G.cy, r: r * k, fill: 'none', stroke: '#fff', 'stroke-opacity': .18}, svg));
+  S('text', {x: G.cx, y: G.cy + 6, 'text-anchor': 'middle', 'font-size': r * .44, 'font-weight': 600, fill: '#fff', 'letter-spacing': '-.03em'}, svg, big);
+  S('text', {x: G.cx, y: G.cy + r * .42, 'text-anchor': 'middle', 'font-size': 8, 'letter-spacing': '.16em', fill: '#fff', opacity: .75}, svg, small);
+}
+
+/* ---------- 1. Sonar ---------- */
+function sonar() {
+  const svg = $('#sv-sonar'), G = geo(500, 470), R = 400, T = 9;
+  place(R);
+  const defs = S('defs', {}, svg);
+  S('path', {d: G.sec(-133, 133, 0, R * .93)}, S('clipPath', {id: 'sclip'}, defs));
+  S('path', {d: G.sec(-133, 133, 0, R * .93), fill: '#fff', 'fill-opacity': .035}, svg);
+  frame(svg, G, R, {id: 's', dark: 1, ink: '#fff', dash: 'rgba(255,255,255,.3)'});
+  Q.slice(1).forEach(q => S('path', {d: `M${G.P(q.a0, R * .24)}L${G.P(q.a0, R * .93)}`, stroke: '#fff', 'stroke-opacity': .1, fill: 'none'}, svg));
+  const sw = S('g', {class: 'sweep'}, S('g', {'clip-path': 'url(#sclip)'}, svg));
+  for (let i = 0; i < 20; i++) S('path', {d: G.sec(-2 * (i + 1), -2 * i + .15, 0, R), fill: NEON, 'fill-opacity': f(.3 * Math.pow(1 - i / 20, 1.6) * 100) / 100}, sw);
+  S('path', {d: `M${G.cx},${G.cy}L${G.P(0, R)}`, stroke: NEON, 'stroke-width': 1.6}, sw);
+  let nb = 0;
+  KW.forEach(k => {
+    const [x, y0] = G.P(k.a, k.rr), y = k.b ? y0 + (nb++ % 3 - 1) * 7 : y0, g = S('g', {class: 'blip', style: `--d:${f((k.a + 180) / 360 * T - T)}s`}, svg);
+    S('circle', {cx: x, cy: y, r: k.b ? 4.4 : 2.5, fill: k.b ? '#fff' : Q[k.q].l}, g);
+    if (k.b) S('text', {x: x + (k.a < 0 ? -8 : 8), y: y + 3.5, 'text-anchor': k.a < 0 ? 'end' : 'start', 'font-size': 10.5, 'font-weight': 500, fill: '#fff', stroke: NIGHT, 'stroke-width': 3, 'paint-order': 'stroke'}, g, k.w);
+  });
+  hub(svg, G, R * .24, '2026', 'CISO RADAR');
+}
+
+/* ---------- 2. Cernes ---------- */
+function cernes() {
+  const svg = $('#sv-cernes'), G = geo(580, 572), r0 = 70, rw = 37.75, YEARS = [2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026], LOST = [2022, 2023];
+  const A = [2019, 2020, 2021, 2024, 2025, 2026], mid = y => r0 + (y - 2019 + .5) * rw;
+  const TH = [
+    ['Post Quantum Crypto', 0, A], ['Passwordless', 0, A], ['Non-Human Identities', 0, [2025, 2026]],
+    ['Zero Trust', 1, A], ['Confidential computing', 1, A.slice(1)], ['AI risk assessment', 1, A.slice(1), 1], ['Serverless apps', 1, A.slice(0, 4)],
+    ['Immune systems', 1, A.slice(0, 3)], ['Blockchain trust', 1, [2019, 2020]], ['Remote access', 1, [2021]], ['Digital twin', 1, A.slice(3)],
+    ['AI red teaming', 1, A.slice(3), 1], ['Deepfake protection', 1, [2025, 2026], 1], ['MCP security', 1, [2026], 1],
+    ['Fusion centers', 2, A], ['Cyber data lake', 2, A.slice(3)], ['Agentic AI platform', 2, [2026], 1],
+    ['Risk Quantification', 3, [2019, 2021, 2025, 2026]], ['Smart Sourcing', 3, [2025, 2026]],
+    ['Cyber borders', 4, [2021, 2024, 2025], 0, 1], ['DORA', 4, A.slice(3), 0, 1], ['AI Act', 4, A.slice(3), 0, 1],
+    ['AD rebuild', 5, A], ['Pandemic continuity', 5, [2021]], ['Decoupled IT', 5, [2026]],
+  ].map(([w, q, y, ia, reg]) => ({w, q, y, ia, reg}));
+  const defs = S('defs', {}, svg), pat = S('pattern', {id: 'hatch', width: 7, height: 7, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)'}, defs);
+  S('rect', {width: 7, height: 7, fill: '#fff', 'fill-opacity': .03}, pat); S('rect', {width: 1.2, height: 7, fill: '#fff', 'fill-opacity': .22}, pat);
+  YEARS.forEach((y, i) => {
+    S('path', {d: G.sec(-133, 133, r0 + i * rw, r0 + (i + 1) * rw - 1.5), fill: LOST.includes(y) ? 'url(#hatch)' : '#fff', 'fill-opacity': LOST.includes(y) ? 1 : (i % 2 ? .05 : .085)}, svg);
+    const p = G.P(137.5, mid(y));
+    S('text', {x: p[0], y: p[1], transform: `rotate(43 ${p})`, 'text-anchor': 'middle', 'dominant-baseline': 'middle', 'font-size': 10, 'font-weight': 500, fill: '#fff', opacity: LOST.includes(y) ? .45 : .9}, svg, y);
+  });
+  Q.forEach((q, qi) => {
+    S('path', {d: G.arc(q.a0 + .4, q.a1 - .4, 536), stroke: q.l, 'stroke-width': 4, fill: 'none'}, svg);
+    S('path', {id: `cn${qi}`, d: G.arc(q.a0, q.a1, 545), fill: 'none'}, svg);
+    S('textPath', {href: `#cn${qi}`, startOffset: '50%', 'text-anchor': 'middle'}, S('text', {'font-size': 11.5, 'font-weight': 600, 'letter-spacing': '.05em', fill: '#fff'}, svg), q.n.toUpperCase());
+    if (qi) S('path', {d: `M${G.P(q.a0, r0)}L${G.P(q.a0, 530)}`, stroke: '#fff', 'stroke-opacity': .14, fill: 'none'}, svg);
+    const ts = TH.filter(t => t.q === qi);
+    ts.forEach((t, i) => {
+      const a = q.a0 + (q.a1 - q.a0) * (i + .5) / ts.length, g = S('g', {class: 'fib'}, svg); t.g = g;
+      const y0 = t.y[0], y1 = t.y[t.y.length - 1];
+      if (y1 > y0) S('path', {d: `M${G.P(a, mid(y0))}L${G.P(a, mid(y1))}`, stroke: q.l, 'stroke-width': 1.2, 'stroke-dasharray': '2 4', fill: 'none'}, g);
+      t.y.forEach((y, j) => { if (t.y[j + 1] === y + 1) S('path', {d: `M${G.P(a, mid(y))}L${G.P(a, mid(y + 1))}`, stroke: q.l, 'stroke-width': 3.2, 'stroke-linecap': 'round', fill: 'none'}, g); });
+      t.y.forEach(y => { const p = G.P(a, mid(y)); S('circle', {cx: p[0], cy: p[1], r: 4.6, fill: q.l, stroke: NIGHT, 'stroke-width': 1.4}, g); });
+      S('path', {d: `M${G.P(a, mid(y1) + 8)}L${G.P(a, 380)}`, stroke: '#fff', 'stroke-opacity': y1 === 2026 ? 0 : .16, fill: 'none'}, g);
+      const p = G.P(a, 386), left = a < 0;
+      S('text', {x: p[0], y: p[1], transform: `rotate(${f(left ? a + 90 : a - 90)} ${p})`, 'text-anchor': left ? 'end' : 'start', 'dominant-baseline': 'middle', 'font-size': 12, 'font-weight': y1 === 2026 ? 500 : 300, fill: '#fff', opacity: y1 === 2026 ? 1 : .7}, g, t.w);
+    });
+  });
+  S('circle', {cx: G.cx, cy: G.cy, r: r0 - 3, fill: DEEP}, svg);
+  S('text', {x: G.cx, y: G.cy + 3, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 600, fill: '#fff'}, svg, '2019');
+  S('text', {x: G.cx, y: G.cy + 20, 'text-anchor': 'middle', 'font-size': 7.5, 'letter-spacing': '.16em', fill: '#fff', opacity: .75}, svg, 'AU CŒUR');
+  const sets = [['Tout', null], ['Fondamentaux', t => t.y.length === 6], ['Effets de mode', t => t.y[t.y.length - 1] <= 2021], ['Nouveautés', t => t.y[0] >= 2025], ['Réglementation', t => t.reg], ['IA', t => t.ia]];
+  const bar = $('#cernes-bar');
+  sets.forEach(([name, fn], i) => { const b = H('button', {'aria-pressed': i === 0}, bar, name);
+    b.onclick = () => { [...bar.children].forEach(c => c.setAttribute('aria-pressed', c === b)); svg.classList.toggle('dim', !!fn); TH.forEach(t => t.g.classList.toggle('hit', !!fn && !!fn(t))); }; });
+}
+
+/* ---------- 3. Éventail ---------- */
+function eventail() {
+  const svg = $('#sv-fan'), G = geo(500, 470), R = 400, blades = []; let open = true, sel = 0;
+  place(R);
+  Q.forEach((q, i) => {
+    const g = S('g', {class: 'blade', tabindex: 0, role: 'button', 'aria-label': q.n, style: `transition-delay:${i * 55}ms`}, svg);
+    S('path', {d: G.sec(q.a0 + .5, q.a1 - .5, R * .2, R), fill: q.c, stroke: INK, 'stroke-opacity': .25}, g);
+    [.43, .65, .9].forEach(k => S('path', {d: G.arc(q.a0 + .5, q.a1 - .5, R * k), stroke: q.on, 'stroke-opacity': .45, 'stroke-dasharray': '3 5', fill: 'none'}, g));
+    KW.filter(k => k.q === i).forEach(k => { const p = G.P(k.a, k.rr); S('circle', {cx: p[0], cy: p[1], r: k.b ? 3.6 : 2, fill: q.on, 'fill-opacity': k.b ? 1 : .6}, g); });
+    S('path', {id: `fn${i}`, d: G.arc(q.a0, q.a1, R * .928), fill: 'none'}, g);
+    S('textPath', {href: `#fn${i}`, startOffset: '50%', 'text-anchor': 'middle'}, S('text', {'font-size': 9.6, 'font-weight': 600, 'letter-spacing': '.04em', fill: q.on}, g), q.n.toUpperCase());
+    g.onclick = () => { if (!open) toggle(); sel = i; draw(); };
+    g.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); g.onclick(); } };
+    blades.push(g);
+  });
+  hub(svg, G, R * .2, '2026', 'RADAR', INK);
+  const phone = $('#phone'), btn = $('#fold');
+  function draw() {
+    blades.forEach((g, i) => { const q = Q[i], b = (q.a0 + q.a1) / 2, pop = open && i === sel ? 16 : 0;
+      g.style.transform = `rotate(${open ? 0 : -b}deg) translate(${f(pop * Math.sin(rad(b)))}px,${f(-pop * Math.cos(rad(b)))}px)`;
+      g.style.opacity = open && i !== sel ? .55 : 1; });
+    const q = Q[sel]; phone.replaceChildren();
+    const h = H('header', {style: `background:${q.c};color:${q.on}`}, phone);
+    const prev = H('button', {'aria-label': 'Lame précédente'}, h, '←'); H('b', {}, h, q.n); const next = H('button', {'aria-label': 'Lame suivante'}, h, '→');
+    prev.onclick = () => { sel = (sel + 5) % 6; draw(); }; next.onclick = () => { sel = (sel + 1) % 6; draw(); };
+    const rings = H('div', {class: 'rings'}, phone);
+    [2, 1, 0].forEach(ri => { const ks = cell(sel, ri), s = H('section', {class: 'r' + ri}, rings); H('small', {}, s, `${RING[ri]} · ${ks.length}`);
+      const p = H('p', {}, s); ks.forEach((k, j) => { if (j) p.append(' · '); k.b ? H('b', {}, p, k.w) : p.append(k.w); }); });
+  }
+  function toggle() { open = !open; btn.setAttribute('aria-pressed', !open); btn.textContent = open ? 'Replier l’éventail' : 'Déplier l’éventail'; draw(); }
+  btn.onclick = toggle; draw();
+}
+
+/* ---------- 4. Affiche typographique ---------- */
+function affiche() {
+  const svg = $('#sv-affiche'), G = geo(500, 470), R = 400, TONE = [INK, VIOLET, '#7d68dc'];
+  frame(svg, G, R, {id: 'a', ink: INK, bare: 1});
+  function fit(ws, span, r0, r1) {
+    for (let fs = 15; fs >= 4; fs -= .5) { const lh = fs * 1.2, n = Math.floor((r1 - r0) / lh), rows = []; let i = 0;
+      for (let k = 0; k < n && i < ws.length; k++) { const r = r1 - (k + 1) * lh + fs * .22, av = rad(span) * r - fs * .6, it = []; let w = 0;
+        while (i < ws.length) { const ww = ws[i].m * fs / 10 + (it.length ? fs * 1.25 : 0); if (w + ww > av) break; w += ww; it.push(ws[i++]); }
+        if (!it.length) break; rows.push({r, it}); }
+      if (i >= ws.length) return {fs, rows}; }
+    return null;
+  }
+  let n = 0;
+  Q.forEach((q, qi) => RING.forEach((_, ri) => {
+    const ws = cell(qi, ri).map(k => ({...k, m: mw(k.w, k.b ? 700 : 400)})), a0 = q.a0 + 1.6, a1 = q.a1 - 1.6;
+    const res = fit(ws, a1 - a0, R * RF[ri] + 4, R * RF[ri + 1] - 3); if (!res) return;
+    res.rows.forEach(row => { const id = 'ap' + n++; S('path', {id, d: G.arc(a0, a1, row.r), fill: 'none'}, svg);
+      const tp = S('textPath', {href: '#' + id, startOffset: '50%', 'text-anchor': 'middle'}, S('text', {'font-size': res.fs, fill: TONE[ri]}, svg));
+      row.it.forEach((k, j) => { if (j) S('tspan', {'fill-opacity': .4}, tp, ' · '); S('tspan', {'font-weight': k.b ? 700 : 400}, tp, k.w); }); });
+  }));
+  S('text', {x: 500, y: 492, 'text-anchor': 'middle', 'font-size': 62, 'font-weight': 700, fill: VIOLET, 'letter-spacing': '-.05em'}, svg, '2026');
+  S('text', {x: 500, y: 512, 'text-anchor': 'middle', 'font-size': 8.5, 'letter-spacing': '.22em', fill: INK}, svg, 'CISO RADAR');
+}
+
+/* ---------- 5. Horizon ---------- */
+function horizon() {
+  const svg = $('#sv-horizon'), K = 1000 / 90, LIM = 88, X = a => a * K;
+  const BAND = [{y0: 388, y1: 510, fs: 20, lh: 31}, {y0: 262, y1: 368, fs: 14.5, lh: 24}, {y0: 160, y1: 246, fs: 10.5, lh: 16.5}];
+  const defs = S('defs', {}, svg), gr = S('linearGradient', {id: 'hz', x1: 0, y1: 0, x2: 0, y2: 1}, defs);
+  [[0, VIOLET, .0], [.28, '#7a4dff', .5], [.3, NEON, .35], [.34, VIOLET, .22], [1, NIGHT, 0]].forEach(([o, c, a]) => S('stop', {offset: o, 'stop-color': c, 'stop-opacity': a}, gr));
+  S('rect', {width: 1000, height: 520, fill: 'url(#hz)'}, svg);
+  const world = S('g', {}, svg);
+  S('path', {d: `M${X(-133)},150H${X(133)}`, stroke: NEON, 'stroke-opacity': .8, 'stroke-width': 1.2}, world);
+  [254, 378].forEach(y => S('path', {d: `M${X(-133)},${y}H${X(133)}`, stroke: '#fff', 'stroke-opacity': .22, 'stroke-dasharray': '3 6'}, world));
+  for (let a = -130; a <= 130; a += 5) S('path', {d: `M${X(a)},0v${a % 15 ? 6 : 12}`, stroke: '#fff', 'stroke-opacity': .5}, world);
+  Q.forEach((q, qi) => {
+    const x0 = X(q.a0), span = X(q.a1) - x0;
+    S('path', {d: `M${x0},150V520`, stroke: q.l, 'stroke-opacity': .35}, world);
+    S('rect', {x: x0 + 4, y: 20, width: span - 8, height: 4, fill: q.l}, world);
+    const words = q.n.toUpperCase(), size = Math.min(34, (span - 30) / (mw(words, 600) / 10 * 1.08));
+    S('text', {x: x0 + span / 2, y: 86, 'text-anchor': 'middle', 'font-size': f(size), 'font-weight': 600, fill: q.l, 'letter-spacing': '.04em'}, world, words);
+    BAND.forEach((b, ri) => {
+      const ks = cell(qi, ri).map(k => ({...k, m: mw(k.w, k.b ? 700 : 400) / 10})), maxRows = Math.floor((b.y1 - b.y0) / b.lh) + 1;
+      let fs = b.fs, rows = Math.ceil(ks.reduce((s, k) => s + k.m * fs + fs * 1.6, 0) / (span - 16));
+      const widest = Math.max(...ks.map(k => k.m));
+      rows = Math.max(rows, Math.ceil(ks.length / Math.max(1, Math.floor((span - 10) / (widest * fs + fs)))));
+      if (rows > maxRows) { fs *= maxRows / rows; rows = maxRows; }
+      const per = Math.ceil(ks.length / rows), lh = Math.min(b.lh, (b.y1 - b.y0) / Math.max(1, rows - 1) || b.lh);
+      ks.forEach((k, i) => { const r = Math.floor(i / per), m = Math.min(per, ks.length - r * per), j = i % per;
+        S('text', {x: f(x0 + span * (j + .5) / m), y: f(b.y0 + r * lh + fs * .35), 'text-anchor': 'middle', 'font-size': f(fs), 'font-weight': k.b ? 700 : [500, 400, 300][ri], fill: k.b ? NEON : '#fff', 'fill-opacity': k.b ? 1 : [1, .86, .62][ri]}, world, k.w); });
+    });
+  });
+  S('path', {d: `M${X(133)},150V520`, stroke: Q[5].l, 'stroke-opacity': .35}, world);
+  const hud = S('linearGradient', {id: 'hud', x1: 0, x2: 1}, defs); S('stop', {offset: .55, 'stop-color': NIGHT, 'stop-opacity': .92}, hud); S('stop', {offset: 1, 'stop-color': NIGHT, 'stop-opacity': 0}, hud);
+  S('rect', {y: 130, width: 120, height: 390, fill: 'url(#hud)'}, svg);
+  [['EMERGING', 'à l’horizon', 200], ['TRENDING', 'en approche', 315], ['MATURE', 'à vos pieds', 450]].forEach(([a, b, y]) => {
+    S('text', {x: 14, y, 'font-size': 9, 'font-weight': 600, 'letter-spacing': '.16em', fill: '#fff'}, svg, a);
+    S('text', {x: 14, y: y + 13, 'font-size': 8.5, fill: '#fff', opacity: .65}, svg, b); });
+  const M = geo(930, 462), mr = 46;
+  S('circle', {cx: 930, cy: 462, r: mr + 8, fill: NIGHT, 'fill-opacity': .85, stroke: '#fff', 'stroke-opacity': .25}, svg);
+  Q.forEach(q => S('path', {d: M.sec(q.a0, q.a1, 9, mr), fill: q.l, 'fill-opacity': .55}, svg));
+  const cone = S('path', {d: M.sec(-45, 45, 0, mr + 4), fill: '#fff', 'fill-opacity': .3, stroke: '#fff'}, svg);
+  let yaw = -40, dir = 1, hold = 0, last = 0, drag = null;
+  const apply = () => { world.setAttribute('transform', `translate(${f(500 - yaw * K)} 0)`); cone.setAttribute('transform', `rotate(${f(yaw)} 930 462)`); };
+  svg.addEventListener('pointerdown', e => { drag = {x: e.clientX, yaw}; svg.setPointerCapture(e.pointerId); svg.style.cursor = 'grabbing'; });
+  svg.addEventListener('pointermove', e => { if (!drag) return; const w = svg.getBoundingClientRect().width; yaw = Math.max(-LIM, Math.min(LIM, drag.yaw - (e.clientX - drag.x) * 1000 / w / K)); hold = performance.now() + 3500; apply(); });
+  const end = () => { drag = null; svg.style.cursor = 'grab'; };
+  svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
+  apply();
+  if (!reduced) requestAnimationFrame(function tick(t) { const dt = Math.min(.05, (t - last) / 1000); last = t;
+    if (!drag && t > hold) { yaw += dir * 5 * dt; if (yaw > LIM) { yaw = LIM; dir = -1; } if (yaw < -LIM) { yaw = -LIM; dir = 1; } apply(); }
+    requestAnimationFrame(tick); });
+}
+
+/* ---------- 6. Mon radar ---------- */
+function monRadar() {
+  const svg = $('#sv-mine'), G = geo(500, 470), R = 400, panel = $('#panel'); let sel = 1;
+  place(R);
+  /* États d'exemple, déterministes : plus un sujet est mature, plus il a de chances d'être en place. */
+  KW.forEach((k, i) => { const h = (i * 2654435761 >>> 0) % 100, [d, w] = [[78, 94], [34, 72], [7, 30]][k.r]; k.s = h < d ? 2 : h < w ? 1 : 0; });
+  const cells = [], dots = [];
+  Q.forEach((q, qi) => RING.forEach((_, ri) => cells.push({qi, ri, el: S('path', {d: G.sec(q.a0, q.a1, R * RF[ri], R * (ri === 2 ? .93 : RF[ri + 1])), fill: '#0a9d58', stroke: '#fff', 'stroke-width': 2}, svg)})));
+  frame(svg, G, R, {id: 'm', ink: INK, dash: 'rgba(37,15,107,.35)'});
+  const ring = S('path', {fill: 'none', stroke: INK, 'stroke-width': 3}, svg);
+  KW.forEach(k => { const p = G.P(k.a, k.rr); dots.push(S('circle', {cx: p[0], cy: p[1], r: 4, 'stroke-width': 1.6}, svg)); });
+  S('circle', {cx: 500, cy: 470, r: R * .24, fill: DEEP}, svg);
+  const pct = S('text', {x: 500, y: 482, 'text-anchor': 'middle', 'font-size': 44, 'font-weight': 600, fill: '#fff', 'letter-spacing': '-.03em'}, svg);
+  S('text', {x: 500, y: 505, 'text-anchor': 'middle', 'font-size': 8, 'letter-spacing': '.16em', fill: '#fff', opacity: .75}, svg, 'COUVERTURE');
+  Q.forEach((q, qi) => { const h = S('path', {class: 'qhit', d: G.sec(q.a0, q.a1, R * .24, R * 1.08), fill: '#fff', 'fill-opacity': 0, tabindex: 0, role: 'button', 'aria-label': q.n}, svg);
+    h.onclick = () => { sel = qi; list(); paint(); }; h.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); h.onclick(); } }; });
+  const score = ks => ks.length ? ks.reduce((s, k) => s + k.s / 2, 0) / ks.length : 0;
+  function paint() {
+    cells.forEach(c => c.el.setAttribute('fill-opacity', f(score(cell(c.qi, c.ri)) * 55) / 100 + .03));
+    KW.forEach((k, i) => { const d = dots[i]; d.setAttribute('fill', ['#fff', '#b9a6ff', '#0a8a4e'][k.s]); d.setAttribute('stroke', ['#8d86ad', VIOLET, '#075f36'][k.s]); });
+    pct.textContent = Math.round(score(KW) * 100) + ' %';
+    ring.setAttribute('d', G.arc(Q[sel].a0, Q[sel].a1, R * 1.012));
+  }
+  function list() {
+    const q = Q[sel]; panel.replaceChildren();
+    H('div', {class: 'mono'}, panel, 'Cadran sélectionné'); H('h3', {}, panel, q.n);
+    const sc = H('div', {class: 'mono'}, panel);
+    const upd = () => sc.textContent = `Couverture ${Math.round(score(KW.filter(k => k.q === sel)) * 100)} %`;
+    upd();
+    RING.forEach((name, ri) => { H('h4', {}, panel, name); const box = H('div', {class: 'chips'}, panel);
+      cell(sel, ri).forEach(k => { const b = H('button', {'data-s': k.s, title: 'Changer l’état'}, box, k.w);
+        b.onclick = () => { k.s = (k.s + 1) % 3; b.dataset.s = k.s; paint(); upd(); }; }); });
+  }
+  list(); paint();
+}
+
+const run = () => [sonar, cernes, eventail, affiche, horizon, monRadar].forEach(fn => { try { fn(); } catch (e) { console.error(fn.name, e); } });
+const fonts = document.fonts && document.fonts.load ? Promise.all(['300', '400', '500', '600', '700'].map(w => document.fonts.load(w + ' 10px Poppins'))) : Promise.resolve();
+Promise.race([fonts, new Promise(r => setTimeout(r, 2500))]).catch(() => {}).then(run);
+})();
+</script>
