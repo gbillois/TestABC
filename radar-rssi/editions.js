@@ -147,3 +147,36 @@ window.EDITIONS = [
     ],
   },
 ].map(e => ({...e, photo: e.missing ? '' : 'private/photos/' + e.year + '.jpg'}));
+
+// Fils de mots-clés : années où le mot figure sur le radar (éditions dont le visuel est disponible).
+// Les radars 2018, 2022 et 2023 n'ont pas été retrouvés : aucune présence n'y est affirmée.
+window.NO_RADAR = ['2018', '2022', '2023'];
+window.FAMILIES = {ia: 'IA', id: 'Identité', protect: 'Protection', detect: 'Détection', conf: 'Conformité', res: 'Résilience'};
+window.THREADS = [
+  {w: 'Post Quantum Crypto', f: 'id', y: [2019, 2020, 2021, 2024, 2025, 2026, 2027]},
+  {w: 'Beyond Password → Passwordless', f: 'id', y: [2019, 2020, 2021, 2024, 2025, 2026, 2027]},
+  {w: 'Software Defined Perimeter → Zero Trust', f: 'protect', y: [2019, 2020, 2021, 2024, 2025, 2026, 2027]},
+  {w: 'Active Directory rebuild', f: 'res', y: [2019, 2020, 2021, 2024, 2025, 2026, 2027]},
+  {w: 'Fusion centers', f: 'detect', y: [2019, 2020, 2021, 2024, 2025, 2026]},
+  {w: 'Serverless apps', f: 'protect', y: [2019, 2020, 2021, 2024]},
+  {w: 'Immune systems', f: 'protect', y: [2019, 2020, 2021]},
+  {w: 'Blockchain based trust', f: 'protect', y: [2019, 2020]},
+  {w: 'AI security → AI risk assessment', f: 'ia', y: [2020, 2021, 2024, 2025, 2026, 2027]},
+  {w: 'Confidential computing', f: 'protect', y: [2020, 2021, 2024, 2025, 2026, 2027]},
+  {w: 'Cyber borders', f: 'conf', y: [2021, 2024, 2025]},
+  {w: 'Remote access / teleworking', f: 'protect', y: [2021]},
+  {w: 'Pandemic business continuity', f: 'res', y: [2021]},
+  {w: 'Security data hub → Cyber data lake', f: 'detect', y: [2024, 2025, 2026, 2027]},
+  {w: 'Digital twin', f: 'protect', y: [2024, 2025, 2026, 2027]},
+  {w: 'AI red teaming', f: 'ia', y: [2024, 2025, 2026, 2027]},
+  {w: 'DORA', f: 'conf', y: [2024, 2025, 2026, 2027]},
+  {w: 'AI Act', f: 'conf', y: [2024, 2025, 2026, 2027]},
+  {w: 'Non-Human Identities', f: 'id', y: [2025, 2026, 2027]},
+  {w: 'Deepfake protection', f: 'ia', y: [2025, 2026, 2027]},
+  {w: 'Agentic AI cyber platform', f: 'ia', y: [2026, 2027]},
+  {w: 'MCP / Skills security', f: 'ia', y: [2026, 2027]},
+  {w: 'Decoupled IT', f: 'res', y: [2026, 2027]},
+  {w: 'Agentic Identity', f: 'ia', y: [2027]},
+  {w: 'Rogue agent', f: 'ia', y: [2027]},
+  {w: 'Rebuild as code', f: 'res', y: [2027]},
+];
