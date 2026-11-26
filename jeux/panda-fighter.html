@@ -9,7 +9,7 @@
   Le rendu est celui du film « Crimson Loong » de ChetasLua (https://github.com/ChetasLua/crimson-loong), avec son accord :
   ciel, lumière, roche, pierre, érables et tissus viennent de son code ; le château, le relief et le jeu sont écrits pour ce jeu.
   Tout est calculé par le code : pas d'image, pas de modèle, pas de son enregistré.
-  Ce fichier est FABRIQUÉ : ne pas le modifier à la main, voir outils/chateau/ (bash outils/chateau/fabriquer.sh).
+  Ce fichier est FABRIQUÉ : ne pas le modifier à la main, voir les scripts de fabrication dans outils/mondes/ et outils/panda/.
   three.js r180 (licence MIT, © 2010-2025 three.js authors) vient du CDN.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -84,25 +84,6 @@ body.tactile #mains{display:grid}
 #mot{position:fixed;z-index:10;left:50%;transform:translateX(-50%);bottom:calc(var(--bas) + 14px);font-weight:800;font-size:13px;letter-spacing:.06em;color:#f3d9bd;background:rgba(40,10,10,.5);padding:9px 15px;border-radius:999px;border:1px solid rgba(243,217,189,.2);opacity:0;transition:opacity .8s;pointer-events:none;white-space:nowrap;max-width:calc(100vw - 24px);overflow:hidden;text-overflow:ellipsis}
 body.tactile #mot{bottom:auto;top:calc(var(--haut) + 60px)}
 body:not(.joue) #haut,body:not(.joue) #mains,body:not(.joue) #mot{display:none}
-/* ---- Les Voyageurs du temps : l'écran de chargement montre une image du monde (jeux/mondes/ecran-<clé>.jpg), le compteur des pièces du puzzle ---- */
-#titre.voyage,#versVoyage{background:linear-gradient(180deg,rgba(4,3,12,.62) 0%,rgba(4,3,12,.08) 34%,rgba(4,3,12,.18) 62%,rgba(4,3,12,.90) 100%),var(--capture,none),#06040e;background-size:cover,cover,cover,auto;background-position:center;background-repeat:no-repeat}
-#titre.voyage h1,#versVoyage h1{color:#fff4e6;text-shadow:0 0 30px rgba(150,90,255,.85),0 3px 0 #1a0a30}
-#titre.voyage h1 small,#versVoyage h1 small{color:#9fe8ff}
-#titre.voyage .gros{background:linear-gradient(#8a5cff,#5228c9);border-color:#c9b4ff;box-shadow:0 6px 0 #241060,0 0 40px rgba(140,90,255,.6)}
-#titre.voyage.niveau .regles{display:none}
-#titre.voyage .mots{background:rgba(6,4,16,.55);padding:10px 16px;border-radius:14px}
-#titre.voyage #barre s,#barreV s{background:#b48cff;box-shadow:0 0 8px #b48cff}
-#versVoyage{z-index:40;justify-content:flex-end;padding-bottom:calc(var(--bas) + 40px)}
-#barreV{width:min(260px,70vw);height:3px;background:rgba(233,201,164,.18);border-radius:2px;overflow:hidden}
-#barreV s{display:block;height:100%;width:30%;animation:va 1.1s ease-in-out infinite alternate}
-@keyframes va{from{margin-left:0}to{margin-left:70%}}
-.etatV{font-weight:800;font-size:12px;letter-spacing:.2em;text-transform:uppercase;opacity:.85}
-.persos.duo{grid-template-columns:repeat(2,1fr);width:min(300px,64vw);gap:12px}
-.persos.duo .carte{font-size:clamp(12px,2.2vw,15px)}
-#persosTitre[hidden]{display:none}
-#puzzleBadge{position:fixed;z-index:10;top:var(--haut);left:var(--g);display:flex;align-items:center;gap:8px;height:46px;padding:0 14px 0 10px;border-radius:999px;background:rgba(20,8,30,.55);border:1px solid rgba(255,200,120,.35);color:#ffe2a0;font-weight:800;font-size:16px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);pointer-events:none}
-#puzzleBadge svg{width:26px;height:26px}
-#puzzleBadge[hidden],body:not(.joue) #puzzleBadge{display:none}
 @media (max-height:430px){.ecran{gap:8px}.regles li{padding:5px 11px}.gros{padding:11px 36px}.mots{display:none}}
 </style>
 <script type="importmap">
@@ -141,35 +122,12 @@ body:not(.joue) #haut,body:not(.joue) #mains,body:not(.joue) #mot{display:none}
     <li><svg viewBox="0 0 24 24" fill="#e9a15c"><path d="M13 2L5 14h5l-1 8 8-12h-5z"/></svg><span class="clavier">Maj : courir</span><span class="doigt">Éclair : courir</span></li>
     <li><svg viewBox="0 0 24 24" fill="none" stroke="#e9a15c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15l7-7 7 7"/></svg><span class="clavier">Espace : sauter</span><span class="doigt">Flèche ronde : sauter</span></li>
   </ul>
-  <div class="persos duo" id="persosTitre" role="radiogroup" aria-label="Choisir son héros" hidden></div>
   <button class="gros" id="bJouer" disabled>Jouer</button>
   <div id="barre"><s></s></div>
   <div id="etat">Le jour se lève…</div>
   <div class="pied">Décor : le moteur du film « Crimson Loong » de ChetasLua, avec son accord · le panda, le sabre et l'éventail : modèles Meshy fournis par le propriétaire</div>
 </div>
 
-<script>
-// Les Voyageurs du temps : chaque monde du jeu, sa page, son nom et son époque. Cet écran est posé AVANT que le jeu (gros module) ne se charge :
-// on voit tout de suite l'image du monde où l'on arrive. Le hub, le chalet et le village sont toujours « en voyage » ; le château et Miami quand on vient d'un portail (?v=1).
-(function () {
-  var V = window.VOYAGES = {
-    hub: { page: 'monde-hub.html', titre: 'Les Voyageurs du temps', epoque: 'La Machine du temps', toujours: true },
-    chateau: { page: 'chateau-des-erables.html', titre: 'Le Château des Érables', epoque: 'Moyen Âge · 1450' },
-    temple: { page: 'monde-temple.html', titre: 'Le Temple de la vallée', epoque: 'Japon · 1500', toujours: true },
-    village: { page: 'monde-village.html', titre: 'Le Village de France', epoque: '1930', toujours: true },
-    miami: { page: 'monde-miami.html', titre: 'Miami Beach', epoque: '1957' },
-    chalet: { page: 'monde-chalet.html', titre: 'Le Chalet sous la neige', epoque: '2020', toujours: true } };
-  window.VOYAGE_ECRAN = function (el, k) { var E = V[k]; if (!E) return; el.classList.add('voyage');
-    el.style.setProperty('--capture', "url('mondes/ecran-" + k + ".jpg'),url('mondes/mini-" + k + ".jpg')");
-    var h = el.querySelector('h1'); if (h) { h.textContent = E.titre; var s = document.createElement('small'); s.textContent = k === 'hub' ? E.epoque : 'Les Voyageurs du temps · ' + E.epoque; h.insertBefore(s, h.firstChild); } };
-  var f = location.pathname.split('/').pop(), q = new URLSearchParams(location.search), cle = null;
-  for (var k in V) if (V[k].page === f) cle = k;
-  if (!cle || !(V[cle].toujours || q.get('v') === '1')) return;
-  var t = document.getElementById('titre'); window.VOYAGE_ECRAN(t, cle);
-  if (cle !== 'hub') { t.classList.add('niveau'); document.getElementById('bJouer').textContent = 'Entrer'; var e = document.getElementById('etat'); if (e) e.textContent = 'Voyage dans le temps…'; }
-  var m = t.querySelector('.mots'); if (m) m.textContent = cle === 'hub' ? 'La Machine du temps est en panne ! Passe ses portails, trouve les pièces du puzzle cachées dans chaque époque, et rapporte-les ici pour compléter le puzzle.' : '';
-})();
-</script>
 
 <div class="ecran" id="pause" hidden>
   <h2>Pause</h2>
@@ -177,13 +135,6 @@ body:not(.joue) #haut,body:not(.joue) #mains,body:not(.joue) #mot{display:none}
   <button class="ligne" id="bReglages"><svg viewBox="0 0 24 24" fill="none" stroke="#f3d9bd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/></svg>Réglages</button>
   <button class="ligne" id="bDepart"><svg viewBox="0 0 24 24" fill="none" stroke="#f3d9bd" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v5h5"/></svg>Revenir au départ</button>
   <a class="b ligne" href="../index.html"><svg viewBox="0 0 24 24" fill="none" stroke="#f3d9bd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg>Accueil des jeux</a>
-</div>
-
-<div class="ecran" id="niveaux" hidden>
-  <button class="rond coin" id="bFermerNiv" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="#f3d9bd" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-  <h2>Changer de niveau</h2>
-  <p class="mots">Pour les essais : va tout de suite dans un niveau, sans passer par son portail.</p>
-  <div id="listeNiveaux" style="display:flex;flex-direction:column;gap:9px"></div>
 </div>
 
 <div class="ecran" id="reglages" data-o="heros" hidden>
@@ -199,7 +150,6 @@ body:not(.joue) #haut,body:not(.joue) #mains,body:not(.joue) #mot{display:none}
   <button class="ligne" id="bVue"><svg viewBox="0 0 24 24" fill="none" stroke="#f3d9bd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="3.2"/><path d="M5 21c0-4.5 3-7.5 7-7.5s7 3 7 7.5"/></svg>Vue</button>
   <button class="ligne" id="bRecul"><svg viewBox="0 0 24 24" fill="none" stroke="#f3d9bd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M7.5 10.5h6"/></svg>Caméra</button>
   <button class="ligne" id="bVol"><svg viewBox="0 0 24 24" fill="none" stroke="#f3d9bd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13c4-1 6-4 9-9 3 5 5 8 9 9-4 0-6 1-9 6-3-5-5-6-9-6z"/></svg>Se déplacer</button>
-  <button class="ligne" id="bNiveau"><svg viewBox="0 0 24 24" fill="none" stroke="#f3d9bd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V8a7 7 0 0 1 14 0v13M9 21v-6h6v6"/></svg>Changer de niveau</button>
   </div>
   <div class="page" data-o="temps">
   <button class="ligne" id="bCiel"><svg viewBox="0 0 24 24" fill="none" stroke="#f3d9bd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><path d="M8 2v1M2 8h1M3.8 3.8l.7.7M7 17h10a4 4 0 0 0 0-8 5 5 0 0 0-9.6 1.5A3.3 3.3 0 0 0 7 17z"/></svg>Ciel</button>
@@ -1784,10 +1734,7 @@ const Monde = (() => {
   // bas, haut : le plus bas et le plus haut niveau permis (le griffon du lac s'y fie : son île reste une île, il ne vole jamais sous l'eau).
   const LAC = { y: 0.05 + clamp(+(Q.get('niveau') || 0) || 0, -1, 1.2), bas: 0.05 - 1, haut: 0.05 + 1.2, x0: -59, x1: 59, z0: 114, z1: 232, cz: 174, rx: 53, rz: 51, ile: { x: -7, z: 161, r: 8.5 }, TER: { x: 33, z: 210, haut: 14.5 },
     chutes: [{ x: 31, z: 208, dx: -0.10, dz: -0.995, w0: 3.2, w1: 5.2, k: 1.0 }, { x: 40, z: 208, dx: -0.05, dz: -0.999, w0: 1.2, w1: 2.0, k: 0.55 }] };
-  // le portail de la Machine du temps (Les Voyageurs du temps, outils/mondes/VOYAGEUR.md ; demande du propriétaire, 18 novembre 2026) : au bout du chemin
-  // qui descend du château au lac, au bord de l'eau, tourné vers le château (lacet π : il regarde -z). Le portail de Miami du parvis est retiré.
-  // Son seuil est posé au plus bas du sol sous son emprise (calculé plus bas, quand le relief est connu) : rien n'est en l'air, le côté du coteau s'enterre un peu.
-  const PORTAIL_HUB = { nom: 'MACHINE', titre: 'la Machine du temps', cle: 'hub', page: 'monde-hub.html', x: -2, z: 119.8, lacet: Math.PI, y: 0, teinte: [0.85, 0.20, 0.95] };
+  const TERRASSE_CENTRE = { x: -2, z: 119.8 };
   // les deux gardes de la grande porte (modèle Meshy, gardes.js) : de part et d'autre de l'ouverture (demi-largeur 2,75 m), devant les piliers, tournés vers le chemin
   // (les deux anciens gardes, gardes.js, ont été remplacés par deux chevaliers, demande du propriétaire, 15 novembre 2026 : voir PNJ, lieu 'porte')
   const GARDES = [];
@@ -1904,15 +1851,13 @@ const Monde = (() => {
   const LUEURS = [[0, Y0 + 4.2, 3.4, 34, 20], [0, Y0 + 2.4, 27, 30, 22], [0, Y0 + 5, -28, 34, 30]];
   // les trajets que le jeu promet : le contrôle par le calcul (R11) les fait parcourir par un promeneur virtuel
   const WY = Y0 + 10.4;
-  // la TERRASSE du portail du lac : une plateforme de pierre (chateau.js) devant le portail 3 m, derrière 1 m, 3,2 m de chaque côté. Son dessus est au plus haut
+  // la TERRASSE du lac : une plateforme de pierre de 4 m de profondeur et 6,4 m de largeur. Son dessus est au plus haut
   // du coteau sous elle (rien ne la traverse) : on y monte de plain-pied depuis le chemin (moins d'une marche), vers le lac c'est un mur de soutènement.
-  // Le portail est posé dessus : son seuil et le sol devant lui sont au même niveau (R19). Le relief n'est pas touché (les arbres et les habitants restent où ils sont).
+  // Le relief n'est pas touché (les arbres et les habitants restent où ils sont).
   const TERRASSE = { u: 3.2, avant: 3.0, arriere: 1.0 };
-  if (Math.abs(PORTAIL_HUB.lacet - Math.PI) > 1e-9) throw new Error('la terrasse du lac est écrite pour un portail qui regarde -z');
-  { let h = -1e9, b = 1e9; for (let u = -TERRASSE.u; u <= TERRASSE.u + 1e-9; u += 0.2) for (let w = -TERRASSE.arriere; w <= TERRASSE.avant + 1e-9; w += 0.2) { const g = sol0(PORTAIL_HUB.x - u, PORTAIL_HUB.z - w); h = Math.max(h, g); b = Math.min(b, g); }
-    Object.assign(TERRASSE, { x0: PORTAIL_HUB.x - TERRASSE.u, x1: PORTAIL_HUB.x + TERRASSE.u, z0: PORTAIL_HUB.z - TERRASSE.avant, z1: PORTAIL_HUB.z + TERRASSE.arriere, y: h + 0.02, bas: b - 0.4 }); }
-  PORTAIL_HUB.y = TERRASSE.y;
-  if (PORTAIL_HUB.y < LAC.haut + 0.1) throw new Error('le portail du lac serait dans l\'eau quand le lac est au plus haut');
+  { let h = -1e9, b = 1e9; for (let u = -TERRASSE.u; u <= TERRASSE.u + 1e-9; u += 0.2) for (let w = -TERRASSE.arriere; w <= TERRASSE.avant + 1e-9; w += 0.2) { const g = sol0(TERRASSE_CENTRE.x - u, TERRASSE_CENTRE.z - w); h = Math.max(h, g); b = Math.min(b, g); }
+    Object.assign(TERRASSE, { x0: TERRASSE_CENTRE.x - TERRASSE.u, x1: TERRASSE_CENTRE.x + TERRASSE.u, z0: TERRASSE_CENTRE.z - TERRASSE.avant, z1: TERRASSE_CENTRE.z + TERRASSE.arriere, y: h + 0.02, bas: b - 0.4 }); }
+  if (TERRASSE.y < LAC.haut + 0.1) throw new Error('la terrasse du lac serait dans l\'eau quand le lac est au plus haut');
   // ======== le dojo du panda (Panda Fighter) : tout ce que le décor bâtit et ce que le panda sait faire se lit ici ========
   const PI = Math.PI;
   // le sol de la cour : un dallage, au même niveau que le chemin et le parvis (Y0 + 0,05)
@@ -1967,18 +1912,13 @@ const Monde = (() => {
     { nom: 'du départ au pied du mur d\'escalade', pts: [[DEPART.x, DEPART.z], [0, 3], [-10, -10], [par.x + 0.5, (par.z0 + par.z1) / 2]] },
     { nom: 'de la cour au parvis du grand temple, par l\'escalier de gauche', pts: [[0, -12], [-5, -30], [-5.0, -37.75], [-3.2, -37.75], [0, -38.2]], arrive: TEMPLE1.y + 1.14 },
     { nom: 'du départ au bois d\'érables', pts: [[DEPART.x, DEPART.z], [-8, 40], [-30, 34], [-50, 26], [-70, 18], [-86, 14]] },
-    { nom: 'du départ à la terrasse du thé', pts: [[DEPART.x, DEPART.z], [0, 62], [0, 84], [0, 104], [PORTAIL_HUB.x, 116], [PORTAIL_HUB.x, TERRASSE.z0 + 0.6]], arrive: TERRASSE.y, marge: 0.9 } ];
-  // ---- les quatre pièces du puzzle des Voyageurs du temps (outils/mondes/VOYAGEUR.md ; seulement quand on vient de la Machine du temps) : près du puits,
-  //      sur le chemin de ronde, dans la grande salle, et sur l'île du griffon, au milieu du lac : on n'y va qu'en hiver, quand le lac gèle (jeu.js : la glace).
-  //      Le jeu les pose sur le sol lu à cet endroit (R25 le vérifie).
-  const PIECES = [];      // (ile : posée au sommet de l'île, lu dans la roche bâtie par terrain.js : sommetIle)
+    { nom: 'du départ à la terrasse du thé', pts: [[DEPART.x, DEPART.z], [0, 62], [0, 84], [0, 104], [TERRASSE_CENTRE.x, 116], [TERRASSE_CENTRE.x, TERRASSE.z0 + 0.6]], arrive: TERRASSE.y, marge: 0.9 } ];
   // le sommet de l'île (la roche, pas le plan : terrain.js la bâtit) : le plus haut point à moins de r de son centre, sur une grille de 50 cm
   let sommet = null;
   function sommetIle() { if (sommet) return sommet; const I = LAC.ile; let b = { x: I.x, z: I.z, y: -1e9 };
     for (let dz = -I.r * 1.6; dz <= I.r * 1.6; dz += 0.5) for (let dx = -I.r * 1.6; dx <= I.r * 1.6; dx += 0.5) { const y = solSous(I.x + dx, I.z + dz, -1e3); if (y > b.y) b = { x: I.x + dx, z: I.z + dz, y }; }
     return (sommet = b); }
-  const INDICE = '';
-  return { PANDA, JEU, sommetIle, INDICE, TERRASSE, PIECES, Y0, NEIGE, DEPART, TRAJETS, LAC, SUD, OUEST, BOIS, dansBois, bassin, seuil, YEUX, VUES, CHATEAU, plat, sol0, murs, ronds, sols, feux, lierre, blocs, mobiles, poses, pose, passages, passage, portails, portail, PORTAIL_HUB, mur, rond, sol, solSous, bute, degage, trier, jonchee, horsDePortee, PAS_ETAGE, grands, PLAQUE, CHEMIN, ERABLES, GRANDS, LUEURS, portes: null, GARDES, PNJ,
+  return { PANDA, JEU, sommetIle, TERRASSE, Y0, NEIGE, DEPART, TRAJETS, LAC, SUD, OUEST, BOIS, dansBois, bassin, seuil, YEUX, VUES, CHATEAU, plat, sol0, murs, ronds, sols, feux, lierre, blocs, mobiles, poses, pose, passages, passage, portails, portail, mur, rond, sol, solSous, bute, degage, trier, jonchee, horsDePortee, PAS_ETAGE, grands, PLAQUE, CHEMIN, ERABLES, GRANDS, LUEURS, portes: null, GARDES, PNJ,
     set relief(f) { relief = f; }, get relief() { return relief; } };
 })();
 
@@ -11011,16 +10951,6 @@ const Pnj = (() => {
   // la saison et le vent sont propres à chaque monde (clés « monde-<cle>: »). Sans Monde.JEU, c'est le château.
   const JEU = M.JEU || {}, PRE = JEU.cle ? 'monde-' + JEU.cle + ':' : '', gardeM = { lire: k => garde.lire(PRE + k), ecrire: (k, v) => garde.ecrire(PRE + k, v) };
   if (JEU.titre) { document.title = JEU.titre; const h = titre.querySelector('h1'), m = titre.querySelector('.mots'); if (h) { h.textContent = JEU.titre; if (JEU.sousTitre) { const sm0 = document.createElement('small'); sm0.textContent = JEU.sousTitre; h.prepend(sm0); } } if (m && JEU.mots) m.textContent = JEU.mots; }
-  // Les Voyageurs du temps : le hub, le chalet et le village n'existent que dans ce jeu (JEU.voyageur) ; le château et Miami y entrent quand on arrive par un portail (?v=1).
-  // En voyage : deux héros (Arlen et l'aventurier roux), les pièces du puzzle, l'écran de chargement montre une image du monde (coquille.html : VOYAGES).
-  const VOY = !!JEU.voyageur || Q.get('v') === '1', PIECES = JEU.pieces || M.PIECES || [], NPIECES = PIECES.length, VE = (window.VOYAGES || {})[JEU.cle || 'chateau'];
-  if (VOY) { Perso.choix = ['arlen', 'aventurier']; Perso.noms.aventurier = 'L\'aventurier roux';
-    const h = titre.querySelector('h1'), m = titre.querySelector('.mots');
-    if (JEU.cle !== 'hub') { if (h) { h.textContent = JEU.titre || (VE && VE.titre) || document.title; const sm0 = document.createElement('small'); sm0.textContent = 'Les Voyageurs du temps · ' + ((VE && VE.epoque) || JEU.nomEpoque || ''); h.prepend(sm0); }
-      let n = 0; try { n = (JSON.parse(localStorage.getItem('voyageur:pieces') || '{}')[JEU.cle || 'chateau'] || []).length; } catch (e) {}
-      if (m) m.textContent = n >= NPIECES ? 'Tu as déjà trouvé les ' + NPIECES + ' pièces du puzzle de ce monde. Promène-toi, puis reprends le portail de la Machine du temps !'
-        : 'Trouve les ' + NPIECES + ' pièces du puzzle cachées ici (suis les colonnes de lumière), puis rapporte-les à la Machine du temps par son portail.' + (n ? '  Déjà trouvées : ' + n + ' / ' + NPIECES + '.' : '') + (M.INDICE ? '  ' + M.INDICE : ''); } }
-  const herosV = { lire() { try { return localStorage.getItem('voyageur:heros'); } catch (e) { return null; } }, ecrire(v) { try { localStorage.setItem('voyageur:heros', v); } catch (e) {} } };
   const impossible = msg => { etat.textContent = msg; $('barre').style.visibility = 'hidden'; window.__UNSUPPORTED = msg; window.__READY = true; };
 
   let R;
@@ -11123,7 +11053,7 @@ const Pnj = (() => {
   const MER = JEU.sousMarin || null; let nage = false;
   const dansMer = (x, z) => !!MER && x > (M.rivage ? M.rivage(z) - 3 : 0) && x < MER.x1 && z > -98 && z < M.SUD - 8;
   // (on ne marche pas dans l'eau du lac au-delà de la cheville ; dans une mer où l'on nage, on y entre)
-  // ---- le LAC GELÉ (Les Voyageurs du temps : « le temps qu'il fait ») : au château, en hiver, une glace couvre le lac ; on y marche (son dessus est à 10 cm au-dessus de l'eau).
+  // ---- le LAC GELÉ : au château, en hiver, une glace couvre le lac ; on y marche (son dessus est à 10 cm au-dessus de l'eau).
   //      Elle fond quand la saison change, mais pas sous les pieds de celui qui est dessus : elle attend qu'il soit revenu sur la rive.
   const GEL = !JEU.cle && M.LAC && !M.LAC.mer && !JEU.sousMarin, L0 = M.LAC; let gelOn = false;
   const surLac = (x, z) => x > L0.x0 && x < L0.x1 && z > L0.z0 && z < L0.z1;
@@ -11276,7 +11206,7 @@ const Pnj = (() => {
     { n: 'L\'allée des érables', x: 0, y: Y0 + 1.6, z: 38, r: 7 }, { n: 'La grande porte', x: 0, y: Y0 + 1.6, z: 7, r: 6.5 }, { n: 'La cour du château', x: 0, y: Y0 + 1.6, z: -19, r: 7 },
     { n: 'Le puits', x: 13.5, y: Y0 + 1.6, z: -24, r: 3.6 }, { n: 'La grande salle', x: -20, y: Y0 + 1.6, z: -23, r: 4.5 }, { n: 'L\'écurie', x: 24.5, y: Y0 + 1.6, z: -37, r: 5 },
     { n: 'Le perron du donjon', x: 0, y: Y0 + 3.2, z: -36.6, r: 3.2 }, { n: 'Le chemin de ronde', x: 25, y: WY + 1.6, z: -5.3, r: 9 }, { n: 'Le lac de la cascade', x: 8, y: 3.4, z: 119, r: 8 },
-    ].concat(M.PORTAIL_HUB ? [{ n: 'Le portail de la Machine du temps', x: M.PORTAIL_HUB.x + 2.2 * Math.sin(M.PORTAIL_HUB.lacet || 0), y: M.PORTAIL_HUB.y + 1.6, z: M.PORTAIL_HUB.z + 2.2 * Math.cos(M.PORTAIL_HUB.lacet || 0), r: 3.2 }] : []);
+    ];
   const vus = new Set((gardeM.lire('lieux') || '').split(',').filter(s => s !== '').map(Number).filter(i => i >= 0 && i < LIEUX.length));
   let dedans = -1, motFin = 0;
   const dire = (txt, sec = 5) => { mot.textContent = txt; mot.style.opacity = 1; motFin = performance.now() + sec * 1000; };
@@ -11292,23 +11222,17 @@ const Pnj = (() => {
   const passage = { P: null, k: 0, parti: false, arme: true };
   const versPortail = P => (J.pos.x - P.x) * P.nx + (J.pos.z - P.z) * P.nz, lePortail = P => Math.abs((J.pos.x - P.x) * P.nz - (J.pos.z - P.z) * P.nx);
   const dansPortail = P => lePortail(P) < P.l - 0.05 && J.pieds > P.y - 0.6 && J.pieds < P.y + P.h && Math.abs(versPortail(P)) < 0.32;
-  function partir(P) { if (passage.parti) return; passage.parti = true; const page = P.page + '?de=' + encodeURIComponent(JEU.cle || 'chateau') + (VOY ? '&v=1' : ''); window.__PORTAIL = page; try { Son.dormir(); } catch (e) {}
-    if (VOY && window.VOYAGE_ECRAN) { const e = document.createElement('div'); e.className = 'ecran charge'; e.id = 'versVoyage'; e.innerHTML = '<h1></h1><div id="barreV"><s></s></div><div class="etatV">Voyage dans le temps…</div>'; document.body.appendChild(e); window.VOYAGE_ECRAN(e, P.cle); }
+  function partir(P) { if (passage.parti) return; passage.parti = true; const page = P.page + '?de=' + encodeURIComponent(JEU.cle || 'chateau'); window.__PORTAIL = page; try { Son.dormir(); } catch (e) {}
     location.href = page; }
   function portails(dt) {
     if (passage.P) { passage.k = Math.min(1, passage.k + dt / 0.55); if (passage.k >= 1) partir(passage.P); return; }
     let pres = false; for (const P of M.portails) { if (dansPortail(P)) { pres = true; if (passage.arme && !vol) { passage.P = P; passage.k = 0; try { Son.carillon(true); } catch (e) {} dire('Vers ' + P.titre + '…', 3); } } }
     if (!pres) passage.arme = true;                    // (on vient d'arriver par ce portail : il ne nous reprend que si l'on en sort d'abord)
   }
-  // ---- Les Voyageurs du temps (outils/mondes/VOYAGEUR.md) : les places où l'on s'assoit (M.places) ; en voyage, les pièces du puzzle (JEU.pieces) ----
+  // ---- les places où l'on s'assoit (M.places) ----
   // Une PLACE (le volant d'une voiture, un banc…) : { nom, x, y (les yeux), z, lacet, sortie: {x, z}, porte: {x, z}, r }. Près de sa porte, un bouton « S'asseoir » (ou E) ;
   // assis, on voit par ses yeux, on peut regarder autour ; on se relève par le même bouton, E, ou en voulant marcher, et l'on descend à `sortie`.
-  // Les PIÈCES : quatre par monde, cachées là où l'on marche ; on les prend en passant dessus. Elles vont dans le sac (localStorage voyageur:pieces,
-  // { "<clé du monde>": [indices pris] }) ; le hub les pose dans son puzzle (voyageur:posees, écrit par outils/mondes/hub/vivant.js). Pas de questions, pas de défi.
-  const V = { place: null, vueAvant: 0, sab: [], t: 0 };
-  const lireV = k => { try { return JSON.parse(localStorage.getItem('voyageur:' + k) || '{}') || {}; } catch (e) { return {}; } }, ecrireV = (k, o) => { try { localStorage.setItem('voyageur:' + k, JSON.stringify(o)); } catch (e) {} };
-  const CLE = JEU.cle || 'chateau', SABL = VOY ? PIECES : [];
-  const pris = new Set(lireV('pieces')[CLE] || []);
+  const V = { place: null, vueAvant: 0 };
   const bAssis = document.createElement('button'); bAssis.id = 'bAssis'; bAssis.hidden = true;
   bAssis.style.cssText = 'position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:6;padding:12px 22px;border-radius:24px;border:1px solid rgba(243,217,189,.4);background:rgba(40,10,10,.62);color:#f3d9bd;font:600 17px system-ui,sans-serif;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)';
   document.body.appendChild(bAssis);
@@ -11324,39 +11248,7 @@ const Pnj = (() => {
   bAssis.addEventListener('click', e => { e.preventDefault(); if (V.place) descendre(); else { const P = placeProche(); if (P) asseoir(P); } });
   addEventListener('keydown', e => { if (mode !== 'jeu' || e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.code === 'KeyE') { if (V.place) descendre(); else { const P = placeProche(); if (P) asseoir(P); } } });
-  // la forme d'une pièce de puzzle (côté s, centrée) : un tenon à droite et en haut, une mortaise à gauche et en bas (les mêmes courbes que le puzzle du hub)
-  function formePiece(s) { const h = s / 2, t = s * 0.22, sh = new THREE.Shape();
-    const bord = (ax, ay, bx, by, nx, ny, sens) => { const ux = (bx - ax) / s, uy = (by - ay) / s, p = (u, v) => [ax + ux * s * u + nx * s * v * sens, ay + uy * s * u + ny * s * v * sens];
-      const q = [[0.36, 0], [0.40, 0.02], [0.33, t / s + 0.08], [0.5, t / s + 0.10], [0.67, t / s + 0.08], [0.60, 0.02], [0.64, 0]];
-      sh.lineTo(...p(q[0][0], q[0][1])); sh.bezierCurveTo(...p(...q[1]), ...p(...q[2]), ...p(...q[3])); sh.bezierCurveTo(...p(...q[4]), ...p(...q[5]), ...p(...q[6])); sh.lineTo(bx, by); };
-    sh.moveTo(-h, -h); bord(-h, -h, h, -h, 0, -1, -1); bord(h, -h, h, h, 1, 0, 1); bord(h, h, -h, h, 0, 1, 1); bord(-h, h, -h, -h, -1, 0, -1); return sh; }
-  // les PIÈCES : une pièce d'or lumineuse qui tourne et flotte, et une colonne de lumière qui la signale de loin
-  function sabliersInit() { if (!SABL.length) return; const geo = new THREE.ExtrudeGeometry(formePiece(0.42), { depth: 0.07, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.015, bevelSegments: 2, curveSegments: 10 }); geo.center();
-    const T = JEU.teinte || [1.0, 0.72, 0.30], corps = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.4, 1.6, 0.55), toneMapped: false }), bord = new THREE.MeshBasicMaterial({ color: new THREE.Color(T[0] * 3, T[1] * 3, T[2] * 3), toneMapped: false, side: THREE.BackSide });
-    const rayonGeo = new THREE.CylinderGeometry(0.16, 0.30, 7, 16, 1, true); rayonGeo.translate(0, 3.5, 0);
-    const rayonMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false, uniforms: { uT: { value: 0 }, uC: { value: new THREE.Color(T[0], T[1], T[2]) } },
-      vertexShader: 'varying float vY; void main(){ vY = position.y / 7.0; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-      fragmentShader: 'uniform float uT; uniform vec3 uC; varying float vY; void main(){ float a = (1.0 - vY) * (1.0 - vY) * (0.55 + 0.25 * sin(uT * 2.0 - vY * 12.0)); gl_FragColor = vec4(mix(vec3(1.0, 0.75, 0.35), uC, 0.5) * a * 0.9, 1.0); }' });
-    V.rayonMat = rayonMat;
-    SABL.forEach((s, i) => { if (s.ile && M.sommetIle) { const t = M.sommetIle(); s = Object.assign({}, s, { x: t.x, z: t.z }); } const g = new THREE.Group(), p = new THREE.Mesh(geo, corps), b = new THREE.Mesh(geo, bord); b.scale.setScalar(1.12); p.add(b); g.add(p);
-      const l = new THREE.PointLight(0xffc870, 3, 5, 2); l.position.y = 0.1; g.add(l); const rayon = new THREE.Mesh(rayonGeo, rayonMat); rayon.renderOrder = 5;
-      const y = s.y == null ? M.solSous(s.x, s.z, -1e3) : M.solSous ? M.solSous(s.x, s.z, s.y + 0.6) : s.y;      // (posée sur le sol où l'on marche, lu à la place indiquée par le plan ; R25 le vérifie)
-      g.position.set(s.x, y, s.z); rayon.position.set(s.x, y, s.z); g.visible = rayon.visible = false; scene.add(g, rayon); V.sab.push({ g, p, rayon, s, i, y }); }); }
-  // le compteur des pièces de ce monde (en haut à gauche), seulement en voyage
-  const badge = document.createElement('div'); badge.id = 'puzzleBadge'; badge.hidden = !VOY;
-  badge.innerHTML = '<svg viewBox="0 0 24 24" fill="#ffc870"><path d="M4 7h4a2 2 0 1 1 4 0h4v4a2 2 0 1 1 0 4v4h-4a2 2 0 1 0-4 0H4v-4a2 2 0 1 0 0-4z"/></svg><span></span>';
-  document.body.appendChild(badge);
-  const dessinBadge = () => { if (!VOY) return; const sac = lireV('pieces'), posees = lireV('posees'); let s;
-    if (SABL.length) s = pris.size + ' / ' + SABL.length;
-    else { let n = 0, sacN = 0; for (const k in sac) { const p = new Set(posees[k] || []); for (const i of sac[k]) { if (p.has(i)) n++; else sacN++; } } s = n + ' / ' + (M.TOTAL || 16) + (sacN ? '  ·  ' + sacN + ' dans ton sac' : ''); }
-    badge.lastChild.textContent = s; };
-  dessinBadge(); setInterval(dessinBadge, 1500);
-  function sabliers(dt) { V.t += dt; if (V.rayonMat) V.rayonMat.uniforms.uT.value = V.t;
-    for (const S of V.sab) { const ici = !pris.has(S.i); S.g.visible = S.rayon.visible = ici; if (!ici) continue;
-      S.p.rotation.y = V.t * 1.4; S.g.position.y = S.y + 0.65 + 0.12 * Math.sin(V.t * 2 + S.i);
-      if (Math.hypot(J.pos.x - S.s.x, J.pos.z - S.s.z) < 1.1 && Math.abs(J.pieds - S.y) < 1.6) { pris.add(S.i); const o = lireV('pieces'); o[CLE] = [...pris]; ecrireV('pieces', o); S.g.visible = S.rayon.visible = false; dessinBadge();
-        try { Son.carillon(true); } catch (e) {} dire(`Une pièce du puzzle !  ${pris.size} / ${SABL.length} ici` + (pris.size === SABL.length ? ' : tu les as toutes ! Rapporte-les à la Machine du temps.' : ''), 6); } } }
-  function voyageur(dt) { sabliers(dt); const P = V.place || placeProche(); bAssis.hidden = !P; if (P) bAssis.textContent = V.place ? 'Descendre' + (tactile ? '' : ' (E)') : 'S\'asseoir' + (tactile ? '' : ' (E)'); }
+  function placesMaj() { const P = V.place || placeProche(); bAssis.hidden = !P; if (P) bAssis.textContent = V.place ? 'Descendre' + (tactile ? '' : ' (E)') : 'S\'asseoir' + (tactile ? '' : ' (E)'); }
   // la GLACE du lac gelé : une plaque sur toute l'eau, 8 cm au-dessus d'elle (elle la cache, nénuphars compris), dessinée en code : glace claire et glace noire, neige soufflée en traînées,
   // fissures. Elle apparaît et fond avec le poids de l'hiver (G.uSai.w), en pointillé aléatoire (alphaHash) : elle garde sa profondeur, l'eau ne passe jamais par-dessus.
   const GL = { me: null };
@@ -11576,16 +11468,13 @@ const Pnj = (() => {
       const az = r() * TAU, ht = 0.25 + 0.45 * r(), loin = 0.3 + 2.6 * r(); f.dir.set(Math.sin(az), ht, Math.cos(az)).normalize(); setTimeout(() => Son.tonnerre(1 - loin / 4.5), ESSAI ? 1e9 : loin * 1000); }
     let e = 0; const u = el - f.t0; if (u >= 0 && u < 1.6) for (const c of f.coups) { const v = u - c[0]; if (v >= 0) e += c[1] * Math.exp(-v * 14) * (1 + 0.4 * Math.sin(v * 90)); } G.eclair = e * k; }
 
-  // en voyage, le temps qu'il fait vient du hub (le baromètre et la roue des saisons : voyageur:temps = { ciel: nom du ciel | null, saison: 0..3 | null }) ; null : celui de l'époque
-  const TEMPS_V = (() => { if (!VOY || JEU.interieur) return {}; try { return JSON.parse(localStorage.getItem('voyageur:temps') || '{}') || {}; } catch (e) { return {}; } })();
-  const cielV = CIELS.findIndex(c => c.n === TEMPS_V.ciel);
-  let ciel = JEU.interieur ? (JEU.ciel || 0) : cielV >= 0 ? cielV : clamp(+(gardeM.lire('ciel') ?? JEU.ciel ?? 0) | 0, 0, CIELS.length - 1), TFv = CIELS[ciel].tf; G.meteo = { orage: CIELS[ciel].orage || 0, gris: CIELS[ciel].gris, remous: CIELS[ciel].remous, pluie: CIELS[ciel].pluie, soir: CIELS[ciel].soir, lampes: CIELS[ciel].lampes };
+  let ciel = JEU.interieur ? (JEU.ciel || 0) : clamp(+(gardeM.lire('ciel') ?? JEU.ciel ?? 0) | 0, 0, CIELS.length - 1), TFv = CIELS[ciel].tf; G.meteo = { orage: CIELS[ciel].orage || 0, gris: CIELS[ciel].gris, remous: CIELS[ciel].remous, pluie: CIELS[ciel].pluie, soir: CIELS[ciel].soir, lampes: CIELS[ciel].lampes };
   { const nu = NUAGES[nuage]; nuV.splice(0, 7, nu.w[0], Math.max(nu.w[1], CIELS[ciel].orage), nu.w[2], nu.w[3], nu.cir[0], nu.cir[1], Math.max(nu.nappe || 0, 0.72 * CIELS[ciel].gris)); if (G.uNu3) G.uNu3.value.fromArray(nu.er || [0, 0, 0, 0]); }      // (le ciel du départ est celui du réglage, tout de suite)
   function meteo(dt) { const c = CIELS[ciel], k = 1 - Math.exp(-dt * 0.9), m = G.meteo, nu = NUAGES[nuage]; for (const q of ['remous', 'pluie', 'soir', 'lampes', 'orage']) m[q] += (c[q] - m[q]) * k; m.gris += (Math.max(c.gris, nu.gris) - m.gris) * k;
     { const but = [nu.w[0], Math.max(nu.w[1], c.orage), nu.w[2], nu.w[3], nu.cir[0], nu.cir[1], Math.max(nu.nappe || 0, 0.72 * c.gris)]; for (let i = 0; i < 7; i++) nuV[i] += (but[i] - nuV[i]) * k; if (G.uNu3) { const e = nu.er || [0, 0, 0, 0], v = G.uNu3.value; v.set(v.x + (e[0] - v.x) * k, v.y + (e[1] - v.y) * k, v.z + (e[2] - v.z) * k, v.w + (e[3] - v.w) * k); } if (G.uNu) { G.uNu.value.set(nuV[0], nuV[1], nuV[2], nuV[3]); G.uNu2.value.set(nuV[4], nuV[5], nuV[6], 0); } } TFv += (c.tf - TFv) * (1 - Math.exp(-dt * 0.7)); if (Math.abs(c.tf - TFv) < 0.02) TFv = c.tf; }
   // ---- les quatre saisons (pause et bouton) : le poids de chacune va dans G.uSai, que lisent le feuillage, l'herbe, le sol, la pierre et les toits ----
   const SAISONS = ['printemps', 'été', 'automne', 'hiver'];
-  let saison = clamp(+(Q.get('saison') ?? (TEMPS_V.saison >= 0 && TEMPS_V.saison <= 3 ? TEMPS_V.saison : null) ?? gardeM.lire('saison') ?? JEU.saison ?? 2) | 0, 0, 3);
+  let saison = clamp(+(Q.get('saison') ?? gardeM.lire('saison') ?? JEU.saison ?? 2) | 0, 0, 3);
   const poserSaison = () => { G.uSai.value.set(saison === 0 ? 1 : 0, saison === 1 ? 1 : 0, saison === 2 ? 1 : 0, saison === 3 ? 1 : 0); }; poserSaison();
   // La neige (et les flaques) ne tiennent que là où le ciel est ouvert au-dessus. On le sait par le calcul : la hauteur du plus haut ouvrage au-dessus de chaque point,
   // dessinée une fois depuis le zénith (tToit). Un point d'un ouvrage est à ciel ouvert quand rien n'est plus haut que lui à cet endroit.
@@ -11653,14 +11542,14 @@ const Pnj = (() => {
   add(ET.decor || 'On bâtit le château, pierre après pierre…', 12, async prog => { await Arch.build(scene, prog, tick); });
   if (!JEU.sansFlore) add('Les érables rougissent…', 16, async prog => { await Flora.build(scene, prog, tick); for (const p of Flora.where.maple || []) M.rond(p.x, p.z, 0.42); for (const g of M.GRANDS) for (const k of g) M.rond(k.p.x, k.p.z, 0.55 * k.s); });
   add(ET.eau || 'Le lac se remplit…', 6, async prog => { await Water.build(scene, fx, tick); prog(1); });
-  add('Le héros s\'habille…', 14, async prog => { await tick(); try { const h = VOY ? (herosV.lire() || 'arlen') : garde.lire('habit'); if (!Q.has('heros') && Perso.modes.includes(h) && (!VOY || Perso.choix.includes(h))) Perso.mode = h; else if (VOY && !Perso.choix.includes(Perso.mode)) Perso.mode = 'arlen'; await Perso.creer(scene); } catch (e) { console.error('héros', e); } prog(1); });
+  add('Le héros s\'habille…', 14, async prog => { await tick(); try { const h = garde.lire('habit'); if (!Q.has('heros') && Perso.modes.includes(h)) Perso.mode = h; await Perso.creer(scene); } catch (e) { console.error('héros', e); } prog(1); });
   if (!JEU.sansFlore) add('Les lapins sortent de leur gîte…', 3, async prog => { await tick(); try { await Lapins.creer(scene); } catch (e) { console.error('lapins', e); } prog(1); });
   if (M.GARDES && M.GARDES.length) add('Les gardes prennent leur poste…', 4, async prog => { await tick(); try { await Gardes.creer(scene); } catch (e) { console.error('gardes', e); } prog(1); });
   if (M.PNJ && M.PNJ.length) add('Les habitants sortent de chez eux…', 6, async prog => { await tick(); try { await Pnj.creer(scene); } catch (e) { console.error('habitants', e); } prog(1); });
   if (!JEU.sansDragon) add('Le dragon se réveille…', 8, async prog => { await tick(); try { DragonVert.creer(scene, Son); } catch (e) { console.error('dragon', e); } prog(1); });
   if (!JEU.sansDragon) add('Le griffon lisse ses plumes…', 5, async prog => { await tick(); try { Griffon.creer(scene, Son); } catch (e) { console.error('griffon', e); } prog(1); });
   if (!JEU.sansFlore && !JEU.sansLoups) add('Les loups sortent du bois…', 4, async prog => { await tick(); try { Loups.creer(scene, Son); } catch (e) { console.error('loups', e); } prog(1); });
-  add(ET.feux || 'On allume les torches…', 3, async prog => { salleInit(); sabliersInit(); glaceInit(); arriver(); feux(); if (!JEU.sansFlore) feuilles(); gouttes = pluie(); try { cuireToit(); } catch (e) { console.error('ciel ouvert', e); } prog(1); });
+  add(ET.feux || 'On allume les torches…', 3, async prog => { salleInit(); glaceInit(); arriver(); feux(); if (!JEU.sansFlore) feuilles(); gouttes = pluie(); try { cuireToit(); } catch (e) { console.error('ciel ouvert', e); } prog(1); });
   add('Premier rayon de soleil…', 8, async prog => { Daylight.plan(); frame(0, 1 / 60); await tick(); frame(1 / 60, 1 / 60); await tick(); });
   const tw = steps.reduce((a, s) => a + s.w, 0); let done = 0; const t0 = performance.now();
 
@@ -11732,7 +11621,7 @@ const Pnj = (() => {
 
   // ---- les écrans ----
   let el = 0;                                           // secondes de décor écoulées (s'arrête pendant la pause)
-  function jouer() { if (mode !== 'titre') return; mode = 'jeu'; titre.hidden = true; document.body.classList.add('joue'); Son.demarrer(); last = 0; dire(vol ? 'Tu voles : va où tu regardes. Espace pour monter, C pour descendre.' : VOY && NPIECES && pris.size < NPIECES ? 'Trouve les ' + NPIECES + ' pièces du puzzle : suis les colonnes de lumière !' : VOY && JEU.bienvenueV ? JEU.bienvenueV : JEU.bienvenue ? JEU.bienvenue : tactile ? 'Marche jusqu\'à la grande porte : elle s\'ouvrira pour toi !' : 'Marche jusqu\'à la grande porte : elle s\'ouvrira pour toi !  (P : pause)', 8); }
+  function jouer() { if (mode !== 'titre') return; mode = 'jeu'; titre.hidden = true; document.body.classList.add('joue'); Son.demarrer(); last = 0; dire(vol ? 'Tu voles : va où tu regardes. Espace pour monter, C pour descendre.' : JEU.bienvenue ? JEU.bienvenue : tactile ? 'Marche jusqu\'à la grande porte : elle s\'ouvrira pour toi !' : 'Marche jusqu\'à la grande porte : elle s\'ouvrira pour toi !  (P : pause)', 8); }
   function mettreEnPause() { if (mode !== 'jeu') return; mode = 'pause'; toutLacher(); pause.hidden = false; document.body.classList.remove('joue'); Son.dormir(); redraw = true;
     $('bDepart').lastChild.textContent = `Revenir au départ  ·  lieux ${vus.size} / ${LIEUX.length}`; $('bReprendre').focus({ preventScroll: true }); }
   function reprendre() { if (mode !== 'pause') return; mode = 'jeu'; pause.hidden = true; $('reglages').hidden = true; document.body.classList.add('joue'); Son.demarrer(); last = 0; }
@@ -11772,23 +11661,11 @@ const Pnj = (() => {
     const dessinHeros = attente => { for (const m in cartes) { const c = cartes[m], oui = m === (attente || Perso.mode) || (m === 'tripo' && !attente && Perso.mode === 'mixamo'); c.classList.toggle('choisi', oui); c.classList.toggle('attente', m === attente); c.setAttribute('aria-checked', oui ? 'true' : 'false'); } };
     for (const m of Perso.choix) { const c = document.createElement('button'), im = new Image(), nom = document.createElement('span'); c.className = 'carte'; c.setAttribute('role', 'radio'); im.alt = ''; im.onerror = () => im.remove(); im.src = (m === 'panda' ? 'panda-fighter/mini-' : 'chateau/mini-') + m + '.jpg'; nom.textContent = Perso.noms[m]; c.append(im, nom); boite.append(c); cartes[m] = c;
       c.addEventListener('click', async () => { if (change || m === Perso.mode) return; change = true; dessinHeros(m); await tick();
-        try { const eu = await Perso.choisir(m); if (VOY) herosV.ecrire(eu); else garde.ecrire('habit', eu); } catch (e) { console.error('héros', e); } change = false; dessinHeros(); R.shadowMap.needsUpdate = true; redraw = true; }); }
+        try { const eu = await Perso.choisir(m); garde.ecrire('habit', eu); } catch (e) { console.error('héros', e); } change = false; dessinHeros(); R.shadowMap.needsUpdate = true; redraw = true; }); }
     // le bouton du haut : le personnage suivant
     $('bHerosH').addEventListener('click', () => { if (change) return; const L = Perso.choix, i = L.indexOf(Perso.mode === 'mixamo' ? 'tripo' : Perso.mode), m = L[(i + 1) % L.length]; dire('Personnage : ' + Perso.noms[m], 2.5); cartes[m].click(); });
     dessinHeros();
-    // en voyage, sur l'écran titre du hub : les deux héros en grand (on peut choisir pendant que la salle se charge)
-    const duo = $('persosTitre'); if (duo && VOY && JEU.cle === 'hub') { duo.hidden = false; const grand = {};
-      const dessinDuo = () => { for (const m in grand) grand[m].classList.toggle('choisi', m === (herosV.lire() || Perso.mode)); };
-      for (const m of Perso.choix) { const c = document.createElement('button'), im = new Image(), nom = document.createElement('span'); c.className = 'carte'; im.alt = ''; im.onerror = () => im.remove(); im.src = (m === 'panda' ? 'panda-fighter/mini-' : 'chateau/mini-') + m + '.jpg'; nom.textContent = Perso.noms[m]; c.append(im, nom); duo.append(c); grand[m] = c;
-        c.addEventListener('click', () => { herosV.ecrire(m); dessinDuo(); cartes[m].click(); }); }
-      dessinDuo(); } }
-  // changer de niveau directement (Réglages → Héros ; pour les essais) : la page du niveau, en voyage, posée à son départ
-  { const nv = $('niveaux'), liste = $('listeNiveaux'), V0 = window.VOYAGES || {};
-    for (const k in V0) { const b = document.createElement('button'), ici = k === (JEU.cle || 'chateau'); b.className = 'ligne'; b.textContent = V0[k].titre + '  ·  ' + V0[k].epoque + (ici ? '  (ici)' : '');
-      b.addEventListener('click', () => { if (ici) { nv.hidden = true; return; } const e = document.createElement('div'); e.className = 'ecran charge'; e.id = 'versVoyage'; e.innerHTML = '<h1></h1><div id="barreV"><s></s></div><div class="etatV">Voyage dans le temps…</div>';
-        document.body.appendChild(e); if (window.VOYAGE_ECRAN) window.VOYAGE_ECRAN(e, k); try { Son.dormir(); } catch (er) {} location.href = V0[k].page + '?v=1&de=reglages'; });
-      liste.append(b); }
-    $('bNiveau').addEventListener('click', () => { nv.hidden = false; }); $('bFermerNiv').addEventListener('click', () => { nv.hidden = true; }); }
+  }
   $('bSaluer').addEventListener('click', () => Perso.geste('saluer')); $('bMontrer').addEventListener('click', () => Perso.geste('montrer'));
   $('bVol').addEventListener('click', () => { vol = !vol; garde.ecrire('vol', vol ? '1' : '0'); J.vy = 0; J.vel.set(0, 0, 0); if (!vol) J.auSol = false; dessinVol(); }); dessinVol();
   $('bSon').addEventListener('click', () => Son.basculer()); $('bSon2').addEventListener('click', () => Son.basculer());
@@ -11806,7 +11683,7 @@ const Pnj = (() => {
     if (ts - lastDraw < (div - 0.5) * tickMs) return;
     lastDraw = ts;
     const dt = last ? Math.min(0.1, (ts - last) / 1000) : 1 / 60; el += dt;
-    if (mode === 'jeu') { if (V.place) rester(); else bouger(dt); seuils(); portes(dt); portails(dt); lieux(); voyageur(dt); Son.suivre(dt, el); }
+    if (mode === 'jeu') { if (V.place) rester(); else bouger(dt); seuils(); portes(dt); portails(dt); lieux(); placesMaj(); Son.suivre(dt, el); }
     { const w = el % TOUR; fondu = sm(0, 1.6, el) * (el > 10 ? Math.min(sm(0, 1.2, TOUR - w), el > TOUR ? sm(0, 1.2, w) : 1) : 1); }      // un battement de paupières quand l'horloge du décor repart (toutes les 48 minutes)
     R.shadowMap.autoUpdate = false; R.shadowMap.needsUpdate = shadowDue || tier === 0 || (fcount++ % 2) === 0;      // (les ombres sont refaites à chaque image : celles de ce qui bouge restent fluides) shadowDue = false;
     const tF = performance.now(); frame(el, dt); Mesures.image(ts, performance.now() - tF, el);
