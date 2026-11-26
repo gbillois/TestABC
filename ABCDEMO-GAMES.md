@@ -1,6 +1,6 @@
 # Games copied from ABCDEMO
 
-Copied on 2026-11-26 from `gbillois/ABCDEMO`, branch `main`, commit `6194163`, at the owner's request.
+Copied on 2026-11-26 from `gbillois/ABCDEMO`, branch `main`, commit `6194163` (Panda Fighter: `0882c9f`), at the owner's request.
 These are the **built, playable files only**. The tools that build them stay in ABCDEMO
 (`outils/…`, `blender/…`): to change a game, change and rebuild it there, then copy it again.
 
