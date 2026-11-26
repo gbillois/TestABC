@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Le Gardien de Mousse : le jeu</title>
+<meta name="description" content="Incarne le géant couvert de mousse : réveille-le dans la forêt, marche entre les arbres et envole-toi au-dessus des nuages.">
+<!--
+  A game inspired by the short film « The Moss Keeper » by ChetasLua (copy in ../jeux/moss-keeper.html).
+  Everything here is written for this game (three.js, procedural shapes); the music is the film's soundtrack.
+  To adapt the game, start with js/config.js: every colour, size, speed and count is there.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root { --encre: #2b2420; --creme: #f6ecd8; --or: #f2c879; --mousse: #6f9a3a; --fond: #0b0a08; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--fond); color: var(--creme); font-family: "Nunito", system-ui, sans-serif; user-select: none; -webkit-user-select: none; touch-action: none; }
+  canvas#c { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; display: block; }
+  .cache { display: none !important; }
+  .ecran { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 20; }
+  .carte { width: min(480px, 94vw); max-height: calc(100vh - 32px); overflow: auto; text-align: center; color: var(--encre);
+    background: linear-gradient(180deg, rgba(250,243,228,.95), rgba(238,226,199,.95)); border-radius: 18px; padding: 24px 26px;
+    box-shadow: 0 0 0 2px rgba(111,154,58,.7), 0 22px 60px rgba(0,0,0,.45); }
+  .carte h1 { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 600; font-size: 42px; line-height: 1; margin: 2px 0 8px; color: #3f5d24; letter-spacing: .02em; }
+  .carte h2 { font-family: "Cormorant Garamond", Georgia, serif; font-size: 30px; margin: 0 0 10px; color: #3f5d24; }
+  .carte p { margin: 8px 0; font-size: 15.5px; line-height: 1.45; }
+  .carte ul { text-align: left; font-size: 14.5px; line-height: 1.5; padding-left: 20px; margin: 8px 0 14px; }
+  .petit { font-size: 12.5px !important; opacity: .72; }
+  .bouton { display: inline-flex; align-items: center; justify-content: center; border: 0; cursor: pointer; text-decoration: none; min-height: 44px;
+    font: 800 18px "Nunito", sans-serif; color: #fffbea; background: radial-gradient(circle at 50% 30%, #86b04a, #4a7326);
+    padding: 11px 30px; border-radius: 40px; margin: 6px 4px; box-shadow: 0 0 0 2px var(--or), 0 5px 0 #2f4a17, 0 8px 18px rgba(0,0,0,.3); }
+  .bouton:active { transform: translateY(3px); }
+  .bouton.doux { background: #eadcbc; color: var(--encre); box-shadow: 0 0 0 2px #b49a66, 0 4px 0 #8b7445; font-size: 15px; padding: 8px 20px; }
+  .bouton:focus-visible, .medaillon:focus-visible { outline: 3px solid var(--or); outline-offset: 3px; }
+  .pile { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  #charge { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+    background: radial-gradient(ellipse at 50% 40%, #2c3a1e, #0b0a08); transition: opacity .8s; }
+  #charge .titre { font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(34px, 7vw, 58px); color: var(--or); letter-spacing: .06em; text-align: center; }
+  #barre { width: min(320px, 70vw); height: 4px; border-radius: 4px; background: rgba(255,255,255,.12); overflow: hidden; }
+  #barre i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--mousse), var(--or)); transition: width .3s; }
+  #chargeTxt { font-size: 14px; opacity: .8; font-style: italic; font-family: "Cormorant Garamond", Georgia, serif; font-size: 18px; }
+  #hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+  #hud > * { pointer-events: auto; }
+  .haut { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+  #objectif { left: calc(env(safe-area-inset-left, 0px) + 12px); display: flex; align-items: center; gap: 12px; background: rgba(28,26,18,.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(242,200,121,.55); border-radius: 30px; padding: 6px 16px 6px 10px; font-weight: 800; font-size: 15px; }
+  #objectif .ic { display: inline-flex; align-items: center; gap: 4px; }
+  #objectif svg { width: 22px; height: 22px; }
+  #fleche { width: 26px !important; height: 26px !important; transition: transform .15s; }
+  #objDist { display: block; font-size: 12px; opacity: .8; font-weight: 600; }
+  #droiteHaut { right: calc(env(safe-area-inset-right, 0px) + 12px); display: flex; gap: 10px; }
+  .medaillon { width: 48px; height: 48px; border-radius: 50%; border: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0;
+    background: rgba(28,26,18,.55); box-shadow: 0 0 0 1px rgba(242,200,121,.6); color: var(--creme); font: 800 20px "Nunito"; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  .medaillon svg { width: 24px; height: 24px; }
+  .medaillon.actif { background: rgba(242,200,121,.55); color: #2b2420; }
+  #tactile { position: absolute; right: calc(env(safe-area-inset-right, 0px) + 16px); bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); display: grid; grid-template-columns: auto auto; gap: 14px; align-items: end; }
+  #tactile .medaillon { width: 64px; height: 64px; font-size: 24px; }
+  #bSaut { width: 82px !important; height: 82px !important; }
+  #aide { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); font-size: 13px; background: rgba(28,26,18,.5);
+    padding: 5px 14px; border-radius: 14px; pointer-events: none; white-space: nowrap; max-width: 96vw; overflow: hidden; text-overflow: ellipsis; }
+  #aide:empty { display: none; }
+  #toast { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(20px, 3vw, 30px); font-weight: 600;
+    color: #fff6df; text-shadow: 0 2px 14px rgba(0,0,0,.6); text-align: center; opacity: 0; transition: opacity .6s; pointer-events: none; width: 92vw; line-height: 1.2; }
+  #eveilBox { position: absolute; left: 50%; bottom: 22%; transform: translateX(-50%); width: min(300px, 70vw); height: 6px; border-radius: 4px; background: rgba(255,255,255,.18); overflow: hidden; pointer-events: none; }
+  #eveil { height: 100%; width: 0; background: linear-gradient(90deg, #ffb347, #fff0b0); box-shadow: 0 0 12px #ffc860; }
+  #joy { position: fixed; width: 124px; height: 124px; border-radius: 50%; border: 2px solid rgba(255,240,210,.5); background: rgba(28,26,18,.22); z-index: 11; pointer-events: none; transform: translate(-50%, -50%); display: none; }
+  #joy i { position: absolute; left: 50%; top: 50%; width: 54px; height: 54px; margin: -27px 0 0 -27px; border-radius: 50%; background: rgba(255,226,170,.6); }
+  #perf { position: fixed; left: 12px; bottom: 50px; font: 12px/1.3 ui-monospace, monospace; background: rgba(0,0,0,.55); padding: 6px 8px; border-radius: 6px; z-index: 12; white-space: pre; pointer-events: none; }
+  .ligne { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 12px 0; font-weight: 800; font-size: 15px; }
+  .choix { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .choix button { border: 0; border-radius: 16px; padding: 7px 12px; font: 800 14px "Nunito"; background: #e3d5b2; color: var(--encre); cursor: pointer; min-height: 36px; }
+  .choix button.on { background: #4a7326; color: #fff; }
+  .croix { position: absolute; right: 12px; top: 8px; border: 0; background: none; font-size: 30px; color: #3f5d24; cursor: pointer; }
+  .carte { position: relative; }
+  kbd { font: 800 12px "Nunito"; background: #fff8e8; border: 1px solid #c9b48a; border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; }
+  @media (pointer: fine) { #tactile { display: none; } }
+  @media (pointer: coarse) { .clavier { display: none; } }
+  @media (pointer: fine) { .doigts { display: none; } }
+  @media (max-height: 520px) {
+    .carte { padding: 12px 18px; width: min(620px, 94vw); }
+    .carte h1 { font-size: 30px; margin-bottom: 4px; }
+    .carte p, .carte ul { font-size: 13px; margin: 4px 0; line-height: 1.35; }
+    .pile { flex-direction: row; justify-content: center; }
+  }
+  @media (max-width: 560px) { #objectif { font-size: 13px; padding: 5px 12px 5px 8px; gap: 8px; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-graine" viewBox="0 0 32 32"><ellipse cx="16" cy="17" rx="7" ry="10" fill="#ffd27a" stroke="#a8742a" stroke-width="1.6"/><path d="M16 7c2-3 5-4 8-3-1 3-4 5-8 3z" fill="#8fbf4a"/></symbol>
+  <symbol id="i-anneau" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="none" stroke="#ffe1a0" stroke-width="3.5"/><circle cx="16" cy="16" r="10" fill="none" stroke="#c48a2c" stroke-width="1"/></symbol>
+  <symbol id="i-fleche" viewBox="0 0 32 32"><path d="M16 3l9 22-9-5-9 5z" fill="#f2c879" stroke="#2b2420" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 32 32"><rect x="9" y="7" width="5" height="18" rx="1.5" fill="currentColor"/><rect x="18" y="7" width="5" height="18" rx="1.5" fill="currentColor"/></symbol>
+  <symbol id="i-son" viewBox="0 0 32 32"><path d="M5 12h5l7-6v20l-7-6H5z" fill="currentColor"/><path d="M21 11c2 3 2 7 0 10M24.5 8c4 5 4 11 0 16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol>
+  <symbol id="i-muet" viewBox="0 0 32 32"><path d="M5 12h5l7-6v20l-7-6H5z" fill="currentColor"/><path d="M21 12l7 8M28 12l-7 8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+</svg>
+
+<div id="charge"><div class="titre">Le Gardien de Mousse</div><div id="barre"><i></i></div><div id="chargeTxt">La forêt s'éveille…</div></div>
+
+<div id="titre" class="ecran cache"><div class="carte">
+  <h1>Le Gardien de Mousse</h1>
+  <p>Au lever du soleil, un géant couvert de mousse dort dans une forêt oubliée. <b>Tu es le gardien.</b> Réveille-le, marche entre les arbres, puis envole-toi dans le ciel doré.</p>
+  <ul class="clavier">
+    <li>Maintiens <kbd>Espace</kbd> pour réveiller le gardien.</li>
+    <li><kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou les flèches : marcher · <kbd>Maj</kbd> : courir · <kbd>Espace</kbd> : sauter.</li>
+    <li><kbd>F</kbd> : s'envoler (ou <kbd>Espace</kbd> deux fois). En vol : <kbd>Z</kbd> avancer, <kbd>Q</kbd><kbd>D</kbd> tourner, <kbd>Espace</kbd> monter, <kbd>C</kbd> descendre, <kbd>Maj</kbd> turbo, <kbd>F</kbd> atterrir.</li>
+    <li>Glisse la souris pour regarder autour, molette pour le zoom.</li>
+  </ul>
+  <ul class="doigts">
+    <li>Maintiens ▲ pour réveiller le gardien.</li>
+    <li>Joystick à gauche : marcher. ▲ : sauter. ✈ : s'envoler ou atterrir.</li>
+    <li>En vol : ▲ monter, ▼ descendre, ⚡ turbo. Glisse à droite pour regarder.</li>
+  </ul>
+  <p>Trouve les <b>6 graines d'or</b> dans la forêt et traverse les <b>6 anneaux de lumière</b> au-dessus des nuages.</p>
+  <div class="pile"><button class="bouton" id="bJouer">Jouer</button><a class="bouton doux" href="../index.html">Accueil</a></div>
+  <p class="petit">D'après le court métrage « The Moss Keeper » de ChetasLua (musique du film). Jeu écrit pour ce banc d'essai.</p>
+</div></div>
+
+<div id="pause" class="ecran cache"><div class="carte"><h2>Pause</h2><div class="pile">
+  <button class="bouton" id="bReprendre">Reprendre</button><button class="bouton doux" id="bReglages">Réglages</button>
+  <button class="bouton doux" id="bRejouer">Recommencer</button><a class="bouton doux" href="../index.html">Accueil</a>
+</div></div></div>
+
+<div id="reglages" class="ecran cache"><div class="carte"><button class="croix" id="bFermerReglages" aria-label="Fermer">×</button><h2>Réglages</h2>
+  <div class="ligne">Image <span class="choix" id="cQualite"><button data-v="haute">Belle</button><button data-v="moyenne">Moyenne</button><button data-v="rapide">Rapide</button></span></div>
+  <p class="petit">Changer l'image recharge la page. Si l'ordinateur peine, le jeu passe tout seul en « Moyenne » puis « Rapide ».</p>
+</div></div>
+
+<div id="victoire" class="ecran cache"><div class="carte"><h2>La forêt se souvient</h2>
+  <p>Les graines d'or ont germé et les anneaux de lumière brillent sur la mer de nuages. Le gardien veille de nouveau sur sa forêt.</p>
+  <p>Tu peux continuer à marcher et à voler où tu veux.</p>
+  <div class="pile"><button class="bouton" id="bContinuer">Continuer</button></div></div></div>
+
+<div id="hud" class="cache">
+  <div id="objectif" class="haut">
+    <span class="ic"><svg><use href="#i-graine"/></svg><span id="nbGraines">0/6</span></span>
+    <span class="ic"><svg><use href="#i-anneau"/></svg><span id="nbAnneaux">0/6</span></span>
+    <svg id="fleche" aria-hidden="true"><use href="#i-fleche"/></svg><span id="objDist"></span>
+  </div>
+  <div id="droiteHaut" class="haut"><button class="medaillon" id="bSon" aria-label="Son"><svg><use href="#i-son"/></svg></button><button class="medaillon" id="bPause" aria-label="Pause"><svg><use href="#i-pause"/></svg></button></div>
+  <div id="tactile">
+    <button class="medaillon" id="bTurbo" aria-label="Turbo">⚡</button><button class="medaillon" id="bSaut" aria-label="Sauter ou monter">▲</button>
+    <button class="medaillon" id="bBas" aria-label="Descendre">▼</button><button class="medaillon" id="bVol" aria-label="S'envoler ou atterrir">✈</button>
+  </div>
+  <div id="eveilBox" class="cache"><div id="eveil"></div></div>
+  <div id="aide"></div>
+  <div id="toast"></div>
+</div>
+<div id="joy"><i></i></div>
+<div id="perf" class="cache"></div>
+
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<script type="module" src="js/jeu.js"></script>
+</body>
+</html>

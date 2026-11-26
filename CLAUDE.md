@@ -9,6 +9,7 @@ Banc d'essai de tests rangés par catégorie. Page d'accueil « My little sandbo
 - `slides/` — catégorie « Slides création / édition » (menu `slides/index.html`, un dossier `NN-nom/` par test).
 - `breakout.html` — sujet « Games ».
 - `pics-dragon/`, `balade/`, `village/`, `lueurs/`, `panda-dojo/`, `jeux/` — sujet « 3D adventures » : jeux copiés depuis ABCDEMO (fichiers compilés seulement ; origine, licences et outils de fabrication : `ABCDEMO-GAMES.md`). Les modifier dans ABCDEMO puis les recopier.
+- `gardien-mousse/` — sujet « 3D adventures » : jeu jouable tiré du film « Le Gardien de Mousse », écrit ici (three.js). Tous les réglages dans `gardien-mousse/js/config.js` ; guide dans `gardien-mousse/README.md`.
 - `cyber-book/`, `radar-rssi/`, `radar-concepts/` — sujet « The Cyber Book » (radar du RSSI ; `radar-rssi-concepts.html` est une copie de `radar-concepts/`).
 - `assets/` — polices (OFL), `lab.css` (styles partagés), `cards.js` (cartes de tests).
 
