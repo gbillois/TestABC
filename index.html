@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
+<script>
+// No zoom: block pinch, double-tap and double-click (iOS Safari ignores user-scalable=no).
+(() => {
+  const non = e => e.preventDefault(), opt = { passive: false };
+  for (const t of ["gesturestart", "gesturechange", "gestureend"]) document.addEventListener(t, non, opt);
+  document.addEventListener("touchmove", e => { if (e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, opt);
+  document.addEventListener("dblclick", non, opt);
+  let dernier = 0; // second quick tap outside buttons/fields is a double-tap: cancel it
+  document.addEventListener("touchend", e => { const now = Date.now(), t = e.target;
+    if (now - dernier < 350 && e.changedTouches.length === 1 && !(t.closest && t.closest("button, a, input, textarea, select, label, [role=button]")) && !(t.nodeType === 1 && getComputedStyle(t).cursor === "pointer")) e.preventDefault();
+    dernier = now; }, opt);
+})();
+</script>
+<style>
+/* no double-tap zoom; at least 16px in fields (otherwise iPhone zooms in) */
+*{touch-action:manipulation}
+input,textarea,select{font-size:max(16px,1em)}
+</style>
+<title>My little sandbox</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@500;700;800&display=swap">
+<style>
+  /* Layout: a shelf of cartridges — each game is a clickable cartridge. */
+  :root {
+    --bg: #eef3fb;
+    --shelf: #dbe4f3;
+    --ink: #1c2240;
+    --muted: #5b6488;
+    --card: #ffffff;
+    --accent: #ff5a3c;
+    --c1: #ffc531; --c2: #1fb5a6; --c3: #3d6cf0; --c4: #ff6fa8; --c5: #8a5cf6; --c6: #ff8a2b;
+    --display: "Bungee", "Arial Black", Impact, sans-serif;
+    --body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141a33; --shelf: #1e2648; --ink: #eef1ff; --muted: #a3abd0; --card: #232c55;
+      --accent: #ff7a5e; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141a33; --shelf: #1e2648; --ink: #eef1ff; --muted: #a3abd0; --card: #232c55;
+    --accent: #ff7a5e; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 1rem;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 2.5rem 3rem;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; display: grid; gap: 2rem; }
+
+  header { display: grid; gap: .5rem; }
+  .eyebrow {
+    font-weight: 800; font-size: .8rem; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  h1 {
+    font-family: var(--display); font-weight: 400;
+    font-size: clamp(2.2rem, 7vw, 4rem); line-height: 1; margin: 0;
+    text-wrap: balance;
+  }
+  h1 .name { color: var(--accent); }
+  h1 .dots { display: inline-flex; gap: .15em; margin-left: .2em; vertical-align: middle; }
+  h1 .dots i { width: .22em; height: .22em; border-radius: 50%; display: block; }
+  h1 .dots i:nth-child(1) { background: var(--c1); }
+  h1 .dots i:nth-child(2) { background: var(--c2); }
+  h1 .dots i:nth-child(3) { background: var(--c3); }
+  .lead { margin: 0; color: var(--muted); font-size: 1.1rem; max-width: 60ch; }
+  .count { font-variant-numeric: tabular-nums; font-weight: 800; color: var(--ink); }
+
+  .shelf {
+    background: var(--shelf); border-radius: 18px;
+    padding: 1.25rem;
+    display: grid; gap: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  }
+
+  /* Cartridge */
+  .cart {
+    --c: var(--c3);
+    position: relative; display: flex; flex-direction: column;
+    text-decoration: none; color: var(--ink);
+    background: var(--c);
+    border-radius: 14px 14px 8px 8px;
+    padding: 14px 12px 12px;
+    min-height: 230px;
+    box-shadow: 0 6px 0 rgba(0,0,0,.18);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .cart::before { /* top notches */
+    content: ""; position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+    width: 40%; height: 4px; border-radius: 2px; background: rgba(0,0,0,.18);
+  }
+  .cart .label {
+    flex: 1; margin-top: 10px;
+    background: var(--card); border-radius: 8px; padding: 14px;
+    display: flex; flex-direction: column; gap: .5rem;
+  }
+  .cart .icon { font-size: 2.4rem; line-height: 1; }
+  .cart .icon img { display: block; width: 64px; height: 64px; border-radius: 16px; box-shadow: 0 2px 0 rgba(0,0,0,.15); }
+  .cart h2 { font-family: var(--display); font-weight: 400; font-size: 1.15rem; margin: 0; text-wrap: balance; }
+  .cart p { margin: 0; color: var(--muted); font-size: .92rem; }
+  .cart .play {
+    margin-top: auto; align-self: flex-start;
+    font-weight: 800; font-size: .85rem; letter-spacing: .08em; text-transform: uppercase;
+    background: var(--ink); color: var(--bg); padding: .45rem .8rem; border-radius: 999px;
+  }
+  .cart .ridges { display: flex; gap: 4px; justify-content: center; margin-top: 10px; }
+  .cart .ridges i { width: 10px; height: 6px; border-radius: 2px; background: rgba(0,0,0,.2); display: block; }
+  a.cart:hover, a.cart:focus-visible { transform: translateY(-4px); box-shadow: 0 10px 0 rgba(0,0,0,.18); }
+  a.cart:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+  a.cart:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,.18); }
+
+  /* Empty slot */
+  .slot {
+    min-height: 230px; border-radius: 14px 14px 8px 8px;
+    border: 3px dashed color-mix(in srgb, var(--muted) 45%, transparent);
+    display: grid; place-items: center; text-align: center; padding: 1rem;
+    color: var(--muted); font-weight: 700;
+  }
+  .slot span { display: block; font-family: var(--display); font-weight: 400; font-size: 2rem; opacity: .5; }
+
+  footer { color: var(--muted); font-size: .9rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cart { transition: none; }
+    a.cart:hover, a.cart:focus-visible, a.cart:active { transform: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Game room</div>
+    <h1>My little <span class="name">sandbox</span><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span></h1>
+    <p class="lead">Pick a cartridge to start a game. <span class="count" id="count"></span></p>
+  </header>
+
+  <main class="shelf" id="shelf" aria-label="Game list"></main>
+
+  <footer>Every new game shows up here with its own button.</footer>
+</div>
+
+<script>
+  // Game list: add one entry per new game.
+  // color: c1 yellow, c2 teal, c3 blue, c4 pink, c5 purple, c6 orange
+  const GAMES = [
+    { title: "Breakout", description: "Bounce the ball with your paddle and smash every brick on the wall!", icon: "🧱", file: "breakout.html", color: "c4" },
+  ];
+
+  const shelf = document.getElementById("shelf");
+  const count = document.getElementById("count");
+
+  for (const game of GAMES) {
+    const a = document.createElement("a");
+    a.className = "cart";
+    a.href = game.file;
+    a.style.setProperty("--c", `var(--${game.color || "c3"})`);
+    a.innerHTML = `
+      <div class="label">
+        <div class="icon" aria-hidden="true"></div>
+        <h2></h2>
+        <p></p>
+        <span class="play">Play ▸</span>
+      </div>
+      <div class="ridges" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>`;
+    if (game.image) { const im = document.createElement("img"); im.src = game.image; im.alt = ""; im.width = 64; im.height = 64; a.querySelector(".icon").append(im); }
+    else a.querySelector(".icon").textContent = game.icon || "🎮";
+    a.querySelector("h2").textContent = game.title;
+    a.querySelector("p").textContent = game.description || "";
+    shelf.appendChild(a);
+  }
+
+  // Free slots to fill the row
+  const free = Math.max(3 - GAMES.length, 1);
+  for (let i = 0; i < free; i++) {
+    const s = document.createElement("div");
+    s.className = "slot";
+    s.innerHTML = `<div><span>+</span>Free slot<br>for the next game</div>`;
+    shelf.appendChild(s);
+  }
+
+  count.textContent = GAMES.length === 0
+    ? "No games yet: the first one is coming soon."
+    : `${GAMES.length} game${GAMES.length > 1 ? "s" : ""} available.`;
+</script>
+<script>
+// Gamepad support: in menus, the stick or d-pad picks a button, A presses it, B goes back.
+window.MANETTE = { toujoursMenu: true };
+(() => {
+  const C = window.MANETTE, st = { prec: [], dir: "", rep: 0, focus: null, tenues: new Set(), roule: false };
+  const css = document.createElement("style"); css.textContent = ".gp-focus{outline:4px solid #ffc93c!important;outline-offset:3px;box-shadow:0 0 0 7px rgba(255,255,255,.85)!important}"; document.head.append(css);
+  const NOMS = { Space: " ", Enter: "Enter", Escape: "Escape", ShiftLeft: "Shift", Tab: "Tab" };
+  const touche = (code, bas) => { if (bas === st.tenues.has(code)) return; bas ? st.tenues.add(code) : st.tenues.delete(code);
+    const key = NOMS[code] ?? (code.startsWith("Key") ? code.slice(3).toLowerCase() : code);
+    document.dispatchEvent(new KeyboardEvent(bas ? "keydown" : "keyup", { key, code, bubbles: true, cancelable: true })); };
+  const lacher = () => { for (const c of [...st.tenues]) touche(c, false); };
+  const visible = el => { if (!el.getClientRects().length) return false; const s = getComputedStyle(el); return s.visibility !== "hidden" && +s.opacity > .1 && s.pointerEvents !== "none"; };
+  const menuOuvert = () => { if (C.toujoursMenu) return document.body; const v = [...document.querySelectorAll(C.menus || ".overlay, .screen")].filter(o => !o.hidden && visible(o)); return v[v.length - 1] || null; };
+  const boutons = o => [...o.querySelectorAll("button, a[href], input, select, [role=button]")].filter(b => !b.disabled && visible(b));
+  const poser = b => { st.focus?.classList.remove("gp-focus"); st.focus = b; if (b) { b.classList.add("gp-focus"); b.scrollIntoView?.({ block: "nearest", inline: "nearest" }); } };
+  const bouger = (o, dx, dy) => { const L = boutons(o); if (!L.length) return; const cur = L.includes(st.focus) ? st.focus : null;
+    if (!cur) { poser(L.find(b => /\b(play|start|resume|continue|jouer|c'est parti|commencer|reprendre|continuer)/i.test(b.textContent)) || L[0]); return; }
+    const r = cur.getBoundingClientRect(), cx = r.x + r.width / 2, cy = r.y + r.height / 2; let best = null, bs = 1e9;
+    for (const b of L) { if (b === cur) continue; const q = b.getBoundingClientRect(), x = q.x + q.width / 2 - cx, y = q.y + q.height / 2 - cy, av = x * dx + y * dy;
+      if (av <= 4) continue; const sc = av + Math.abs(x * dy - y * dx) * 2.5; if (sc < bs) { bs = sc; best = b; } }
+    if (best) poser(best); };
+  const cliquer = sel => { for (const s of sel) { const b = document.querySelector(s); if (b && !b.hidden && visible(b)) { b.click(); return true; } } return false; };
+  // a gamepad button in game: a held key (string) or an on-screen button to click (list)
+  const agir = (m, bas, appui) => { if (!m) return; if (typeof m === "string") touche(m, bas); else if (appui) cliquer(m); };
+  const message = t => { const d = document.createElement("div"); d.textContent = t; d.style.cssText = "position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:99999;background:#1d3b2a;color:#fff;font:700 16px system-ui,sans-serif;padding:8px 16px;border-radius:999px;box-shadow:0 4px 12px rgba(0,0,0,.3);pointer-events:none";
+    document.body.append(d); setTimeout(() => d.remove(), 3500); };
+  function tour() {
+    const g = [...(navigator.getGamepads ? navigator.getGamepads() : [])].find(p => p && p.connected);
+    if (!g) { if (st.roule) { lacher(); poser(null); st.roule = false; } return; }
+    requestAnimationFrame(tour);
+    const now = performance.now(), B = i => !!g.buttons[i]?.pressed, appui = i => B(i) && !st.prec[i], ax = i => { const v = g.axes[i] ?? 0; return Math.abs(v) < .25 ? 0 : v; };
+    const mx = Math.max(-1, Math.min(1, ax(0) + (B(15) ? 1 : 0) - (B(14) ? 1 : 0))), my = Math.max(-1, Math.min(1, ax(1) + (B(13) ? 1 : 0) - (B(12) ? 1 : 0)));
+    const o = menuOuvert();
+    if (o) {
+      lacher(); if (st.focus && !o.contains(st.focus)) poser(null);
+      const dir = Math.max(Math.abs(mx), Math.abs(my)) > .5 ? (Math.abs(mx) > Math.abs(my) ? (mx > 0 ? "d" : "g") : (my > 0 ? "b" : "h")) : "";
+      if (dir && (dir !== st.dir || now > st.rep)) { bouger(o, dir === "d" ? 1 : dir === "g" ? -1 : 0, dir === "b" ? 1 : dir === "h" ? -1 : 0); st.rep = now + (dir !== st.dir ? 400 : 170); }
+      st.dir = dir;
+      if (appui(0)) { if (!st.focus) bouger(o, 0, 0); else if (st.focus.matches("input, select")) st.focus.focus(); else st.focus.click(); }
+      if (appui(9) && !(C.start && cliquer(C.start))) { const b = boutons(o).find(b => /\b(play|start|resume|continue|jouer|c'est parti|commencer|reprendre|continuer)/i.test(b.textContent)); b?.click(); }
+      if (appui(1)) { const b = boutons(o).find(b => b.matches("button") && /close|back|resume|cancel|fermer|retour|reprendre|continuer|annuler|^ok$|✖|❌/i.test(b.textContent.trim())); if (b) b.click(); else { touche("Escape", true); touche("Escape", false); } }
+    } else {
+      if (st.focus) poser(null); st.dir = "";
+      touche("ArrowLeft", mx < -.45); touche("ArrowRight", mx > .45); touche("ArrowUp", my < -.45); touche("ArrowDown", my > .45);
+      const map = [[0, C.A], [1, C.B], [2, C.X], [3, C.Y], [9, C.start], [8, C.select]];
+      for (const [i, m] of map) agir(m, B(i), appui(i));
+      if (C.courir) touche(C.courir, B(4) || B(5) || B(6) || B(7));
+    }
+    st.prec = g.buttons.map(b => b.pressed);
+  }
+  const lancer = () => { if (!st.roule) { st.roule = true; requestAnimationFrame(tour); } };
+  addEventListener("gamepadconnected", () => { message("🎮 Gamepad connected!"); lancer(); });
+  addEventListener("gamepaddisconnected", () => { lacher(); poser(null); });
+  if ([...(navigator.getGamepads ? navigator.getGamepads() : [])].some(p => p && p.connected)) lancer();
+})();
+</script>
+</body>
+</html>
