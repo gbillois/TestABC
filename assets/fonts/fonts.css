@@ -1,0 +1,5 @@
+/* Self-hosted Google Fonts (SIL Open Font License) shared by every video test. */
+@font-face{font-family:'Anton';font-weight:400;font-display:block;src:url(Anton.woff2) format('woff2')}
+@font-face{font-family:'Archivo Black';font-weight:400;font-display:block;src:url(ArchivoBlack.woff2) format('woff2')}
+@font-face{font-family:'Space Mono';font-weight:400;font-display:block;src:url(SpaceMono-Regular.woff2) format('woff2')}
+@font-face{font-family:'Space Mono';font-weight:700;font-display:block;src:url(SpaceMono-Bold.woff2) format('woff2')}

@@ -93,7 +93,7 @@ input,textarea,select{font-size:max(16px,1em)}
     background: var(--c);
     border-radius: 14px 14px 8px 8px;
     padding: 14px 12px 12px;
-    min-height: 230px;
+    min-height: 230px; min-width: 0;
     box-shadow: 0 6px 0 rgba(0,0,0,.18);
     transition: transform .15s ease, box-shadow .15s ease;
   }
@@ -107,7 +107,7 @@ input,textarea,select{font-size:max(16px,1em)}
     display: flex; flex-direction: column; gap: .5rem;
   }
   .cart .icon { font-size: 2.4rem; line-height: 1; }
-  .cart .icon img { display: block; width: 64px; height: 64px; border-radius: 16px; box-shadow: 0 2px 0 rgba(0,0,0,.15); }
+  .cart .icon img:not(.poster) { display: block; width: 64px; height: 64px; border-radius: 16px; box-shadow: 0 2px 0 rgba(0,0,0,.15); }
   .cart h2 { font-family: var(--display); font-weight: 400; font-size: 1.15rem; margin: 0; text-wrap: balance; }
   .cart p { margin: 0; color: var(--muted); font-size: .92rem; }
   .cart .play {
@@ -130,6 +130,19 @@ input,textarea,select{font-size:max(16px,1em)}
   }
   .slot span { display: block; font-family: var(--display); font-weight: 400; font-size: 2rem; opacity: .5; }
 
+  /* Topics */
+  .topic { display: grid; gap: .75rem; scroll-margin-top: 16px; }
+  .topic-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem 1rem; }
+  .topic-head h2 { font-family: var(--display); font-weight: 400; font-size: clamp(1.4rem, 4vw, 2rem); margin: 0; }
+  .topic-head h2 span { margin-right: .35em; }
+  .topic-head a { color: var(--accent); font-weight: 800; text-decoration: none; }
+  .topic-head a:hover { text-decoration: underline; }
+  .topic > p { margin: 0; color: var(--muted); max-width: 70ch; }
+  .toc { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; }
+  .toc a { text-decoration: none; color: var(--ink); background: var(--shelf); font-weight: 800; padding: .4rem .8rem; border-radius: 999px; }
+  .toc a:hover, .toc a:focus-visible { background: var(--card); }
+  .cart .poster { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 6px; background: var(--shelf); }
+
   footer { color: var(--muted); font-size: .9rem; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -141,58 +154,105 @@ input,textarea,select{font-size:max(16px,1em)}
 <body>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Game room</div>
+    <div class="eyebrow">Test bench · one shelf per topic</div>
     <h1>My little <span class="name">sandbox</span><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span></h1>
-    <p class="lead">Pick a cartridge to start a game. <span class="count" id="count"></span></p>
+    <p class="lead">Pick a cartridge to open a project. <span class="count" id="count"></span></p>
+    <nav class="toc" id="toc" aria-label="Topics"></nav>
   </header>
 
-  <main class="shelf" id="shelf" aria-label="Game list"></main>
+  <main id="topics"></main>
 
-  <footer>Every new game shows up here with its own button.</footer>
+  <footer>Every new project shows up here with its own button: add it to the <code>TOPICS</code> list at the bottom of this page.</footer>
 </div>
 
 <script>
-  // Game list: add one entry per new game.
+  // Topics: one shelf each. Add one entry per new project.
   // color: c1 yellow, c2 teal, c3 blue, c4 pink, c5 purple, c6 orange
-  const GAMES = [
-    { title: "Breakout", description: "Bounce the ball with your paddle and smash every brick on the wall!", icon: "🧱", file: "breakout.html", color: "c4" },
+  // poster (optional): a 16:9 image shown on the cartridge label; otherwise the icon is shown.
+  const TOPICS = [
+    {
+      id: "games", name: "Games", icon: "🕹️",
+      description: "Small self-contained games.",
+      items: [
+        { title: "Breakout", description: "Bounce the ball with your paddle and smash every brick, with power-ups falling from broken bricks!", icon: "🧱", poster: "assets/posters/breakout.jpg", file: "breakout.html", color: "c4" },
+      ],
+    },
+    {
+      id: "cyber", name: "The Cyber Book", icon: "📖",
+      description: "The Wavestone CISO radar (Radar du RSSI), staged as books and concept boards. Pages in French.",
+      items: [
+        { title: "The Cyber Book", description: "The sixteen published radar editions, 2011 to 2026, as a page-turning book: click a dial for its keywords, follow a keyword across the years.", icon: "📖", file: "cyber-book/index.html", color: "c5" },
+        { title: "The Cyber Book: night edition", description: "Another take: ten years of cybersecurity, 2018 → 2027, on a night stage with an upright radar, version selector and decade insights.", icon: "🌌", file: "radar-rssi/index.html", color: "c3" },
+        { title: "Radar concepts", description: "Six ways to stage the CISO radar: a concept board, including the upright book with page turns and clickable themes.", icon: "🎯", file: "radar-concepts/index.html", color: "c2" },
+      ],
+    },
+    {
+      id: "video", name: "Video Lab", icon: "🎬", menu: "videos/index.html",
+      description: "Motion design made in code (Canvas 2D + Web Audio), played live in the browser and exportable as MP4.",
+      items: [
+        { title: "AO // Character Reveal", description: "Explosive streetwear title sequence: giant kinetic type, split-screens, shatters and strobe around the AO character.", icon: "🎬", poster: "videos/01-ao-reveal/poster.jpg", file: "videos/01-ao-reveal/index.html", color: "c6" },
+        { title: "AO // Reveal Trailer v2", description: "Second version: posable vector rig, frame-by-frame navigation, per-shot timeline and shot list.", icon: "🎞️", poster: "videos/02-ao-reveal-trailer/poster.jpg", file: "videos/02-ao-reveal-trailer/index.html", color: "c1" },
+      ],
+    },
+    {
+      id: "slides", name: "Slide Lab", icon: "🖼️", menu: "slides/index.html",
+      description: "Create, edit, present and export HTML presentations. External repos, audited before use (see each AUDIT.md).",
+      items: [
+        { title: "HTML Presentation Editor", description: "Offline PowerPoint-style editor in one HTML file: ribbon, thumbnails, tables, charts, presenter mode, .pptx export.", icon: "🖼️", poster: "slides/01-html-presentation-editor/poster.jpg", file: "slides/01-html-presentation-editor/index.html", color: "c2" },
+        { title: "Bento Slides", description: "Deck, player and editor in a single self-saving .bento.html: morph, charts, AI-editable JSON document.", icon: "🍱", poster: "slides/02-bento-slides/poster.jpg", file: "slides/02-bento-slides/index.html", color: "c4" },
+      ],
+    },
   ];
 
-  const shelf = document.getElementById("shelf");
+  const root = document.getElementById("topics");
+  const toc = document.getElementById("toc");
   const count = document.getElementById("count");
 
-  for (const game of GAMES) {
+  function cartridge(item) {
     const a = document.createElement("a");
     a.className = "cart";
-    a.href = game.file;
-    a.style.setProperty("--c", `var(--${game.color || "c3"})`);
+    a.href = item.file;
+    a.style.setProperty("--c", `var(--${item.color || "c3"})`);
     a.innerHTML = `
       <div class="label">
         <div class="icon" aria-hidden="true"></div>
         <h2></h2>
         <p></p>
-        <span class="play">Play ▸</span>
+        <span class="play">Open ▸</span>
       </div>
       <div class="ridges" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>`;
-    if (game.image) { const im = document.createElement("img"); im.src = game.image; im.alt = ""; im.width = 64; im.height = 64; a.querySelector(".icon").append(im); }
-    else a.querySelector(".icon").textContent = game.icon || "🎮";
-    a.querySelector("h2").textContent = game.title;
-    a.querySelector("p").textContent = game.description || "";
-    shelf.appendChild(a);
+    const icon = a.querySelector(".icon");
+    if (item.poster) { const im = document.createElement("img"); im.className = "poster"; im.src = item.poster; im.alt = ""; im.loading = "lazy"; im.onerror = () => { im.remove(); icon.textContent = item.icon || "🎮"; }; icon.append(im); }
+    else icon.textContent = item.icon || "🎮";
+    a.querySelector("h2").textContent = item.title;
+    a.querySelector("p").textContent = item.description || "";
+    return a;
   }
 
-  // Free slots to fill the row
-  const free = Math.max(3 - GAMES.length, 1);
-  for (let i = 0; i < free; i++) {
+  for (const topic of TOPICS) {
+    const sec = document.createElement("section");
+    sec.className = "topic"; sec.id = topic.id;
+    sec.innerHTML = `<div class="topic-head"><h2><span aria-hidden="true"></span></h2></div><p></p><div class="shelf"></div>`;
+    sec.querySelector("h2 span").textContent = topic.icon || "";
+    sec.querySelector("h2").append(topic.name);
+    if (topic.menu) { const m = document.createElement("a"); m.href = topic.menu; m.textContent = `Open the ${topic.name} →`; sec.querySelector(".topic-head").append(m); }
+    sec.querySelector("p").textContent = topic.description || "";
+    const shelf = sec.querySelector(".shelf");
+    shelf.setAttribute("aria-label", topic.name);
+    for (const item of topic.items) shelf.append(cartridge(item));
     const s = document.createElement("div");
     s.className = "slot";
-    s.innerHTML = `<div><span>+</span>Free slot<br>for the next game</div>`;
-    shelf.appendChild(s);
+    s.innerHTML = `<div><span>+</span>Free slot<br>for the next one</div>`;
+    shelf.append(s);
+    root.append(sec);
+
+    const t = document.createElement("a");
+    t.href = "#" + topic.id; t.textContent = `${topic.icon || ""} ${topic.name}`;
+    toc.append(t);
   }
 
-  count.textContent = GAMES.length === 0
-    ? "No games yet: the first one is coming soon."
-    : `${GAMES.length} game${GAMES.length > 1 ? "s" : ""} available.`;
+  const n = TOPICS.reduce((k, t) => k + t.items.length, 0);
+  count.textContent = `${n} project${n > 1 ? "s" : ""} in ${TOPICS.length} topic${TOPICS.length > 1 ? "s" : ""}.`;
 </script>
 <script>
 // Gamepad support: in menus, the stick or d-pad picks a button, A presses it, B goes back.

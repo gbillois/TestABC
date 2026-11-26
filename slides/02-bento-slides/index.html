@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bento Slides · Slide Lab</title>
+<link rel="stylesheet" href="../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../assets/lab.css">
+<style>
+  :root { --accent: #ff8a65; --ok: #7ee2a8; --warn: #ffd166; }
+  .eyebrow { color: var(--accent); }
+  h1 em { color: var(--accent); }
+  .shot { display: block; margin-top: 22px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #000; }
+  .shot img { display: block; width: 100%; height: auto; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); }
+  .btn:hover { border-color: var(--accent); }
+
+  .cols { display: grid; gap: 18px; margin-top: 16px; }
+  @media (min-width: 900px) { .cols { grid-template-columns: 1fr 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .panel h3 { margin: 0 0 8px; font: 700 12px "Space Mono", monospace; letter-spacing: .1em; color: var(--accent); text-transform: uppercase; }
+  .panel ol, .panel ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
+  .panel li { margin: 5px 0; }
+  .panel li b { color: var(--text); font-weight: 600; }
+
+  .verdict { display: flex; gap: 14px; align-items: center; margin-top: 16px; padding: 14px 18px; border-radius: 12px; border: 1px solid var(--ok); background: color-mix(in srgb, var(--ok) 10%, var(--panel)); }
+  .verdict strong { font: 400 26px/1 "Anton", sans-serif; color: var(--ok); text-transform: uppercase; letter-spacing: .02em; }
+  .verdict span { color: var(--muted); font-size: 14px; }
+
+  .checks { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 14px; }
+  .checks th, .checks td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .checks th { font: 700 11px "Space Mono", monospace; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+  .checks td:first-child { white-space: nowrap; font-weight: 600; }
+  .ok { color: var(--ok); font-weight: 700; }
+  .warn { color: var(--warn); font-weight: 700; }
+  .table-wrap { overflow-x: auto; }
+  .note { margin-top: 12px; font-size: 13px; color: var(--muted); max-width: 820px; }
+  .verdict.warnv { border-color: var(--warn); background: color-mix(in srgb, var(--warn) 10%, var(--panel)); }
+  .verdict.warnv strong { color: var(--warn); }
+  .meta { font: 700 12px "Space Mono", monospace; color: var(--muted); margin-top: 10px; word-break: break-all; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="top"><a class="back" href="../index.html">← Slide Lab</a><a class="back" href="../../index.html">TestABC</a><span class="crumb">SLIDES · TEST 02</span></nav>
+
+  <header class="hero">
+    <p class="eyebrow">Slides création / édition · repo externe</p>
+    <h1>Bento <em>Slides</em></h1>
+    <p class="lede">Une alternative à PowerPoint qui tient dans <b>un seul fichier HTML</b> : le deck, le lecteur, le mode présentateur et l'éditeur voyagent ensemble. On enregistre, et le fichier se réécrit avec le deck dedans. Transitions « morph », graphiques intégrés, collaboration chiffrée de bout en bout (optionnelle), document en JSON lisible et facile à faire éditer par une IA.</p>
+    <div class="chips"><span>nyblnet/bento</span><span>MIT</span><span>v1.2.13</span><span>signature ECDSA vérifiée</span><span>~720 KB</span></div>
+    <div class="actions">
+      <a class="btn primary" href="Bento_Slides.bento.html" data-offline="on">Ouvrir Bento · hors ligne ↗</a>
+      <a class="btn" href="Bento_Slides.bento.html" data-offline="off">Ouvrir en ligne (mises à jour, collab)</a>
+      <a class="btn" href="Bento_Slides.bento.html" download>Télécharger (usage local)</a>
+      <a class="btn" href="AUDIT.md">Rapport d'audit complet</a>
+      <a class="btn" href="https://bento.page" rel="noopener noreferrer">bento.page ↗</a>
+    </div>
+    <p class="note">« Hors ligne » active l'interrupteur <i>Offline mode</i> de Bento (préférence <code>bento-offline</code> du navigateur) avant l'ouverture : aucune requête ne sort, ni vérification de mise à jour, ni packs de langue, ni relais de collaboration. Par défaut, Bento contacte <code>bento.page</code> à chaque lancement.</p>
+  </header>
+
+  <a class="shot" href="Bento_Slides.bento.html" data-offline="on"><img src="poster.jpg" alt="Bento Slides ouvert sur son deck de démonstration : miniatures à gauche, slide « The file is the software. » au centre, panneau de thème à droite" width="1280" height="720"></a>
+
+  <h2 class="sec">Protocole de test</h2>
+  <div class="cols">
+    <div class="panel">
+      <h3>Création</h3>
+      <ol>
+        <li><b>Ouvrir Bento (hors ligne)</b> : le fichier démarre sur un deck de démonstration qui fait aussi visite guidée.</li>
+        <li>Nouveau deck, layouts, thème (couleurs, polices), formes, images, tableaux, graphiques, code.</li>
+        <li><b>Morph</b> : dupliquer une slide, déplacer des éléments, présenter (Slideshow) pour voir l'animation.</li>
+        <li>Save : le fichier <code>.bento.html</code> se réécrit avec le deck (File System Access, sinon téléchargement).</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <h3>Édition et comparaison avec le test 01</h3>
+      <ol>
+        <li>Rouvrir le <code>.bento.html</code> enregistré : il contient l'éditeur.</li>
+        <li>Édition par IA : <i>Save → Copy document JSON</i>, faire réécrire le JSON, le recoller.</li>
+        <li>Mode présentateur, commentaires, export PDF.</li>
+        <li>Comparer avec HTML Presentation Editor : Bento a son propre format JSON, alors que le test 01 édite du HTML quelconque et exporte en .pptx.</li>
+      </ol>
+    </div>
+  </div>
+
+  <h2 class="sec">Audit du code source</h2>
+  <div class="verdict warnv"><strong>OK*</strong><span>OK avec réserves : release authentifiée (signature du mainteneur vérifiée), aucune télémétrie, réseau centralisé derrière un interrupteur hors ligne qui fonctionne. Réserve principale : un appel à bento.page à chaque lancement par défaut, d'où le lien hors ligne ci-dessus.</span></div>
+
+  <div class="table-wrap">
+  <table class="checks">
+    <thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead>
+    <tbody>
+      <tr><td>Authenticité</td><td><span class="ok">✓</span> Fichier identique sur bento.page et dans la release GitHub v1.2.13. Le manifeste signé ECDSA P-256 (clé publique du code source) épingle son SHA-256.</td></tr>
+      <tr><td>Runtime décompressé</td><td><span class="ok">✓</span> 1,58 Mo de JS analysé : 1 seul <code>fetch</code> et 1 seul <code>WebSocket</code>, tous deux derrière <code>net.ts</code> (interrupteur hors ligne). Aucune télémétrie.</td></tr>
+      <tr><td>Test dynamique</td><td><span class="ok">✓</span> Hors ligne : 0 requête. Par défaut : 1 GET du manifeste de mise à jour. Aucun WebSocket sans action de l'utilisateur.</td></tr>
+      <tr><td>Mises à jour</td><td><span class="ok">✓</span> Jamais silencieuses : proposées, signées, hash épinglé, pas de rétrogradation, toujours un nouveau fichier.</td></tr>
+      <tr><td>Contenu collé ou reçu</td><td><span class="ok">✓</span> Reconstruit clé par clé selon le schéma (<code>untrusted.ts</code>), valeurs CSS échappées.</td></tr>
+      <tr><td>Rebuild depuis les sources</td><td><span class="warn">!</span> Non fait : il aurait exécuté du code de build tiers non audité. Remplacé par la vérification de signature.</td></tr>
+      <tr><td>Pas de CSP</td><td><span class="warn">!</span> Le confinement réseau repose sur le code et non sur le navigateur. Les surcharges « dev » (<code>bento-update-url</code>…) sont lues sur le domaine : n'héberger aucune page tierce à côté.</td></tr>
+      <tr><td>Stockage et collab</td><td><span class="warn">!</span> Brouillons en local sur le domaine du site. Le relais de collaboration voit le chiffré et les métadonnées. Pour du confidentiel : télécharger, usage local, hors ligne.</td></tr>
+      <tr><td>Fichiers <code>.bento.html</code></td><td><span class="warn">!</span> Un fichier Bento est du code : n'ouvrir que des fichiers de confiance.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="meta">Bento_Slides.bento.html sha256 12cbb62c3a6b70937396f9faa955708c955c0bab9ef2e6a2cabe965233bccede · tag v1.2.13 7de22de76e264170931e0fa0534f8a82fcddef4f</p>
+
+  <footer class="foot">Fichiers tiers non modifiés : <code>Bento_Slides.bento.html</code>, <code>LICENSE</code> (MIT, © 2026 The Bento authors), <code>THIRD_PARTY_NOTICES.md</code>. · <a href="../index.html">Slide Lab</a> · <a href="../../index.html">TestABC</a></footer>
+</div>
+<script>
+// Set Bento's own Offline-mode preference (same origin) before opening it.
+document.querySelectorAll('a[data-offline]').forEach(a => a.addEventListener('click', () => {
+  try { localStorage.setItem('bento-offline', a.dataset.offline); } catch (e) { /* storage blocked: Bento keeps its own default */ }
+}));
+</script>
+</body>
+</html>

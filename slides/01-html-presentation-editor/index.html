@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HTML Presentation Editor · Slide Lab</title>
+<link rel="stylesheet" href="../../assets/fonts/fonts.css">
+<link rel="stylesheet" href="../../assets/lab.css">
+<style>
+  :root { --accent: #ff8a65; --ok: #7ee2a8; --warn: #ffd166; }
+  .eyebrow { color: var(--accent); }
+  h1 em { color: var(--accent); }
+  .shot { display: block; margin-top: 22px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #000; }
+  .shot img { display: block; width: 100%; height: auto; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); }
+  .btn:hover { border-color: var(--accent); }
+
+  .cols { display: grid; gap: 18px; margin-top: 16px; }
+  @media (min-width: 900px) { .cols { grid-template-columns: 1fr 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .panel h3 { margin: 0 0 8px; font: 700 12px "Space Mono", monospace; letter-spacing: .1em; color: var(--accent); text-transform: uppercase; }
+  .panel ol, .panel ul { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
+  .panel li { margin: 5px 0; }
+  .panel li b { color: var(--text); font-weight: 600; }
+
+  .verdict { display: flex; gap: 14px; align-items: center; margin-top: 16px; padding: 14px 18px; border-radius: 12px; border: 1px solid var(--ok); background: color-mix(in srgb, var(--ok) 10%, var(--panel)); }
+  .verdict strong { font: 400 26px/1 "Anton", sans-serif; color: var(--ok); text-transform: uppercase; letter-spacing: .02em; }
+  .verdict span { color: var(--muted); font-size: 14px; }
+
+  .checks { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 14px; }
+  .checks th, .checks td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .checks th { font: 700 11px "Space Mono", monospace; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+  .checks td:first-child { white-space: nowrap; font-weight: 600; }
+  .ok { color: var(--ok); font-weight: 700; }
+  .warn { color: var(--warn); font-weight: 700; }
+  .table-wrap { overflow-x: auto; }
+  .meta { font: 700 12px "Space Mono", monospace; color: var(--muted); margin-top: 10px; word-break: break-all; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="top"><a class="back" href="../index.html">← Slide Lab</a><a class="back" href="../../index.html">TestABC</a><span class="crumb">SLIDES · TEST 01</span></nav>
+
+  <header class="hero">
+    <p class="eyebrow">Slides création / édition · repo externe</p>
+    <h1>HTML Presentation <em>Editor</em></h1>
+    <p class="lede">Un éditeur de présentations type PowerPoint livré en <b>un seul fichier HTML</b>, qui fonctionne hors ligne. Pensé pour retoucher les decks HTML générés par une IA (Copilot, Claude…) : déplacer des blocs, corriger un graphique, présenter, exporter en PDF / PNG / PowerPoint.</p>
+    <div class="chips"><span>matheusbeccalli/html-presentation-editor</span><span>MIT</span><span>commit fd03cd5</span><span>Edge / Chrome desktop</span></div>
+    <div class="actions">
+      <a class="btn primary" href="editor.html">Ouvrir l'éditeur ↗</a>
+      <a class="btn" href="contract-deck.html" download>Télécharger le deck d'exemple</a>
+      <a class="btn" href="editor.html" download="editor.html">Télécharger l'éditeur (usage local)</a>
+      <a class="btn" href="AUDIT.md">Rapport d'audit complet</a>
+      <a class="btn" href="https://github.com/matheusbeccalli/html-presentation-editor" rel="noopener noreferrer">Repo GitHub ↗</a>
+    </div>
+  </header>
+
+  <a class="shot" href="editor.html"><img src="poster.jpg" alt="L'éditeur avec le deck d'exemple ouvert : ruban en haut, miniatures à gauche, slide au centre, panneau Format à droite" width="1280" height="720"></a>
+
+  <h2 class="sec">Protocole de test</h2>
+  <div class="cols">
+    <div class="panel">
+      <h3>Création</h3>
+      <ol>
+        <li><b>Ouvrir l'éditeur</b> → <i>New blank deck</i>.</li>
+        <li>Ajouter des slides (4 layouts), du texte à puces, un tableau, un graphique (coller une plage Excel), des formes.</li>
+        <li>Thème (Design) et masque (logo, pied de page, numéros).</li>
+        <li>Enregistrer (Ctrl+S) → le deck est un fichier HTML autonome.</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <h3>Édition</h3>
+      <ol>
+        <li>Télécharger <b>contract-deck.html</b> puis <i>Open a deck…</i> (ou glisser-déposer).</li>
+        <li>Ouvrir un deck HTML écrit par une IA : lire le <b>rapport d'import</b> (scripts retirés, ressources bloquées).</li>
+        <li>Déplacer / redimensionner, éditer un graphique, notes, commentaires.</li>
+        <li>Présenter (F5), mode présentateur, export <b>PDF</b>, <b>PNG</b>, <b>.pptx</b>.</li>
+      </ol>
+    </div>
+  </div>
+
+  <h2 class="sec">Audit du code source</h2>
+  <div class="verdict"><strong>OK</strong><span>Aucun problème bloquant. Build reproductible, dépendance identique au registre npm, aucun accès réseau possible, contenu importé neutralisé. 3 points d'attention mineurs.</span></div>
+
+  <div class="table-wrap">
+  <table class="checks">
+    <thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead>
+    <tbody>
+      <tr><td>Binaire livré = code source</td><td><span class="ok">✓</span> <code>dist/editor.html</code> reconstruit avec <code>build.py</code> : identique octet pour octet.</td></tr>
+      <tr><td>Dépendance tierce</td><td><span class="ok">✓</span> PptxGenJS 4.0.1 (MIT, embarque JSZip) : hash identique au paquet officiel npm.</td></tr>
+      <tr><td>Réseau</td><td><span class="ok">✓</span> CSP <code>default-src 'none'; connect-src 'none'</code>. Aucun <code>fetch</code> / XHR / WebSocket / beacon dans le code de l'éditeur.</td></tr>
+      <tr><td>Code dynamique</td><td><span class="ok">✓</span> Pas de <code>eval</code>, <code>new Function</code>, <code>import()</code>, Worker, Service Worker.</td></tr>
+      <tr><td>Decks non fiables</td><td><span class="ok">✓</span> Iframes <code>sandbox</code> sans <code>allow-scripts</code> ; import qui retire scripts, <code>on*=</code>, <code>javascript:</code>, iframes ; liens en liste blanche.</td></tr>
+      <tr><td>Test dynamique</td><td><span class="ok">✓</span> Deck piégé (scripts, <code>onerror</code>, iframe, CSS/images distantes) : 0 script exécuté, 0 requête sortie.</td></tr>
+      <tr><td>Stockage partagé</td><td><span class="warn">!</span> Brouillons en IndexedDB sur le domaine du site : pour un deck confidentiel, télécharger l'éditeur et l'ouvrir en local.</td></tr>
+      <tr><td>Maturité</td><td><span class="warn">!</span> Repo de 3 semaines, un seul auteur : commit figé, toute mise à jour repasse par l'audit.</td></tr>
+      <tr><td>Samples</td><td><span class="warn">!</span> Seul <code>contract-deck.html</code> est copié ; le sample « messy » charge des CDN et n'est pas inclus.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="meta">editor.html sha256 8b98b9c19a5a3742f9fd5224572ea7ad587dc108090ca75a8675ceaeac3fec48 · upstream fd03cd517d0112a8bbde8e73c25f3e0676cebb74</p>
+
+  <footer class="foot">Fichiers tiers non modifiés : <code>editor.html</code>, <code>contract-deck.html</code>, <code>LICENSE</code> (MIT, © 2026 Matheus Beccalli). · <a href="../index.html">Slide Lab</a> · <a href="../../index.html">TestABC</a></footer>
+</div>
+</body>
+</html>
