@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le Gardien de Mousse</title>
+<meta name="description" content="Un court film d'animation : au lever du soleil, un géant couvert de mousse se réveille dans une forêt oubliée et s'envole dans le ciel doré.">
+<!--
+  Copie de « The Moss Keeper » de ChetasLua (https://github.com/ChetasLua/moss-keeper, commit 75148b8, 2 novembre 2026),
+  à la demande du propriétaire. Le README de l'auteur dit : « Feel free to copy it, remix it, and learn from it. »
+  Le dépôt n'a pas de fichier de licence. L'original met le film en base64 dans la page (48 Mo) ; ici le même film
+  (MP4 inchangé, 1920 x 1040, 24 images/s, 80 s) et son affiche sont des fichiers à côté (moss-keeper/), lus depuis le même site.
+  Le lecteur est celui de l'auteur, traduit en français, avec un bouton Accueil.
+-->
+<style>
+:root{--ink:#f3ead8;--dim:rgba(243,234,216,.62);--line:rgba(243,234,216,.28);--bg:#07060a;--accent:#f2c879}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Iowan Old Style","Palatino Linotype",Palatino,"Hiragino Mincho ProN","Yu Mincho",Georgia,serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+#frame{position:relative;width:min(100vw,calc(100vh * 1.8462));width:min(100dvw,calc(100dvh * 1.8462));aspect-ratio:1920/1040;background:#000;overflow:hidden;cursor:pointer;box-shadow:0 0 120px rgba(242,200,121,.05)}
+video{position:absolute;inset:0;width:100%;height:100%;display:block;background:#000}
+#poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .9s ease}
+#grain{position:absolute;inset:-4px;pointer-events:none;opacity:.055;mix-blend-mode:overlay}
+.fade{transition:opacity .5s ease}
+#veil{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:16px;background:radial-gradient(ellipse at center,rgba(7,6,10,.12),rgba(7,6,10,.5))}
+#veil[hidden]{display:none}
+h1{margin:0;font-weight:400;font-size:clamp(24px,4.6vw,54px);letter-spacing:.09em;text-shadow:0 2px 24px rgba(0,0,0,.65)}
+#credit{margin:0;font-size:clamp(12px,1.3vw,15px);color:var(--dim);letter-spacing:.05em}
+#credit a{color:var(--dim)}
+button,.lien{font:inherit;color:var(--ink);background:rgba(10,9,14,.46);border:1px solid var(--line);border-radius:999px;padding:11px 24px;font-size:clamp(14px,1.5vw,17px);letter-spacing:.06em;cursor:pointer;min-height:44px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:background .2s,border-color .2s;text-decoration:none;display:inline-flex;align-items:center}
+button:hover,.lien:hover{background:rgba(242,200,121,.18);border-color:var(--accent)}
+button:focus-visible,.lien:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+#accueil{position:fixed;left:clamp(10px,2vw,24px);top:clamp(10px,2vw,24px);z-index:5;padding:8px 16px;min-height:40px;font-size:15px}
+#sound{position:absolute;right:clamp(10px,2vw,24px);top:clamp(10px,2vw,24px);opacity:0;pointer-events:none}
+#sound.on{opacity:1;pointer-events:auto}
+#bar{position:absolute;left:0;right:0;bottom:0;padding:26px clamp(10px,2vw,22px) 12px;display:flex;align-items:center;gap:14px;background:linear-gradient(transparent,rgba(5,4,8,.62));opacity:0}
+#frame.show #bar{opacity:1}
+#track{flex:1;height:18px;display:flex;align-items:center;cursor:pointer;touch-action:none}
+#rail{position:relative;width:100%;height:2px;background:var(--line);border-radius:2px}
+#fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--accent);border-radius:2px}
+.ic{padding:0;width:40px;height:40px;min-height:40px;flex:none;display:grid;place-items:center;background:transparent;border:0;backdrop-filter:none;-webkit-backdrop-filter:none}
+.ic svg{width:20px;height:20px;fill:var(--ink)}
+#load{position:absolute;inset:auto 0 12% 0;text-align:center;color:var(--dim);font-size:15px;letter-spacing:.08em;padding:0 16px}
+@media (prefers-reduced-motion:reduce){#grain{display:none}}
+</style>
+</head>
+<body>
+<a id="accueil" class="lien" href="../index.html">← Accueil</a>
+<div id="stage">
+  <div id="frame" aria-label="Le Gardien de Mousse, court film d'animation">
+    <video id="v" playsinline preload="auto" src="moss-keeper/film.mp4"></video>
+    <img id="poster" alt="Un géant couvert de mousse, à genoux dans une forêt brumeuse au lever du soleil" src="moss-keeper/affiche.jpg">
+    <canvas id="grain" width="256" height="139"></canvas>
+    <div id="veil" hidden><h1 id="ttl">Le Gardien de Mousse</h1><button id="go">Regarder avec le son</button>
+      <p id="credit">« The Moss Keeper », un film de <a href="https://github.com/ChetasLua/moss-keeper" target="_blank" rel="noopener">ChetasLua</a></p></div>
+    <div id="load">Le film se déroule…</div>
+    <button id="sound">Mettre le son</button>
+    <div id="bar" class="fade">
+      <button class="ic" id="pp" aria-label="Pause"><svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>
+      <div id="track" role="slider" aria-label="Avancer dans le film" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="rail"><div id="fill"></div></div></div>
+      <button class="ic" id="fs" aria-label="Plein écran"><svg viewBox="0 0 24 24"><path d="M4 9V4h5v2H6v3zm11-5h5v5h-2V6h-3zM6 15v3h3v2H4v-5zm12 3v-3h2v5h-5v-2z"/></svg></button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},v=$('v'),veil=$('veil'),poster=$('poster'),frame=$('frame'),snd=$('sound'),fill=$('fill'),ttl=$('ttl'),go=$('go'),idle=0,ended=false,begun=false;
+var TITRE='Le Gardien de Mousse';
+var PA='M7 5h4v14H7zM13 5h4v14h-4z',PL='M8 5l11 7-11 7z';
+function setIcon(p){$('pp').innerHTML='<svg viewBox="0 0 24 24"><path d="'+(p?PA:PL)+'"/></svg>';$('pp').setAttribute('aria-label',p?'Pause':'Lecture')}
+function hidePoster(){poster.style.opacity=0;setTimeout(function(){poster.style.display='none'},900);veil.hidden=true;begun=true;$('load').style.display='none'}
+function syncSound(){snd.classList.toggle('on',v.muted&&!v.paused)}
+function showVeil(t,b){ttl.textContent=t;go.textContent=b;veil.hidden=false}
+function wake(){frame.classList.add('show');frame.style.cursor='pointer';clearTimeout(idle);idle=setTimeout(function(){if(!v.paused){frame.classList.remove('show');frame.style.cursor='none'}},2200)}
+function toggle(){if(ended)return replay();if(v.paused){v.play()}else{v.pause()}}
+function replay(){ended=false;v.currentTime=0;v.muted=false;veil.hidden=true;v.play()}
+// Règle du dépôt : le son ne démarre qu'après un toucher. On montre donc l'écran titre, sans lecture automatique.
+v.addEventListener('canplay',function(){$('load').style.display='none'},{once:true});
+v.addEventListener('error',function(){$('load').textContent='Le film n’est pas disponible ici : ouvre la page sur gbillois.github.io/ABCDEMO.'});
+showVeil(TITRE,'Regarder avec le son');
+go.addEventListener('click',function(e){e.stopPropagation();if(ended)return replay();v.muted=false;var r=v.play();if(r&&r.catch)r.catch(function(){v.muted=true;v.play()})});
+snd.addEventListener('click',function(e){e.stopPropagation();v.muted=false;snd.classList.remove('on');v.play()});
+frame.addEventListener('click',function(e){if(e.target.closest('button,#track,a'))return;if(!begun)return go.click();toggle()});
+frame.addEventListener('mousemove',wake);frame.addEventListener('touchstart',wake,{passive:true});
+$('pp').addEventListener('click',function(e){e.stopPropagation();toggle()});
+$('fs').addEventListener('click',function(e){e.stopPropagation();var d=document,r=frame;if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d)}else if(r.requestFullscreen){r.requestFullscreen()}else if(r.webkitRequestFullscreen){r.webkitRequestFullscreen()}else if(v.webkitEnterFullscreen){v.webkitEnterFullscreen()}});
+v.addEventListener('play',function(){setIcon(true);ended=false});
+v.addEventListener('playing',function(){hidePoster();syncSound()});
+v.addEventListener('volumechange',syncSound);
+v.addEventListener('pause',function(){setIcon(false);frame.classList.add('show');syncSound()});
+v.addEventListener('timeupdate',function(){var p=v.duration?v.currentTime/v.duration*100:0;fill.style.width=p+'%';$('track').setAttribute('aria-valuenow',Math.round(p))});
+v.addEventListener('ended',function(){ended=true;showVeil(TITRE,'Revoir le film');frame.classList.add('show')});
+function seekAt(x){var r=$('rail').getBoundingClientRect();v.currentTime=Math.max(0,Math.min(1,(x-r.left)/r.width))*(v.duration||0)}
+var dragging=false,tr=$('track');
+tr.addEventListener('pointerdown',function(e){e.stopPropagation();dragging=true;tr.setPointerCapture(e.pointerId);seekAt(e.clientX)});
+tr.addEventListener('pointermove',function(e){if(dragging)seekAt(e.clientX)});
+tr.addEventListener('pointerup',function(){dragging=false});
+window.addEventListener('keydown',function(e){
+  if(e.code==='Space'||e.key==='k'){e.preventDefault();if(!begun)go.click();else toggle()}
+  else if(e.key==='ArrowRight'){v.currentTime=Math.min(v.duration||0,v.currentTime+5);wake()}
+  else if(e.key==='ArrowLeft'){v.currentTime=Math.max(0,v.currentTime-5);wake()}
+  else if(e.key==='m'){v.muted=!v.muted;snd.classList.remove('on')}
+  else if(e.key==='f'){$('fs').click()}
+});
+// grain de pellicule discret, calculé ici (code de l'auteur)
+var g=$('grain'),c=g.getContext('2d'),w=g.width,h=g.height,pool=[];
+for(var k=0;k<6;k++){var d=c.createImageData(w,h);for(var i=0;i<d.data.length;i+=4){var q=128+(Math.random()-.5)*190;d.data[i]=d.data[i+1]=d.data[i+2]=q;d.data[i+3]=255}pool.push(d)}
+g.style.width='100%';g.style.height='100%';var idx=0,last=0;
+(function tick(t){requestAnimationFrame(tick);if(t-last<84||v.paused)return;last=t;idx=(idx+1+Math.floor(Math.random()*4))%6;c.putImageData(pool[idx],0,0)})(0);
+})();
+</script>
+</body>
+</html>

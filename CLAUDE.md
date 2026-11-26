@@ -4,10 +4,11 @@ Banc d'essai de tests rangés par catégorie. Page d'accueil « My little sandbo
 
 ## Structure
 
-- `index.html` — accueil « My little sandbox », une étagère par sujet (Games, The Cyber Book, Video Lab, Slide Lab).
+- `index.html` — accueil « My little sandbox », une étagère par sujet (Games, 3D adventures, The Cyber Book, Video Lab, Slide Lab).
 - `videos/` — catégorie « Vidéo création » (menu `videos/index.html`, un dossier `NN-nom/` par test).
 - `slides/` — catégorie « Slides création / édition » (menu `slides/index.html`, un dossier `NN-nom/` par test).
 - `breakout.html` — sujet « Games ».
+- `pics-dragon/`, `balade/`, `village/`, `lueurs/`, `panda-dojo/`, `jeux/` — sujet « 3D adventures » : jeux copiés depuis ABCDEMO (fichiers compilés seulement ; origine, licences et outils de fabrication : `ABCDEMO-GAMES.md`). Les modifier dans ABCDEMO puis les recopier.
 - `cyber-book/`, `radar-rssi/`, `radar-concepts/` — sujet « The Cyber Book » (radar du RSSI ; `radar-rssi-concepts.html` est une copie de `radar-concepts/`).
 - `assets/` — polices (OFL), `lab.css` (styles partagés), `cards.js` (cartes de tests).
 

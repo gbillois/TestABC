@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Les Pics du Dragon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root { --rouge: #b3261e; --or: #e8b04a; --encre: #2a1a12; --papier: #f6ecd8; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #140c0a; color: var(--papier); font-family: "Nunito", system-ui, sans-serif; user-select: none; -webkit-user-select: none; touch-action: none; }
+  canvas#c { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; display: block; }
+  .ecran { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 20; }
+  .cache { display: none !important; }
+  .rouleau { position: relative; width: min(470px, 94vw); max-height: calc(100vh - 32px); overflow: auto; color: var(--encre);
+    background: linear-gradient(180deg, rgba(251,243,226,.97), rgba(239,223,191,.97)); border-radius: 14px; padding: 22px 24px;
+    box-shadow: 0 0 0 3px #7a1d14, 0 0 0 6px var(--or), 0 18px 50px rgba(0,0,0,.55); text-align: center; }
+  .rouleau h1 { font-family: "Ma Shan Zheng", "Nunito", cursive; font-weight: 400; font-size: 46px; line-height: 1; margin: 4px 0 6px; color: var(--rouge); }
+  .rouleau h2 { font-size: 22px; margin: 0 0 10px; color: var(--rouge); }
+  .rouleau p { margin: 8px 0; font-size: 15.5px; line-height: 1.4; }
+  .rouleau ul { text-align: left; font-size: 14.5px; line-height: 1.45; padding-left: 20px; margin: 8px 0 12px; }
+  .bouton { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer; text-decoration: none;
+    font: 800 19px "Nunito", sans-serif; color: #fff7e6; background: radial-gradient(circle at 50% 35%, #d8402f, #8e1b12);
+    padding: 12px 30px; border-radius: 40px; margin: 6px 4px; box-shadow: 0 0 0 2px var(--or), 0 5px 0 #5c110b, 0 8px 16px rgba(0,0,0,.35); }
+  .bouton:active { transform: translateY(3px); }
+  .bouton.doux { background: #e9d7b3; color: var(--encre); box-shadow: 0 0 0 2px #b38a4a, 0 4px 0 #8f6a33; font-size: 16px; padding: 9px 20px; }
+  .pile { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  #charge { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(ellipse at 50% 40%, #3a1c14, #120a08); gap: 14px; transition: opacity .8s; }
+  #charge .titre { font-family: "Ma Shan Zheng", cursive; font-size: 52px; color: var(--or); text-shadow: 0 0 30px rgba(216,50,42,.5); }
+  #barre { width: min(320px, 70vw); height: 6px; border-radius: 4px; background: rgba(255,255,255,.12); overflow: hidden; }
+  #barre i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--rouge), var(--or)); transition: width .25s; }
+  #chargeTxt { font-size: 14px; opacity: .8; }
+  #hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+  #hud > * { pointer-events: auto; }
+  .haut { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); }
+  #objectif { left: calc(env(safe-area-inset-left, 0px) + 12px); display: flex; align-items: center; gap: 10px; background: rgba(30,14,10,.6); border: 2px solid rgba(232,176,74,.75); border-radius: 30px; padding: 6px 14px 6px 8px; font-weight: 800; }
+  #objectif svg { width: 30px; height: 30px; }
+  #fleche { width: 26px; height: 26px; }
+  #objDist { font-size: 13px; opacity: .85; font-weight: 600; }
+  .medaillon { width: 52px; height: 52px; border-radius: 50%; border: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 35%, #c23a2a, #7a1710); box-shadow: 0 0 0 2px var(--or), 0 4px 10px rgba(0,0,0,.4); color: #fff1d6; padding: 0; font: 800 12px "Nunito"; }
+  .medaillon svg { width: 28px; height: 28px; }
+  .medaillon.actif { background: radial-gradient(circle at 50% 35%, #f2b84d, #b06d12); color: #3a1a06; }
+  #droiteHaut { right: calc(env(safe-area-inset-right, 0px) + 12px); display: flex; gap: 10px; }
+  #tactile { position: absolute; right: calc(env(safe-area-inset-right, 0px) + 16px); bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); display: grid; grid-template-columns: auto auto; gap: 14px; align-items: end; }
+  #tactile .medaillon { width: 62px; height: 62px; }
+  #bFeu { width: 84px !important; height: 84px !important; background: radial-gradient(circle at 50% 35%, #ffb23a, #c2340f) !important; grid-row: span 2; }
+  #bFeu svg { width: 46px; height: 46px; }
+  #aide { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); font-size: 13px; background: rgba(30,14,10,.55); padding: 4px 12px; border-radius: 12px; pointer-events: none; white-space: nowrap; }
+  #toast { position: absolute; left: 50%; top: 20%; transform: translate(-50%, 0); font-size: 22px; font-weight: 800; color: #fff3d6; text-shadow: 0 2px 6px rgba(0,0,0,.6);
+    background: rgba(120,25,15,.55); border: 2px solid var(--or); padding: 8px 20px; border-radius: 30px; opacity: 0; transition: opacity .4s; pointer-events: none; text-align: center; max-width: 90vw; }
+  #joy { position: fixed; width: 130px; height: 130px; border-radius: 50%; border: 2px solid rgba(255,240,210,.5); background: rgba(30,14,10,.25); z-index: 11; pointer-events: none; transform: translate(-50%, -50%); display: none; }
+  #joy i { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: rgba(255,220,170,.55); }
+  #perf { position: fixed; left: 12px; top: calc(env(safe-area-inset-top, 0px) + 66px); font: 12px/1.3 ui-monospace, monospace; background: rgba(0,0,0,.55); padding: 6px 8px; border-radius: 6px; z-index: 12; white-space: pre; pointer-events: none; }
+  .ligne { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 10px 0; font-weight: 800; font-size: 15px; }
+  .choix { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .choix button { border: 0; border-radius: 16px; padding: 6px 12px; font: 800 14px "Nunito"; background: #e3cfa6; color: var(--encre); cursor: pointer; }
+  .choix button.on { background: var(--rouge); color: #fff; }
+  .croix { position: absolute; right: 10px; top: 8px; border: 0; background: none; font-size: 28px; color: #7a1d14; cursor: pointer; }
+  .petit { font-size: 12.5px !important; opacity: .75; }
+  @media (pointer: fine) { #tactile { display: none; } }
+  @media (pointer: coarse) { #aide { display: none; } }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-lanterne" viewBox="0 0 32 32"><path d="M16 2v4" stroke="#e8b04a" stroke-width="2.2" stroke-linecap="round"/><rect x="11" y="5" width="10" height="3" rx="1" fill="#e8b04a"/>
+    <ellipse cx="16" cy="16" rx="9" ry="8.5" fill="#d8402f" stroke="#7a1710" stroke-width="1.4"/><path d="M16 7.6v16.8M11.5 9.5c-2 4-2 9 0 13M20.5 9.5c2 4 2 9 0 13" stroke="#8e1b12" stroke-width="1.2" fill="none"/>
+    <rect x="11" y="24" width="10" height="3" rx="1" fill="#e8b04a"/><path d="M16 27v4" stroke="#e8b04a" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 32 32"><rect x="9" y="7" width="5" height="18" rx="1.5" fill="currentColor"/><rect x="18" y="7" width="5" height="18" rx="1.5" fill="currentColor"/></symbol>
+  <symbol id="i-son" viewBox="0 0 32 32"><path d="M5 12h5l7-6v20l-7-6H5z" fill="currentColor"/><path d="M21 11c2 3 2 7 0 10M24.5 8c4 5 4 11 0 16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol>
+  <symbol id="i-muet" viewBox="0 0 32 32"><path d="M5 12h5l7-6v20l-7-6H5z" fill="currentColor"/><path d="M21 12l7 8M28 12l-7 8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-feu" viewBox="0 0 32 32"><path d="M16 3c2 5 8 7 8 15a8 8 0 0 1-16 0c0-4 2-6 3-8 1 3 2 4 3 4-1-4 0-8 2-11z" fill="#fff3c4" stroke="#7a1710" stroke-width="1.2"/><path d="M16 15c1 3 4 4 4 8a4 4 0 0 1-8 0c0-2 2-4 4-8z" fill="#ff8a1e"/></symbol>
+  <symbol id="i-vite" viewBox="0 0 32 32"><path d="M5 8l10 8-10 8zM16 8l10 8-10 8z" fill="currentColor"/></symbol>
+  <symbol id="i-lent" viewBox="0 0 32 32"><rect x="7" y="14" width="18" height="5" rx="2" fill="currentColor"/></symbol>
+  <symbol id="i-fleche" viewBox="0 0 32 32"><path d="M16 3l9 22-9-5-9 5z" fill="#e8b04a" stroke="#5c110b" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+</svg>
+
+<div id="charge"><div class="titre">Les Pics du Dragon</div><div id="barre"><i></i></div><div id="chargeTxt">Le dragon s'éveille…</div></div>
+
+<div id="titre" class="ecran cache"><div class="rouleau">
+  <h1>Les Pics du Dragon</h1>
+  <p>Tu es le <b>dragon rouge</b>. Vole librement au-dessus de la vallée des pics, des érables et des temples.</p>
+  <ul>
+    <li>Dirige-toi avec les <b>flèches</b> (ou ZQSD), ou le joystick sur tablette.</li>
+    <li><b>Espace</b> ou le bouton de feu : crache du feu.</li>
+    <li>Rallume les <b>6 grandes lanternes</b> avec ton feu. La flèche montre la plus proche.</li>
+  </ul>
+  <p class="petit">Maj : plus vite · Ctrl : plus lentement · R : rugir · glisser la souris pour regarder autour · Échap : pause</p>
+  <div class="pile"><button class="bouton" id="bJouer">Jouer</button><a class="bouton doux" href="../index.html">Accueil</a></div>
+  <p class="petit">Rendu inspiré de « Crimson Loong » de ChetasLua : nous avons repris ses techniques ; le code et la vallée sont faits pour ce jeu.</p>
+</div></div>
+
+<div id="pause" class="ecran cache"><div class="rouleau"><h2>Pause</h2><div class="pile">
+  <button class="bouton" id="bReprendre">Reprendre</button><button class="bouton doux" id="bReglages">Réglages</button>
+  <button class="bouton doux" id="bDepart">Revenir au départ</button><button class="bouton doux" id="bRejouer">Rejouer</button><a class="bouton doux" href="../index.html">Accueil</a>
+</div></div></div>
+
+<div id="reglages" class="ecran cache"><div class="rouleau"><button class="croix" id="bFermerReglages" aria-label="Fermer">×</button><h2>Réglages</h2>
+  <div class="ligne">Image <span class="choix" id="cQualite"><button data-v="haute">Belle</button><button data-v="moyenne">Moyenne</button><button data-v="rapide">Rapide</button></span></div>
+  <div class="ligne">Commande <span class="choix" id="cInv"><button data-v="0">↑ monte</button><button data-v="1">↑ pique</button></span></div>
+  <div class="ligne">Son <span class="choix" id="cSon"><button data-v="1">Oui</button><button data-v="0">Non</button></span></div>
+  <div class="ligne">Mesures <span class="choix" id="cPerf"><button data-v="1">Oui</button><button data-v="0">Non</button></span></div>
+  <p class="petit">« Image » change au prochain lancement pour les arbres et la roche.</p>
+</div></div>
+
+<div id="victoire" class="ecran cache"><div class="rouleau"><h1>Bravo !</h1><p>Les 6 lanternes brillent dans la vallée. Le dragon rouge en est le gardien !</p><p>Tu peux continuer à voler où tu veux.</p>
+  <div class="pile"><button class="bouton" id="bContinuer">Continuer</button></div></div></div>
+
+<div id="hud" class="cache">
+  <div id="objectif" class="haut"><svg><use href="#i-lanterne"/></svg><span><span id="objNb">0/6</span><br><span id="objDist"></span></span><svg id="fleche"><use href="#i-fleche"/></svg></div>
+  <div id="droiteHaut" class="haut"><button class="medaillon" id="bSon" aria-label="Son"><svg><use href="#i-son"/></svg></button><button class="medaillon" id="bPause" aria-label="Pause"><svg><use href="#i-pause"/></svg></button></div>
+  <div id="tactile"><button class="medaillon" id="bVite" aria-label="Plus vite"><svg><use href="#i-vite"/></svg></button><button class="medaillon" id="bFeu" aria-label="Feu"><svg><use href="#i-feu"/></svg></button><button class="medaillon" id="bLent" aria-label="Plus lentement"><svg><use href="#i-lent"/></svg></button></div>
+  <div id="aide">Flèches : voler · Espace : feu · Maj : vite · Ctrl : lent · R : rugir</div>
+  <div id="toast"></div>
+</div>
+<div id="joy"><i></i></div>
+<div id="perf" class="cache"></div>
+
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<script type="module" src="js/jeu.js"></script>
+</body>
+</html>

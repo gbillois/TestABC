@@ -7,6 +7,7 @@ Banc d'essai de tests rangés par catégorie. Ouvrir `index.html` pour la page d
 | Vidéo création | `videos/index.html` | 01 AO Character Reveal · 02 AO Reveal Trailer v2 |
 | Slides création / édition | `slides/index.html` | 01 HTML Presentation Editor ([audit](slides/01-html-presentation-editor/AUDIT.md)) · 02 Bento Slides ([audit](slides/02-bento-slides/AUDIT.md)) |
 | Games | — | Breakout (`breakout.html`) |
+| 3D adventures | — | Les Pics du Dragon · La Balade de Millépoques · Le Village de Millépoques · Les Trois Lueurs · Panda Fighter · Panda Fighter : le Dojo · La Ville du Pélican · Le Gardien de Mousse (copiés depuis ABCDEMO, voir `ABCDEMO-GAMES.md`) |
 | The Cyber Book | — | The Cyber Book (`cyber-book/`) · night edition (`radar-rssi/`) · Radar concepts (`radar-concepts/`) |
 
 Toute repo externe intégrée passe d'abord par un audit du code source (voir `CLAUDE.md`).
