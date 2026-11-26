@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The Last Page</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; media-src 'self'; connect-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; touch-action: none; }
+  body { display: flex; align-items: center; justify-content: center; }
+  canvas { display: block; background: #000; image-rendering: auto; }
+  #back { position: fixed; top: 10px; left: 12px; z-index: 2; color: #cfc6b0; font: 13px/1 Georgia, serif;
+          text-decoration: none; opacity: .45; padding: 6px 8px; }
+  #back:hover { opacity: .9; }
+  #load { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  #load div { width: 180px; height: 2px; background: #2a2630; }
+  #load span { display: block; height: 100%; width: 0; background: #d8c7a0; transition: width .2s; }
+</style>
+</head>
+<body>
+<a id="back" href="../index.html" aria-label="Back to the sandbox">&larr; sandbox</a>
+<canvas id="c" width="1280" height="720" aria-label="The Last Page, a platform game"></canvas>
+<div id="load"><div><span id="bar"></span></div></div>
+<script src="game.js"></script>
+</body>
+</html>
